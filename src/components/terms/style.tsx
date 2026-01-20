@@ -37,7 +37,7 @@ export const Checkbox = styled.input.attrs({ type: "checkbox" })`
     background-color: #ff5900;
   }
 
-  &:checked + ${Label} {
+  &:checked + a ${Label}, &:checked + ${Label} {
     color: #3d3d3d;
   }
 `;

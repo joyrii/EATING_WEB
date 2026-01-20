@@ -29,7 +29,9 @@ const TermsItem = ({
       />
       {detailHref ? (
         <Link href={detailHref}>
-          <Label>{label}</Label>
+          <Label as="span" $clickable={true}>
+            {label}
+          </Label>
         </Link>
       ) : (
         <Label htmlFor={id} $clickable={false}>
