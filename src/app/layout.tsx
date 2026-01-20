@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import StyledComponentsRegistry from "../lib/styled-components/registry";
+import "pretendard/dist/web/static/pretendard.css";
 
 export const metadata: Metadata = {
   title: "EATING - 이화여대 밥약 매칭",

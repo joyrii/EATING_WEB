@@ -77,24 +77,28 @@ export default function TermsIndex() {
           label="[필수] 서비스 이용약관 동의"
           checked={terms.term2}
           handler={() => termToggle("term2")}
+          detailHref="/terms/service"
         />
         <TermsItem
           id="term3"
           label="[필수] 개인정보 수집 및 이용 동의"
           checked={terms.term3}
           handler={() => termToggle("term3")}
+          detailHref="/terms/privacy"
         />
         <TermsItem
           id="term4"
           label="[필수] 개인정보 제3자 제공 동의"
           checked={terms.term4}
           handler={() => termToggle("term4")}
+          detailHref="/terms/thirdParty"
         />
         <TermsItem
           id="term5"
           label="[선택] 마케팅 정보 수신 동의"
           checked={terms.term5}
           handler={() => termToggle("term5")}
+          detailHref="/terms/marketing"
         />
       </div>
       <div style={{ marginTop: "auto", marginBottom: 45 }}>

@@ -1,13 +1,23 @@
+"use client";
+
 import { CheckboxWrapper, Checkbox, Label } from "./style";
+import Link from "next/link";
 
 interface TermsItemProps {
   id: string;
   label: string;
   checked: boolean;
   handler: (checked: boolean) => void;
+  detailHref?: string;
 }
 
-const TermsItem = ({ id, label, checked, handler }: TermsItemProps) => {
+const TermsItem = ({
+  id,
+  label,
+  checked,
+  handler,
+  detailHref,
+}: TermsItemProps) => {
   return (
     <CheckboxWrapper $checked={checked}>
       <Checkbox
@@ -17,7 +27,15 @@ const TermsItem = ({ id, label, checked, handler }: TermsItemProps) => {
         checked={checked}
         onChange={(e) => handler(e.target.checked)}
       />
-      <Label htmlFor={id}>{label}</Label>
+      {detailHref ? (
+        <Link href={detailHref}>
+          <Label>{label}</Label>
+        </Link>
+      ) : (
+        <Label htmlFor={id} $clickable={false}>
+          {label}
+        </Label>
+      )}
     </CheckboxWrapper>
   );
 };

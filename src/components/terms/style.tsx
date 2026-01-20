@@ -10,13 +10,15 @@ export const CheckboxWrapper = styled.label<{ $checked: boolean }>`
   border: 1px solid ${({ $checked }) => ($checked ? "#ff7a33" : "#f0f0f0")};
   background-color: ${({ $checked }) => ($checked ? "#ffdecc" : "#ffffff")};
   border-radius: 10px;
-  margin-bottom: 18px;
+  margin-bottom: 15px;
 `;
 
-export const Label = styled.label`
+export const Label = styled.label<{ $clickable?: boolean }>`
   color: #8a8a8a;
   font-size: 16px;
   text-decoration: underline;
+
+  cursor: ${({ $clickable = true }) => ($clickable ? "pointer" : "default")};
 `;
 
 export const Checkbox = styled.input.attrs({ type: "checkbox" })`
