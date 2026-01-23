@@ -30,7 +30,7 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx",
-    "src/app/terms/[term]"
+    "src/app/(onboarding)/terms/[term]"
   ],
   "exclude": ["node_modules"]
 }

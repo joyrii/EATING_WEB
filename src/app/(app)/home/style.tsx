@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 // 헤더
 export const HeaderFont = localFont({
-  src: "../fonts/Hakgyoansim-Dunggeunmiso-OTF-R.otf",
+  src: "../../fonts/Hakgyoansim-Dunggeunmiso-OTF-R.otf",
   weight: "400",
 });
 

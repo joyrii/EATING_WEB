@@ -1,5 +1,7 @@
+import Link from "next/link";
 import styled from "styled-components";
 
+// 가이드 카드
 export const GuideCardContainer = styled.div<{ bg: string }>`
   background-color: #ffffff;
   width: 160px;
