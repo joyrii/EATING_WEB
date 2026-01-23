@@ -1,6 +1,13 @@
 "use client";
 
-import { NavBar, NavTab } from "./style";
+import {
+  NavBar,
+  NavTab,
+  TabLabel,
+  TabLabelWrap,
+  IconWrap,
+  Indicator,
+} from "./style";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 
@@ -33,23 +40,32 @@ export default function TabBar() {
   ];
 
   const pathname = usePathname();
+  const activeIndex = Math.max(
+    0,
+    tabs.findIndex((tab) => pathname === tab.href),
+  );
 
   return (
     <NavBar>
-      {tabs.map((tab) => {
-        const active = pathname === tab.href;
+      <Indicator $index={activeIndex} $count={tabs.length} />
+
+      {tabs.map((tab, index) => {
+        const active = index === activeIndex;
         const Icon = active ? tab.icon.active : tab.icon.inactive;
-        const Label = active ? tab.label : null;
 
         return (
           <NavTab key={tab.label} href={tab.href} $active={active}>
-            <Image
-              src={Icon}
-              alt={`${tab.label}-icon`}
-              width={24}
-              height={24}
-            />
-            {Label}
+            <IconWrap>
+              <Image
+                src={Icon}
+                alt={`${tab.label}-icon`}
+                width={24}
+                height={24}
+              />
+            </IconWrap>
+            <TabLabelWrap $active={active}>
+              <TabLabel $active={active}>{tab.label}</TabLabel>
+            </TabLabelWrap>
           </NavTab>
         );
       })}
