@@ -24,7 +24,7 @@ export const HeaderText = styled.h1`
 `;
 
 export const LogoCharacter = styled.img.attrs({
-  src: "/svgs/eating-logo-character.svg",
+  src: "/svgs/home/eating-logo-character.svg",
   width: 40,
   height: 44,
 })`
@@ -45,7 +45,7 @@ export const AdBanner = styled.div`
 `;
 
 export const AdBannerIcon = styled.img.attrs({
-  src: "/svgs/ad-banner-icon.svg",
+  src: "/svgs/home/ad-banner-icon.svg",
   width: 46,
   height: 44,
 })``;
@@ -75,6 +75,7 @@ export const Body = styled.main`
   padding-inline: 27px;
 `;
 
+// 매칭 섹션
 export const MatchingSection = styled.div`
   margin-top: 40px;
   background-color: #ffffff;
@@ -89,7 +90,7 @@ export const MatchingText = styled.div`
   gap: 4px;
 `;
 
-export const MatchingTitle = styled.p`
+export const SectionTitle = styled.p`
   font-size: 21px;
   font-weight: 600;
   line-height: 150%;
@@ -124,4 +125,20 @@ export const MatchingButton = styled.button`
   line-height: 145%;
   font-style: bold;
   border: none;
+`;
+
+// 가이드 섹션
+export const GuideSection = styled.div`
+  margin-top: 44px;
+  gap: 16px;
+`;
+
+export const GuideScroll = styled.div`
+  margin-top: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
 `;
