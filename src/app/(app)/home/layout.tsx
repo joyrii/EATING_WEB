@@ -1,6 +1,6 @@
 "use client";
 
-import { MatchingContext, matchingStatusList } from "./context";
+import { MatchingContext, MatchingStatus } from "./context";
 import {
   Body,
   Header,
@@ -18,7 +18,6 @@ import {
   MatchingButtonArea,
   MatchingButton,
 } from "./style";
-import { MatchingStatus } from "./context";
 import { useState } from "react";
 import { matchingSectionConfig } from "@/constants/MATCHING";
 
@@ -28,8 +27,6 @@ export default function HomeLayout({
   children: React.ReactNode;
 }) {
   const [currentStatus, setCurrentStatus] = useState<MatchingStatus>("before");
-
-  console.log("currentStatus:", currentStatus);
 
   return (
     <MatchingContext.Provider value={{ currentStatus, setCurrentStatus }}>
@@ -55,12 +52,15 @@ export default function HomeLayout({
                 {matchingSectionConfig[currentStatus].description}
               </MatchingDescription>
             </MatchingText>
-            <MatchingButtonArea>
+            <MatchingButtonArea $currentStatus={currentStatus}>
               <MatchingButton
                 onClick={() => {
                   // (임의) 매칭 상태 변경
                   if (currentStatus === "before")
                     setCurrentStatus("inProgress");
+                  else if (currentStatus === "inProgress")
+                    setCurrentStatus("completed");
+                  else setCurrentStatus("before");
                 }}
                 $currentStatus={currentStatus}
               >

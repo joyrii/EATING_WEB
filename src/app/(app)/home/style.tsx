@@ -103,16 +103,16 @@ export const SectionTitle = styled.h2`
 export const MatchingDescription = styled.p<{ $currentStatus?: string }>`
   font-size: ${({ $currentStatus }) =>
     $currentStatus === "inProgress" ? "14px" : "10px"};
-  font-weight: ${({ $currentStatus }) =>
-    $currentStatus === "inProgress" ? "400" : "500"};
+  font-weight: 400;
   line-height: 145%;
   color: ${({ $currentStatus }) =>
     $currentStatus === "inProgress" ? "#FF5900" : "#a3a3a3"};
   letter-spacing: -0.01em;
 `;
 
-export const MatchingButtonArea = styled.div`
-  margin-top: 45px;
+export const MatchingButtonArea = styled.div<{ $currentStatus?: string }>`
+  margin-top: ${({ $currentStatus }) =>
+    $currentStatus === "completed" ? "20px" : "45px"};
   display: flex;
   justify-content: flex-end;
 `;
@@ -125,8 +125,7 @@ export const MatchingButton = styled.button<{ $currentStatus?: string }>`
     $currentStatus === "inProgress" ? "#F0F0F0" : "#ff5900"};
   color: ${({ $currentStatus }) =>
     $currentStatus === "inProgress" ? "#d6d6d6" : "#ffffff"};
-  font-size: ${({ $currentStatus }) =>
-    $currentStatus === "inProgress" ? "18px" : "16px"};
+  font-size: 16px;
   font-weight: 700;
   line-height: 145%;
   font-style: bold;
