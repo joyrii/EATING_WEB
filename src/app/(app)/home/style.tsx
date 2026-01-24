@@ -90,7 +90,7 @@ export const MatchingText = styled.div`
   gap: 4px;
 `;
 
-export const SectionTitle = styled.p`
+export const SectionTitle = styled.h2`
   font-size: 21px;
   font-weight: 600;
   line-height: 150%;
@@ -100,11 +100,14 @@ export const SectionTitle = styled.p`
   }
 `;
 
-export const MatchingDescription = styled.p`
-  font-size: 10px;
-  font-weight: 500;
+export const MatchingDescription = styled.p<{ $currentStatus?: string }>`
+  font-size: ${({ $currentStatus }) =>
+    $currentStatus === "inProgress" ? "14px" : "10px"};
+  font-weight: ${({ $currentStatus }) =>
+    $currentStatus === "inProgress" ? "400" : "500"};
   line-height: 145%;
-  color: #a3a3a3;
+  color: ${({ $currentStatus }) =>
+    $currentStatus === "inProgress" ? "#FF5900" : "#a3a3a3"};
   letter-spacing: -0.01em;
 `;
 
@@ -114,13 +117,16 @@ export const MatchingButtonArea = styled.div`
   justify-content: flex-end;
 `;
 
-export const MatchingButton = styled.button`
+export const MatchingButton = styled.button<{ $currentStatus?: string }>`
   width: 170px;
   height: 50px;
   border-radius: 10px;
-  background-color: #ff5900;
-  color: #ffffff;
-  font-size: 16px;
+  background-color: ${({ $currentStatus }) =>
+    $currentStatus === "inProgress" ? "#F0F0F0" : "#ff5900"};
+  color: ${({ $currentStatus }) =>
+    $currentStatus === "inProgress" ? "#d6d6d6" : "#ffffff"};
+  font-size: ${({ $currentStatus }) =>
+    $currentStatus === "inProgress" ? "18px" : "16px"};
   font-weight: 700;
   line-height: 145%;
   font-style: bold;

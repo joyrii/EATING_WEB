@@ -23,3 +23,31 @@ export const GuideCardTitle = styled.h3`
   color: #3d3d3d;
   white-space: pre-line;
 `;
+
+// 섹션 타이틀
+export const SectionTitle = styled.h2`
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 150%;
+  color: #232323;
+  span {
+    color: #ff5900;
+  }
+`;
+
+// 섹션
+export const Section = styled.div`
+  margin-top: 44px;
+  gap: 16px;
+`;
+
+// 가이드 섹션
+export const GuideScroll = styled.div`
+  margin-top: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+`;
