@@ -55,10 +55,23 @@ export const GuideScroll = styled.div`
 // 매칭 리스트 섹션
 export const MatchingList = styled.div`
   margin-top: 16px;
-  margin-bottom: 150px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+
+  &::after {
+    content: "";
+    position: sticky;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 150px;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0),
+      rgba(250, 250, 250, 1)
+    );
+  }
 `;
 
 export const MatchingListItemContainer = styled.div`
