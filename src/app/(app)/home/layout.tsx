@@ -6,6 +6,7 @@ import {
   Header,
   HeaderText,
   LogoCharacter,
+  LogoTitle,
   AdBanner,
   AdBannerIcon,
   AdBannerUpperText,
@@ -20,7 +21,7 @@ import {
 } from "./style";
 import { useState } from "react";
 import { matchingSectionText } from "@/constants/MATCHING";
-
+import { IoChevronForward } from "react-icons/io5";
 export default function HomeLayout({
   children,
 }: {
@@ -31,10 +32,19 @@ export default function HomeLayout({
   return (
     <MatchingContext.Provider value={{ currentStatus, setCurrentStatus }}>
       <div style={{ minHeight: "100vh", backgroundColor: "#fafafa" }}>
-        <Header>
-          <HeaderText>잇팅</HeaderText>
-          <LogoCharacter alt="logo-character" />
-        </Header>
+        {currentStatus === "completed" ? (
+          <>
+            <Header $variant="title">
+              <LogoTitle alt="logo-title" />
+              <IoChevronForward size={24} color="#3D3D3D" />
+            </Header>
+          </>
+        ) : (
+          <Header $variant="logo">
+            <HeaderText>잇팅</HeaderText>
+            <LogoCharacter alt="logo-character" />
+          </Header>
+        )}
         <Body>
           <AdBanner>
             <AdBannerTextContainer>

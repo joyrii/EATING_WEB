@@ -7,13 +7,21 @@ export const HeaderFont = localFont({
   weight: "400",
 });
 
-export const Header = styled.header`
+export const Header = styled.header<{ $variant: "logo" | "title" }>`
+  width: 100%;
   font-family: ${HeaderFont.style.fontFamily};
   display: flex;
   flex-direction: row;
   align-items: center;
   padding-block: 8px;
   padding-left: 24px;
+
+  ${({ $variant }) =>
+    $variant === "title"
+      ? `justify-content: space-between;
+      padding-block: 15px;
+      padding-right: 24px;`
+      : null}
 `;
 
 export const HeaderText = styled.h1`
@@ -29,6 +37,14 @@ export const LogoCharacter = styled.img.attrs({
   height: 44,
 })`
   margin-left: 4px;
+`;
+
+export const LogoTitle = styled.img.attrs({
+  src: "/svgs/home/eating-logo-title.svg",
+  width: 106,
+  height: 28,
+})`
+  margin-block: 7px;
 `;
 
 // 광고 배너
