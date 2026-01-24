@@ -112,7 +112,7 @@ export const ButtonContainer = styled.div`
   gap: 6px;
 `;
 
-export const Button = styled.button<{ $variant: "detail" | "chat" }>`
+export const Button = styled.button<{ $variant: "detail" | "chat" | "review" }>`
   width: 155px;
   height: 45px;
   border: none;
@@ -123,12 +123,23 @@ export const Button = styled.button<{ $variant: "detail" | "chat" }>`
   line-height: 145%;
   letter-spacing: -0.01em;
 
-  ${(props) =>
-    props.$variant === "detail"
-      ? `background-color: #f0f0f0;
+  ${({ $variant }) => {
+    switch ($variant) {
+      case "detail":
+        return `background-color: #f0f0f0;
       color: #707070;
-      `
-      : `background-color: #FFEEE5;
+      `;
+      case "chat":
+        return `background-color: #FFEEE5;
       color: #FF5900;
-      `}
+      `;
+      case "review":
+        return `background-color: #F4F9ED;
+      color: #7FB548;
+      width: 313px;
+      `;
+      default:
+        return ``;
+    }
+  }}
 `;

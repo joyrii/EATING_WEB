@@ -8,11 +8,11 @@ export default function MatchingListSection() {
         이번주에 매칭된 방 <span>5개</span>
       </SectionTitle>
       <MatchingList>
-        <MatchingListItem />
-        <MatchingListItem />
-        <MatchingListItem />
-        <MatchingListItem />
-        <MatchingListItem />
+        <MatchingListItem status="match" />
+        <MatchingListItem status="default" />
+        <MatchingListItem status="default" />
+        <MatchingListItem status="default" />
+        <MatchingListItem status="default" />
       </MatchingList>
     </Section>
   );
