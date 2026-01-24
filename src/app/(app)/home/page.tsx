@@ -1,6 +1,7 @@
 "use client";
 
 import GuideSection from "@/components/home/GuideSection";
+import MathchingListSection from "@/components/home/MatchingListSection";
 import { useMatching } from "./context";
 
 export default function Home() {
@@ -8,11 +9,10 @@ export default function Home() {
 
   return (
     <>
-      {/* 안내 섹션 */}
       {currentStatus === "before" || currentStatus === "inProgress" ? (
         <GuideSection />
       ) : (
-        ""
+        <MathchingListSection />
       )}
     </>
   );

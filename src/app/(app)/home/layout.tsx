@@ -19,7 +19,7 @@ import {
   MatchingButton,
 } from "./style";
 import { useState } from "react";
-import { matchingSectionConfig } from "@/constants/MATCHING";
+import { matchingSectionText } from "@/constants/MATCHING";
 
 export default function HomeLayout({
   children,
@@ -46,10 +46,10 @@ export default function HomeLayout({
           <MatchingSection>
             <MatchingText>
               <SectionTitle>
-                {matchingSectionConfig[currentStatus].title}
+                {matchingSectionText[currentStatus].title}
               </SectionTitle>
               <MatchingDescription $currentStatus={currentStatus}>
-                {matchingSectionConfig[currentStatus].description}
+                {matchingSectionText[currentStatus].description}
               </MatchingDescription>
             </MatchingText>
             <MatchingButtonArea $currentStatus={currentStatus}>

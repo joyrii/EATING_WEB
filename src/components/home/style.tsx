@@ -51,3 +51,71 @@ export const GuideScroll = styled.div`
   overflow-y: hidden;
   white-space: nowrap;
 `;
+
+// 매칭 리스트 섹션
+export const MatchingList = styled.div`
+  margin-top: 16px;
+  margin-bottom: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+export const MatchingListItemContainer = styled.div`
+  background-color: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 14px;
+  padding-top: 25px;
+  padding-bottom: 20px;
+  padding-inline: 20px;
+`;
+
+export const ParticipantsWrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
+export const Participants = styled.p`
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 145%;
+  color: #3d3d3d;
+`;
+
+export const DateTimeWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+`;
+
+export const DateTime = styled.h3`
+  font-size: 21px;
+  font-weight: 600;
+`;
+
+export const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+`;
+
+export const Button = styled.button<{ $variant: "detail" | "chat" }>`
+  width: 155px;
+  height: 45px;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 145%;
+  letter-spacing: -0.01em;
+
+  ${(props) =>
+    props.$variant === "detail"
+      ? `background-color: #f0f0f0;
+      color: #707070;
+      `
+      : `background-color: #FFEEE5;
+      color: #FF5900;
+      `}
+`;
