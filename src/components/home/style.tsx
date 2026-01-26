@@ -52,6 +52,7 @@ export const GuideScroll = styled.div`
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
+  margin-bottom: 120px;
 `;
 
 // 매칭 리스트 섹션
@@ -111,12 +112,14 @@ export const DateTime = styled.h3`
 
 export const ButtonContainer = styled.div`
   display: flex;
-  justify-content: center;
+  width: 100%;
   gap: 6px;
 `;
 
 export const Button = styled.button<{ $variant: "detail" | "chat" | "review" }>`
-  width: 155px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
   height: 45px;
   border: none;
   border-radius: 5px;
@@ -139,7 +142,6 @@ export const Button = styled.button<{ $variant: "detail" | "chat" | "review" }>`
       case "review":
         return `background-color: #F4F9ED;
       color: #7FB548;
-      width: 313px;
       `;
       default:
         return ``;

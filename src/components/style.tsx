@@ -87,3 +87,24 @@ export const TabLabel = styled.span<{ $active: boolean }>`
     opacity 180ms ease,
     transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
 `;
+
+// 모달
+export const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+export const ModalContent = styled.div<{ width: string; padding?: string }>`
+  background-color: #fcfcfc;
+  border-radius: 10px;
+  width: ${(p) => p.width};
+  padding: ${(p) => p.padding};
+`;
