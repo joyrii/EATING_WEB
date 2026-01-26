@@ -29,7 +29,7 @@ export const Checkbox = styled.input.attrs({ type: 'checkbox' })`
   background-color: #bdbdbd;
   cursor: pointer;
 
-  background-image: url('check.svg');
+  background-image: url('/svgs/check.svg');
   background-repeat: no-repeat;
   background-position: center;
 

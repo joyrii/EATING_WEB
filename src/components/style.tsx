@@ -120,3 +120,23 @@ export const Chip = styled.div`
   font-weight: 500;
   color: #707070;
 `;
+
+// 버튼
+export const Button = styled.button<{ disabled: boolean }>`
+  width: 100%;
+  height: 55px;
+  background-color: #ff5900;
+  border: none;
+  border-radius: 10px;
+  padding-block: 18px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+`;
+
+export const ButtonText = styled.span`
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+`;
