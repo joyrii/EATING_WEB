@@ -23,7 +23,6 @@ export const TextWrapper = styled.div`
   h1 {
     font-size: 24px;
     font-weight: 700;
-    font-style: bold;
   }
 
   p {

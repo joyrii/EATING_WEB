@@ -1,8 +1,12 @@
+'use client';
+
 import Image from 'next/image';
 import Button from '@/components/BaseButton';
-import { ButtonWrapper, Container, ImageWrapper, TextWrapper } from './style';
+import { Container, ImageWrapper, TextWrapper } from './style';
+import { useRouter } from 'next/navigation';
 
 export default function StudentVerification() {
+  const router = useRouter();
   return (
     <Container>
       <TextWrapper>
@@ -28,7 +32,11 @@ export default function StudentVerification() {
         />
       </ImageWrapper>
       <div style={{ position: 'absolute', bottom: 45, left: 23, right: 23 }}>
-        <Button disabled={false} label="사진 등록하기" />
+        <Button
+          disabled={false}
+          label="사진 등록하기"
+          onClick={() => router.push('/student-verification/confirm')}
+        />
       </div>
     </Container>
   );
