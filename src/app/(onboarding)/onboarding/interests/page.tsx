@@ -15,7 +15,7 @@ import {
 } from '../style';
 import Button from '@/components/BaseButton';
 import { useRouter } from 'next/navigation';
-import InterestsOption from '@/components/onboarding/interests';
+import InterestsOption from '@/components/onboarding/InterestsChip';
 import INTERESTS_SECTION from '@/constants/INTERESTS_SECTION';
 import { useState } from 'react';
 

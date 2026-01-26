@@ -132,7 +132,6 @@ export const Button = styled.button<{ disabled: boolean }>`
   align-items: center;
   display: flex;
   justify-content: center;
-  cursor: pointer;
 `;
 
 export const ButtonText = styled.span`

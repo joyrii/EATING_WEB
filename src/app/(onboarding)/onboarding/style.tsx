@@ -146,3 +146,25 @@ export const ButtonWrapper = styled.div`
   left: 23px;
   right: 23px;
 `;
+
+export const TestButton = styled.a`
+  display: inline-flex;
+  width: 100%;
+  height: 55px;
+  background-color: #ff5900;
+  border: none;
+  border-radius: 10px;
+  padding-block: 18px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+
+  &:visited {
+    color: #ffffff;
+  }
+`;

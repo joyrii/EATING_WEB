@@ -11,6 +11,7 @@ import {
   SubText,
   TextWrapper,
   TitleText,
+  TestButton,
 } from '../style';
 import { IoChevronForward } from 'react-icons/io5';
 import Button from '@/components/BaseButton';
@@ -42,7 +43,13 @@ export default function OnboardingTest() {
       <ButtonWrapper
         style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}
       >
-        <Button label="테스트 하러가기" onClick={() => {}} />
+        <TestButton
+          href="https://eating-survey.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          테스트 하러가기
+        </TestButton>
         <Button label="정보 가져오기" onClick={() => {}} />
       </ButtonWrapper>
     </div>

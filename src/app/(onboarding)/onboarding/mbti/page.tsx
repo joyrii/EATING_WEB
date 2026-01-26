@@ -10,7 +10,7 @@ import {
   TitleText,
 } from '../style';
 import { ButtonWrapper } from '../style';
-import MbtiOption from '@/components/onboarding/mbti';
+import MbtiOption from '@/components/onboarding/MbtiOption';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
