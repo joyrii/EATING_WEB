@@ -112,6 +112,34 @@ export const InterestsOptionWrapper = styled.div`
   gap: 10px;
 `;
 
+export const SkipButtonWrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+`;
+
+export const SkipButton = styled.button`
+  margin-top: 15px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+`;
+
+export const SkipButtonText = styled.p`
+  font-size: 14px;
+  font-weight: 500;
+  color: #a3a3a3;
+`;
+
+export const ImageWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
 export const ButtonWrapper = styled.div`
   position: fixed;
   bottom: 45px;
