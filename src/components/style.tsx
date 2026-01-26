@@ -108,3 +108,15 @@ export const ModalContent = styled.div<{ width: string; padding?: string }>`
   width: ${(p) => p.width};
   padding: ${(p) => p.padding};
 `;
+
+// 칩
+export const Chip = styled.div`
+  display: inline-block;
+  padding: 6px 10px;
+  background-color: #ffffff;
+  border-radius: 30px;
+  border: 1px solid #bdbdbd;
+  font-size: 10px;
+  font-weight: 500;
+  color: #707070;
+`;
