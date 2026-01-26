@@ -27,9 +27,9 @@ export default function StudentVerification() {
           height={60}
         />
       </ImageWrapper>
-      <ButtonWrapper>
+      <div style={{ position: 'absolute', bottom: 45, left: 23, right: 23 }}>
         <Button disabled={false} label="사진 등록하기" />
-      </ButtonWrapper>
+      </div>
     </Container>
   );
 }
