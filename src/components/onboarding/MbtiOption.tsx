@@ -10,7 +10,7 @@ export default function MbtiOption({
   onClick: () => void;
 }) {
   return (
-    <Option selected={selected} onClick={onClick}>
+    <Option aria-pressed={selected} selected={selected} onClick={onClick}>
       {label}
     </Option>
   );

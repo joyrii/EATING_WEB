@@ -148,7 +148,7 @@ export const ButtonWrapper = styled.div`
 `;
 
 export const TestButton = styled.a`
-  display: inline-flex;
+  display: flex;
   width: 100%;
   height: 55px;
   background-color: #ff5900;
@@ -156,7 +156,6 @@ export const TestButton = styled.a`
   border-radius: 10px;
   padding-block: 18px;
   align-items: center;
-  display: flex;
   justify-content: center;
   cursor: pointer;
   text-decoration: none;
