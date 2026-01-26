@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { CheckboxWrapper, Checkbox, Label } from "./style";
-import Link from "next/link";
+import { CheckboxWrapper, Checkbox, Label } from './style';
+import Link from 'next/link';
 
 interface TermsItemProps {
   id: string;

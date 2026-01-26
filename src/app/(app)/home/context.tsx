@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, type ReactNode } from "react";
-import { MatchingStatus } from "@/constants/MATCHING";
+import { createContext, useContext, useState, type ReactNode } from 'react';
+import { MatchingStatus } from '@/constants/MATCHING';
 
 export const matchingStatusList: MatchingStatus[] = [
-  "before",
-  "inProgress",
-  "completed",
+  'before',
+  'inProgress',
+  'completed',
 ];
 
 type MatchingContextType = {
@@ -17,7 +17,7 @@ type MatchingContextType = {
 export const MatchingContext = createContext<MatchingContextType | null>(null);
 
 export function MatchingProvider({ children }: { children: ReactNode }) {
-  const [currentStatus, setCurrentStatus] = useState<MatchingStatus>("before");
+  const [currentStatus, setCurrentStatus] = useState<MatchingStatus>('before');
 
   return (
     <MatchingContext.Provider value={{ currentStatus, setCurrentStatus }}>
@@ -29,6 +29,6 @@ export function MatchingProvider({ children }: { children: ReactNode }) {
 export const useMatching = () => {
   const context = useContext(MatchingContext);
   if (!context)
-    throw new Error("useMatching must be used within a MatchingProvider");
+    throw new Error('useMatching must be used within a MatchingProvider');
   return context;
 };

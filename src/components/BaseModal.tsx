@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { ModalContent, ModalOverlay } from "./style";
+import React, { useEffect } from 'react';
+import { ModalContent, ModalOverlay } from './style';
 
 type BaseModalProps = {
   open: boolean;
@@ -12,7 +12,7 @@ type BaseModalProps = {
 export function BaseModal({
   open,
   onClose,
-  width = "300px",
+  width = '300px',
   padding,
   children,
 }: BaseModalProps) {
@@ -20,10 +20,10 @@ export function BaseModal({
   useEffect(() => {
     if (!open) return;
     // 모달이 열리면 body의 overflow를 hidden으로 설정
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     // 모달이 닫히면 body의 overflow를 원래대로 설정
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = 'auto';
     };
   }, [open]);
 

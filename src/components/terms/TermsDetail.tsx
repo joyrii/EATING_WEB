@@ -1,4 +1,4 @@
-import { Content, Title, Page } from "@/app/(onboarding)/terms/style";
+import { Content, Title, Page } from '@/app/(onboarding)/terms/style';
 
 type TermsDetailProps = {
   title: string;

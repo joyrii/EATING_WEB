@@ -9,11 +9,11 @@ import {
   ParticipantsInfoText,
   ParticipantsInfoContainer,
   TagsContainer,
-} from "./style";
-import MatchingListItem from "./MatchingListItem";
-import { BaseModal } from "../BaseModal";
-import { useState } from "react";
-import BaseChip from "../BaseChip";
+} from './style';
+import MatchingListItem from './MatchingListItem';
+import { BaseModal } from '../BaseModal';
+import { useState } from 'react';
+import BaseChip from '../BaseChip';
 
 export default function MatchingListSection() {
   const [isModalVisible, setIsModalVisible] = useState(false);

@@ -1,19 +1,19 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
-import StyledComponentsRegistry from "../lib/styled-components/registry";
-import "pretendard/dist/web/static/pretendard.css";
+import type { Metadata, Viewport } from 'next';
+import './globals.css';
+import StyledComponentsRegistry from '../lib/styled-components/registry';
+import 'pretendard/dist/web/static/pretendard.css';
 
 export const metadata: Metadata = {
-  title: "EATING - 이화여대 밥약 매칭",
-  description: "이화여대 학생들을 위한 밥약 매칭 서비스",
+  title: 'EATING - 이화여대 밥약 매칭',
+  description: '이화여대 학생들을 위한 밥약 매칭 서비스',
 };
 
 export const viewport: Viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover",
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

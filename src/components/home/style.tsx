@@ -1,5 +1,5 @@
-import Link from "next/link";
-import styled from "styled-components";
+import Link from 'next/link';
+import styled from 'styled-components';
 
 // 가이드 카드
 export const GuideCardContainer = styled.div<{ $bg: string }>`
@@ -63,7 +63,7 @@ export const MatchingList = styled.div`
   gap: 16px;
 
   &::after {
-    content: "";
+    content: '';
     position: sticky;
     left: 0;
     right: 0;
@@ -117,7 +117,7 @@ export const ButtonContainer = styled.div`
 `;
 
 export const Button = styled.button<{
-  $variant: "detail" | "chat" | "review" | "enter";
+  $variant: 'detail' | 'chat' | 'review' | 'enter';
 }>`
   flex: 1;
   min-width: 0;
@@ -133,19 +133,19 @@ export const Button = styled.button<{
 
   ${({ $variant }) => {
     switch ($variant) {
-      case "detail":
+      case 'detail':
         return `background-color: #f0f0f0;
       color: #707070;
       `;
-      case "chat":
+      case 'chat':
         return `background-color: #FFEEE5;
       color: #FF5900;
       `;
-      case "review":
+      case 'review':
         return `background-color: #F4F9ED;
       color: #7FB548;
       `;
-      case "enter":
+      case 'enter':
         return `flex: none;
       width: 128px;
       height: 40px;
