@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 export const TimeGridContainer = styled.div`
   margin-top: 21px;
+  margin-bottom: 100px;
 `;
 
 export const TimeGridWrapper = styled.div`

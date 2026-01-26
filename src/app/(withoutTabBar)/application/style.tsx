@@ -16,3 +16,29 @@ export const DateBox = styled.div`
   color: #707070;
   margin-top: 20px;
 `;
+
+export const ModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+export const CautionWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 45px;
+
+  p {
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+  }
+`;
+
+export const ButtonWrapper = styled.div`
+  width: 128px;
+  display: flex;
+  justify-content: center;
+`;

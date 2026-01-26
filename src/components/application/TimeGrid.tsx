@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   TimeGridContainer,
   TimeGridWrapper,
@@ -10,6 +10,9 @@ import {
 } from './style';
 
 type Cell = { r: number; c: number }; // r=시간, c=요일
+type Props = {
+  onChange?: (selectedCount: number) => void; // 셀 선택
+};
 
 const DAYS = ['월', '화', '수', '목', '금', '토', '일'] as const;
 
@@ -23,7 +26,7 @@ const SHOW_LABEL_HOURS = new Set([12, 15, 18]);
 
 const keyOf = (cell: Cell) => `${cell.r},${cell.c}`;
 
-export default function TimeGrid() {
+export default function TimeGrid({ onChange }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const isPressing = useRef(false);
@@ -87,6 +90,10 @@ export default function TimeGrid() {
     isPressing.current = false;
     lastHit.current = null;
   };
+
+  useEffect(() => {
+    onChange?.(selected.size);
+  }, [selected, onChange]);
 
   return (
     <TimeGridContainer>
