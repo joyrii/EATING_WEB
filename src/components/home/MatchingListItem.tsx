@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Button,
   ButtonContainer,
@@ -9,10 +11,28 @@ import {
 } from "./style";
 
 export default function MatchingListItem({
-  status,
+  status = "default",
+  onClick,
 }: {
   status?: "default" | "match";
+  onClick?: () => void;
 }) {
+  const buttonsByStatus = {
+    default: [
+      {
+        variant: "detail" as const,
+        label: "매칭 상세",
+        onClick: () => {
+          onClick?.();
+        },
+      },
+      { variant: "chat" as const, label: "채팅방 이동", onClick: () => {} },
+    ],
+    match: [
+      { variant: "review" as const, label: "평가하러 가기", onClick: () => {} },
+    ],
+  };
+
   return (
     <MatchingListItemContainer>
       <ParticipantsWrapper>
@@ -21,17 +41,13 @@ export default function MatchingListItem({
       <DateTimeWrapper>
         <DateTime>10.30일 월 14:00</DateTime>
       </DateTimeWrapper>
-      {status == "default" && (
-        <ButtonContainer>
-          <Button $variant="detail">매칭 상세</Button>
-          <Button $variant="chat">채팅방 이동</Button>
-        </ButtonContainer>
-      )}
-      {status === "match" && (
-        <ButtonContainer>
-          <Button $variant="review">평가하러 가기</Button>
-        </ButtonContainer>
-      )}
+      <ButtonContainer>
+        {buttonsByStatus[status].map((b) => (
+          <Button key={b.variant} $variant={b.variant} onClick={b.onClick}>
+            {b.label}
+          </Button>
+        ))}
+      </ButtonContainer>
     </MatchingListItemContainer>
   );
 }

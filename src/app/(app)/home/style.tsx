@@ -9,12 +9,15 @@ export const HeaderFont = localFont({
 
 export const Header = styled.header<{ $variant: "logo" | "title" }>`
   width: 100%;
+  background-color: #fafafa;
   font-family: ${HeaderFont.style.fontFamily};
   display: flex;
   flex-direction: row;
   align-items: center;
   padding-block: 8px;
   padding-left: 24px;
+  position: sticky;
+  top: 0;
 
   ${({ $variant }) =>
     $variant === "title"

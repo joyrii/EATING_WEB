@@ -52,6 +52,7 @@ export const GuideScroll = styled.div`
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
+  margin-bottom: 120px;
 `;
 
 // 매칭 리스트 섹션
@@ -111,12 +112,16 @@ export const DateTime = styled.h3`
 
 export const ButtonContainer = styled.div`
   display: flex;
-  justify-content: center;
+  width: 100%;
   gap: 6px;
 `;
 
-export const Button = styled.button<{ $variant: "detail" | "chat" | "review" }>`
-  width: 155px;
+export const Button = styled.button<{
+  $variant: "detail" | "chat" | "review" | "enter";
+}>`
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
   height: 45px;
   border: none;
   border-radius: 5px;
@@ -139,10 +144,59 @@ export const Button = styled.button<{ $variant: "detail" | "chat" | "review" }>`
       case "review":
         return `background-color: #F4F9ED;
       color: #7FB548;
-      width: 313px;
       `;
+      case "enter":
+        return `flex: none;
+      width: 128px;
+      height: 40px;
+      background-color: #ff5900;
+      color: #ffffff;
+      font-size: 16px;
+        `;
       default:
         return ``;
     }
   }}
+`;
+
+// 상세 보기 모달
+export const ModalMainText = styled.h2`
+  font-size: 21px;
+  font-weight: 600;
+  color: #000000;
+`;
+
+export const ModalSubText = styled.p`
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 145%;
+  letter-spacing: -0.01em;
+  color: #232323;
+`;
+
+export const TagsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 2px;
+  margin-top: 30px;
+`;
+
+export const ParticipantsInfoContainer = styled.p`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  margin-top: 5px;
+`;
+
+export const ParticipantsInfoText = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a8a8a;
+`;
+
+export const ModalButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
 `;
