@@ -1,4 +1,4 @@
-import { GuideCardContainer, GuideCardTitle } from "./style";
+import { GuideCardContainer, GuideCardTitle } from './style';
 
 export default function GuideCard({
   title,

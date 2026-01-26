@@ -1,5 +1,5 @@
-import Link from "next/link";
-import styled from "styled-components";
+import Link from 'next/link';
+import styled from 'styled-components';
 
 // 탭바
 export const NavBar = styled.nav`
@@ -63,7 +63,7 @@ export const IconWrap = styled.span`
 `;
 
 export const TabLabelWrap = styled.span<{ $active: boolean }>`
-  max-width: ${(p) => (p.$active ? "84px" : "0px")};
+  max-width: ${(p) => (p.$active ? '84px' : '0px')};
   overflow: hidden;
   white-space: nowrap;
 
@@ -81,7 +81,7 @@ export const TabLabel = styled.span<{ $active: boolean }>`
   white-space: nowrap;
 
   opacity: ${(p) => (p.$active ? 1 : 0)};
-  transform: translateX(${(p) => (p.$active ? "0" : "-10px")});
+  transform: translateX(${(p) => (p.$active ? '0' : '-10px')});
 
   transition:
     opacity 180ms ease,

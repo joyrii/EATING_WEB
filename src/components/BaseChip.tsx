@@ -1,4 +1,4 @@
-import { Chip } from "./style";
+import { Chip } from './style';
 
 const BaseChip = ({ label }) => {
   return <Chip>{label}</Chip>;

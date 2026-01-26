@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { MatchingContext } from "./context";
-import { MatchingStatus } from "@/constants/MATCHING";
+import { MatchingContext } from './context';
+import { MatchingStatus } from '@/constants/MATCHING';
 import {
   Body,
   Header,
@@ -19,22 +19,22 @@ import {
   MatchingDescription,
   MatchingButtonArea,
   MatchingButton,
-} from "./style";
-import { useState } from "react";
-import { matchingSectionText } from "@/constants/MATCHING";
-import { IoChevronForward } from "react-icons/io5";
-import { BaseModal } from "@/components/BaseModal";
+} from './style';
+import { useState } from 'react';
+import { matchingSectionText } from '@/constants/MATCHING';
+import { IoChevronForward } from 'react-icons/io5';
+import { BaseModal } from '@/components/BaseModal';
 export default function HomeLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [currentStatus, setCurrentStatus] = useState<MatchingStatus>("before");
+  const [currentStatus, setCurrentStatus] = useState<MatchingStatus>('before');
 
   return (
     <MatchingContext.Provider value={{ currentStatus, setCurrentStatus }}>
-      <div style={{ minHeight: "100vh", backgroundColor: "#fafafa" }}>
-        {currentStatus === "completed" ? (
+      <div style={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
+        {currentStatus === 'completed' ? (
           <>
             <Header $variant="title">
               <LogoTitle alt="logo-title" />
@@ -68,11 +68,11 @@ export default function HomeLayout({
               <MatchingButton
                 onClick={() => {
                   // (임의) 매칭 상태 변경
-                  if (currentStatus === "before")
-                    setCurrentStatus("inProgress");
-                  else if (currentStatus === "inProgress")
-                    setCurrentStatus("completed");
-                  else setCurrentStatus("before");
+                  if (currentStatus === 'before')
+                    setCurrentStatus('inProgress');
+                  else if (currentStatus === 'inProgress')
+                    setCurrentStatus('completed');
+                  else setCurrentStatus('before');
                 }}
                 $currentStatus={currentStatus}
               >

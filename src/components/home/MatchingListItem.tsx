@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Button,
@@ -8,28 +8,28 @@ import {
   MatchingListItemContainer,
   Participants,
   ParticipantsWrapper,
-} from "./style";
+} from './style';
 
 export default function MatchingListItem({
-  status = "default",
+  status = 'default',
   onClick,
 }: {
-  status?: "default" | "match";
+  status?: 'default' | 'match';
   onClick?: () => void;
 }) {
   const buttonsByStatus = {
     default: [
       {
-        variant: "detail" as const,
-        label: "매칭 상세",
+        variant: 'detail' as const,
+        label: '매칭 상세',
         onClick: () => {
           onClick?.();
         },
       },
-      { variant: "chat" as const, label: "채팅방 이동", onClick: () => {} },
+      { variant: 'chat' as const, label: '채팅방 이동', onClick: () => {} },
     ],
     match: [
-      { variant: "review" as const, label: "평가하러 가기", onClick: () => {} },
+      { variant: 'review' as const, label: '평가하러 가기', onClick: () => {} },
     ],
   };
 

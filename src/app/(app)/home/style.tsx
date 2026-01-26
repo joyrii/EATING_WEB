@@ -1,13 +1,13 @@
-import localFont from "next/font/local";
-import styled from "styled-components";
+import localFont from 'next/font/local';
+import styled from 'styled-components';
 
 // 헤더
 export const HeaderFont = localFont({
-  src: "../../fonts/Hakgyoansim-Dunggeunmiso-OTF-R.otf",
-  weight: "400",
+  src: '../../fonts/Hakgyoansim-Dunggeunmiso-OTF-R.otf',
+  weight: '400',
 });
 
-export const Header = styled.header<{ $variant: "logo" | "title" }>`
+export const Header = styled.header<{ $variant: 'logo' | 'title' }>`
   width: 100%;
   background-color: #fafafa;
   font-family: ${HeaderFont.style.fontFamily};
@@ -20,7 +20,7 @@ export const Header = styled.header<{ $variant: "logo" | "title" }>`
   top: 0;
 
   ${({ $variant }) =>
-    $variant === "title"
+    $variant === 'title'
       ? `justify-content: space-between;
       padding-block: 15px;
       padding-right: 24px;`
@@ -35,7 +35,7 @@ export const HeaderText = styled.h1`
 `;
 
 export const LogoCharacter = styled.img.attrs({
-  src: "/svgs/home/eating-logo-character.svg",
+  src: '/svgs/home/eating-logo-character.svg',
   width: 40,
   height: 44,
 })`
@@ -43,7 +43,7 @@ export const LogoCharacter = styled.img.attrs({
 `;
 
 export const LogoTitle = styled.img.attrs({
-  src: "/svgs/home/eating-logo-title.svg",
+  src: '/svgs/home/eating-logo-title.svg',
   width: 106,
   height: 28,
 })`
@@ -64,7 +64,7 @@ export const AdBanner = styled.div`
 `;
 
 export const AdBannerIcon = styled.img.attrs({
-  src: "/svgs/home/ad-banner-icon.svg",
+  src: '/svgs/home/ad-banner-icon.svg',
   width: 46,
   height: 44,
 })``;
@@ -121,17 +121,17 @@ export const SectionTitle = styled.h2`
 
 export const MatchingDescription = styled.p<{ $currentStatus?: string }>`
   font-size: ${({ $currentStatus }) =>
-    $currentStatus === "inProgress" ? "14px" : "10px"};
+    $currentStatus === 'inProgress' ? '14px' : '10px'};
   font-weight: 400;
   line-height: 145%;
   color: ${({ $currentStatus }) =>
-    $currentStatus === "inProgress" ? "#FF5900" : "#a3a3a3"};
+    $currentStatus === 'inProgress' ? '#FF5900' : '#a3a3a3'};
   letter-spacing: -0.01em;
 `;
 
 export const MatchingButtonArea = styled.div<{ $currentStatus?: string }>`
   margin-top: ${({ $currentStatus }) =>
-    $currentStatus === "completed" ? "20px" : "45px"};
+    $currentStatus === 'completed' ? '20px' : '45px'};
   display: flex;
   justify-content: flex-end;
 `;
@@ -141,9 +141,9 @@ export const MatchingButton = styled.button<{ $currentStatus?: string }>`
   height: 50px;
   border-radius: 10px;
   background-color: ${({ $currentStatus }) =>
-    $currentStatus === "inProgress" ? "#F0F0F0" : "#ff5900"};
+    $currentStatus === 'inProgress' ? '#F0F0F0' : '#ff5900'};
   color: ${({ $currentStatus }) =>
-    $currentStatus === "inProgress" ? "#d6d6d6" : "#ffffff"};
+    $currentStatus === 'inProgress' ? '#d6d6d6' : '#ffffff'};
   font-size: 16px;
   font-weight: 700;
   line-height: 145%;

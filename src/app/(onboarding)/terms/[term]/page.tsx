@@ -1,5 +1,5 @@
-import { TERMS } from "@/constants/TERMS";
-import TermsDetail from "@/components/terms/TermsDetail";
+import { TERMS } from '@/constants/TERMS';
+import TermsDetail from '@/components/terms/TermsDetail';
 
 export default async function TermsDetailPage({
   params,

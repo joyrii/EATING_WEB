@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   NavBar,
@@ -7,35 +7,35 @@ import {
   TabLabelWrap,
   IconWrap,
   Indicator,
-} from "./style";
-import { usePathname } from "next/navigation";
-import Image from "next/image";
+} from './style';
+import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 export default function TabBar() {
   const tabs = [
     {
-      href: "/home",
+      href: '/home',
       icon: {
-        active: "/svgs/home/navbar/home-active.svg",
-        inactive: "/svgs/home/navbar/home-inactive.svg",
+        active: '/svgs/home/navbar/home-active.svg',
+        inactive: '/svgs/home/navbar/home-inactive.svg',
       },
-      label: "홈",
+      label: '홈',
     },
     {
-      href: "/matching",
+      href: '/matching',
       icon: {
-        active: "/svgs/home/navbar/matching-active.svg",
-        inactive: "/svgs/home/navbar/matching-inactive.svg",
+        active: '/svgs/home/navbar/matching-active.svg',
+        inactive: '/svgs/home/navbar/matching-inactive.svg',
       },
-      label: "매칭",
+      label: '매칭',
     },
     {
-      href: "/settings",
+      href: '/settings',
       icon: {
-        active: "/svgs/home/navbar/setting-active.svg",
-        inactive: "/svgs/home/navbar/setting-inactive.svg",
+        active: '/svgs/home/navbar/setting-active.svg',
+        inactive: '/svgs/home/navbar/setting-inactive.svg',
       },
-      label: "설정",
+      label: '설정',
     },
   ];
 
