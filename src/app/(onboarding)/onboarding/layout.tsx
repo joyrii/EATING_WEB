@@ -20,9 +20,9 @@ export default function OnboardingLayout({
     // Step Indicator
     <MainContainer>
       <StepIndicator>
-        <Segment active={step[pathname] === 1} />
-        <Segment active={step[pathname] === 2} />
-        <Segment active={step[pathname] === 3} />
+        <Segment $active={step[pathname] === 1} />
+        <Segment $active={step[pathname] === 2} />
+        <Segment $active={step[pathname] === 3} />
       </StepIndicator>
       {children}
     </MainContainer>
