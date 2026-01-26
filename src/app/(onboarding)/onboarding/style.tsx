@@ -58,6 +58,11 @@ export const SubText = styled.p`
   line-height: 145%;
   letter-spacing: -0.01em;
   color: #707070;
+
+  span {
+    font-weight: 700;
+    color: #ff5900;
+  }
 `;
 
 export const MbtiOptionColumn = styled.div`
