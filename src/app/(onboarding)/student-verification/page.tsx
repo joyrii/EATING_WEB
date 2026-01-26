@@ -15,13 +15,13 @@ export default function StudentVerification() {
       </TextWrapper>
       <ImageWrapper>
         <Image
-          src="svgs/student-verification/student-id.svg"
+          src="/svgs/student-verification/student-id.svg"
           alt="student-id"
           width={150}
           height={206}
         />
         <Image
-          src="svgs/student-verification/camera.svg"
+          src="/svgs/student-verification/camera.svg"
           alt="camera"
           width={84}
           height={60}

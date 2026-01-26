@@ -32,12 +32,12 @@ export default function StudentVerificationConfirm() {
         </TextWrapper>
         <FormWrapper>
           <InputWrapper>
-            <p>학번</p>
-            <input />
+            <label htmlFor="studentId">학번</label>
+            <input id="studentId" name="studentId" />
           </InputWrapper>
           <InputWrapper>
-            <p>학과</p>
-            <input />
+            <label htmlFor="department">학과</label>
+            <input id="department" name="department" />
           </InputWrapper>
         </FormWrapper>
       </Content>
