@@ -33,6 +33,11 @@ textarea {
   letter-spacing: inherit;
 }
 
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
 h1,
 h2,
 h3,

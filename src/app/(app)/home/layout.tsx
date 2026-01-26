@@ -23,7 +23,7 @@ import {
 import { useState } from 'react';
 import { matchingSectionText } from '@/constants/MATCHING';
 import { IoChevronForward } from 'react-icons/io5';
-import { BaseModal } from '@/components/BaseModal';
+
 export default function HomeLayout({
   children,
 }: {
