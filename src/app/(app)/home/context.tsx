@@ -1,7 +1,6 @@
 "use client";
 
-import { createContext, useContext } from "react";
-import { useState } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import { MatchingStatus } from "@/constants/MATCHING";
 
 export const matchingStatusList: MatchingStatus[] = [
@@ -17,7 +16,7 @@ type MatchingContextType = {
 
 export const MatchingContext = createContext<MatchingContextType | null>(null);
 
-export function MatchingProvider({ children }: { children: React.ReactNode }) {
+export function MatchingProvider({ children }: { children: ReactNode }) {
   const [currentStatus, setCurrentStatus] = useState<MatchingStatus>("before");
 
   return (
