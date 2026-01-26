@@ -1,7 +1,12 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { MainContainer, Segment, StepIndicator } from './style';
+import {
+  IndicatorWrapper,
+  MainContainer,
+  Segment,
+  StepIndicator,
+} from './style';
 
 export default function OnboardingLayout({
   children,
@@ -19,11 +24,13 @@ export default function OnboardingLayout({
   return (
     // Step Indicator
     <MainContainer>
-      <StepIndicator>
-        <Segment $active={step[pathname] === 1} />
-        <Segment $active={step[pathname] === 2} />
-        <Segment $active={step[pathname] === 3} />
-      </StepIndicator>
+      <IndicatorWrapper>
+        <StepIndicator>
+          <Segment $active={step[pathname] === 1} />
+          <Segment $active={step[pathname] === 2} />
+          <Segment $active={step[pathname] === 3} />
+        </StepIndicator>
+      </IndicatorWrapper>
       {children}
     </MainContainer>
   );

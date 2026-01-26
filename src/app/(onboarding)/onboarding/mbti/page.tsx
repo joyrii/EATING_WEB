@@ -2,8 +2,8 @@
 
 import Button from '@/components/BaseButton';
 import {
-  OptionColumn,
-  OptionWrapper,
+  MbtiOptionColumn,
+  MbtiOptionWrapper,
   StepText,
   SubText,
   TextWrapper,
@@ -29,8 +29,8 @@ export default function OnboardingMbti() {
         <TitleText>주연님의 MBTI를 알려주세요.</TitleText>
         <SubText>매칭을 위해 부가적으로 사용됩니다.</SubText>
       </TextWrapper>
-      <OptionWrapper>
-        <OptionColumn>
+      <MbtiOptionWrapper>
+        <MbtiOptionColumn>
           <MbtiOption
             label="E"
             selected={selectedMbti1 === 'E'}
@@ -41,8 +41,8 @@ export default function OnboardingMbti() {
             selected={selectedMbti1 === 'I'}
             onClick={() => setSelectedMbti1('I')}
           />
-        </OptionColumn>
-        <OptionColumn>
+        </MbtiOptionColumn>
+        <MbtiOptionColumn>
           <MbtiOption
             label="S"
             selected={selectedMbti2 === 'S'}
@@ -53,8 +53,8 @@ export default function OnboardingMbti() {
             selected={selectedMbti2 === 'N'}
             onClick={() => setSelectedMbti2('N')}
           />
-        </OptionColumn>
-        <OptionColumn>
+        </MbtiOptionColumn>
+        <MbtiOptionColumn>
           <MbtiOption
             label="T"
             selected={selectedMbti3 === 'T'}
@@ -65,8 +65,8 @@ export default function OnboardingMbti() {
             selected={selectedMbti3 === 'F'}
             onClick={() => setSelectedMbti3('F')}
           />
-        </OptionColumn>
-        <OptionColumn>
+        </MbtiOptionColumn>
+        <MbtiOptionColumn>
           <MbtiOption
             label="J"
             selected={selectedMbti4 === 'J'}
@@ -77,8 +77,8 @@ export default function OnboardingMbti() {
             selected={selectedMbti4 === 'P'}
             onClick={() => setSelectedMbti4('P')}
           />
-        </OptionColumn>
-      </OptionWrapper>
+        </MbtiOptionColumn>
+      </MbtiOptionWrapper>
       <ButtonWrapper>
         <Button
           disabled={

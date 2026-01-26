@@ -6,6 +6,18 @@ export const MainContainer = styled.div`
   padding: 35px 23px 45px;
 `;
 
+export const IndicatorWrapper = styled.div`
+  height: 40px;
+  position: fixed;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  z-index: 10;
+  padding-top: 35px;
+  padding-bottom: 10px;
+  background-color: #fafafa;
+`;
+
 export const StepIndicator = styled.div`
   display: flex;
   flex-direction: row;
@@ -26,7 +38,6 @@ export const Segment = styled.div<{ $active?: boolean }>`
 
 export const TextWrapper = styled.div`
   margin-top: 37px;
-  margin-bottom: 113px;
 `;
 
 export const StepText = styled.h2`
@@ -49,20 +60,60 @@ export const SubText = styled.p`
   color: #707070;
 `;
 
-export const OptionColumn = styled.div`
+export const MbtiOptionColumn = styled.div`
   display: flex;
   flex-direction: column;
   gap: 11px;
 `;
 
-export const OptionWrapper = styled.div`
+export const MbtiOptionWrapper = styled.div`
+  margin-top: 113px;
   display: flex;
   flex-direction: row;
   gap: 8px;
 `;
 
+export const InterestsMainTitle = styled.h2`
+  font-size: 18px;
+  font-weight: 600;
+  color: #000000;
+`;
+
+export const InterestsSubTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 500;
+  color: #000000;
+  line-height: 145%;
+  letter-spacing: -0.01em;
+`;
+
+export const InterestsContent = styled.div`
+  margin-top: 46px;
+`;
+
+export const InterestsWrapperLarge = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 45px;
+`;
+
+export const InterestsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 45px;
+`;
+
+export const InterestsOptionWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+`;
+
 export const ButtonWrapper = styled.div`
-  position: absolute;
+  position: fixed;
   bottom: 45px;
   left: 23px;
   right: 23px;
