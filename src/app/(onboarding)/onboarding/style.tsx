@@ -119,7 +119,7 @@ export const SkipButtonWrapper = styled.div`
 `;
 
 export const SkipButton = styled.button`
-  margin-top: 15px;
+  margin-top: 7px;
   display: flex;
   flex-direction: row;
   align-items: center;
