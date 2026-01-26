@@ -2,8 +2,7 @@
 
 import { createContext, useContext } from "react";
 import { useState } from "react";
-
-export type MatchingStatus = "before" | "inProgress" | "completed";
+import { MatchingStatus } from "@/constants/MATCHING";
 
 export const matchingStatusList: MatchingStatus[] = [
   "before",
