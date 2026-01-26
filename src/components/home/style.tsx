@@ -38,6 +38,8 @@ export const SectionTitle = styled.h2`
 // 섹션
 export const Section = styled.div`
   margin-top: 44px;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 `;
 
