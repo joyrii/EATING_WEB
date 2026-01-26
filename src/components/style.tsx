@@ -126,6 +126,7 @@ export const Button = styled.button<{ disabled: boolean }>`
   width: 100%;
   height: 55px;
   background-color: #ff5900;
+  border: none;
   border-radius: 10px;
   padding-block: 18px;
   align-items: center;
