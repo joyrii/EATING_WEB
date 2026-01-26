@@ -1,18 +1,7 @@
 import { Chip } from './style';
 
-const BaseChip = ({
-  label,
-  className,
-  ...props
-}: {
-  label: string;
-  className?: string;
-}) => {
-  return (
-    <Chip className={className} {...props}>
-      {label}
-    </Chip>
-  );
+const BaseChip = ({ label }: { label: string }) => {
+  return <Chip>{label}</Chip>;
 };
 
 export default BaseChip;
