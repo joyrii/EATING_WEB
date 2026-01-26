@@ -8,7 +8,7 @@ export default function GuideCard({
   bg: string;
 }) {
   return (
-    <GuideCardContainer bg={bg}>
+    <GuideCardContainer $bg={bg}>
       <GuideCardTitle>{title}</GuideCardTitle>
     </GuideCardContainer>
   );

@@ -7,13 +7,21 @@ export const HeaderFont = localFont({
   weight: "400",
 });
 
-export const Header = styled.header`
+export const Header = styled.header<{ $variant: "logo" | "title" }>`
+  width: 100%;
   font-family: ${HeaderFont.style.fontFamily};
   display: flex;
   flex-direction: row;
   align-items: center;
   padding-block: 8px;
   padding-left: 24px;
+
+  ${({ $variant }) =>
+    $variant === "title"
+      ? `justify-content: space-between;
+      padding-block: 15px;
+      padding-right: 24px;`
+      : null}
 `;
 
 export const HeaderText = styled.h1`
@@ -29,6 +37,14 @@ export const LogoCharacter = styled.img.attrs({
   height: 44,
 })`
   margin-left: 4px;
+`;
+
+export const LogoTitle = styled.img.attrs({
+  src: "/svgs/home/eating-logo-title.svg",
+  width: 106,
+  height: 28,
+})`
+  margin-block: 7px;
 `;
 
 // 광고 배너
@@ -90,7 +106,7 @@ export const MatchingText = styled.div`
   gap: 4px;
 `;
 
-export const SectionTitle = styled.p`
+export const SectionTitle = styled.h2`
   font-size: 21px;
   font-weight: 600;
   line-height: 150%;
@@ -100,26 +116,31 @@ export const SectionTitle = styled.p`
   }
 `;
 
-export const MatchingDescription = styled.p`
-  font-size: 10px;
-  font-weight: 500;
+export const MatchingDescription = styled.p<{ $currentStatus?: string }>`
+  font-size: ${({ $currentStatus }) =>
+    $currentStatus === "inProgress" ? "14px" : "10px"};
+  font-weight: 400;
   line-height: 145%;
-  color: #a3a3a3;
+  color: ${({ $currentStatus }) =>
+    $currentStatus === "inProgress" ? "#FF5900" : "#a3a3a3"};
   letter-spacing: -0.01em;
 `;
 
-export const MatchingButtonArea = styled.div`
-  margin-top: 45px;
+export const MatchingButtonArea = styled.div<{ $currentStatus?: string }>`
+  margin-top: ${({ $currentStatus }) =>
+    $currentStatus === "completed" ? "20px" : "45px"};
   display: flex;
   justify-content: flex-end;
 `;
 
-export const MatchingButton = styled.button`
+export const MatchingButton = styled.button<{ $currentStatus?: string }>`
   width: 170px;
   height: 50px;
   border-radius: 10px;
-  background-color: #ff5900;
-  color: #ffffff;
+  background-color: ${({ $currentStatus }) =>
+    $currentStatus === "inProgress" ? "#F0F0F0" : "#ff5900"};
+  color: ${({ $currentStatus }) =>
+    $currentStatus === "inProgress" ? "#d6d6d6" : "#ffffff"};
   font-size: 16px;
   font-weight: 700;
   line-height: 145%;
