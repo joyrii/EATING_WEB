@@ -34,35 +34,37 @@ export default function RestaurantListItem({
 
   return (
     <RestaurantListItemWrapper checked={checked}>
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={name}
-          style={{ width: '87px', height: '87px' }}
-        />
-      ) : (
-        // Placeholder for missing image
-        <div
-          style={{
-            width: '87px',
-            height: '87px',
-            backgroundColor: '#e0e0e0',
-            borderRadius: '8px',
-          }}
-        />
-      )}
-      <RestaurantInfoWrapper>
-        <CategoryChip checked={checked}>{category}</CategoryChip>
-        <RestaurantName checked={checked}>{name}</RestaurantName>
-        <RestaurantInfo>
-          <RestaurantDetailText checked={checked}>
-            혜택<span>{benefit}</span>
-          </RestaurantDetailText>
-          <RestaurantDetailText checked={checked}>
-            메뉴<span>{menue}</span>
-          </RestaurantDetailText>
-        </RestaurantInfo>
-      </RestaurantInfoWrapper>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={name}
+            style={{ width: '87px', height: '87px' }}
+          />
+        ) : (
+          // Placeholder for missing image
+          <div
+            style={{
+              width: '87px',
+              height: '87px',
+              backgroundColor: '#e0e0e0',
+              borderRadius: '8px',
+            }}
+          />
+        )}
+        <RestaurantInfoWrapper>
+          <CategoryChip checked={checked}>{category}</CategoryChip>
+          <RestaurantName checked={checked}>{name}</RestaurantName>
+          <RestaurantInfo>
+            <RestaurantDetailText checked={checked}>
+              혜택<span>{benefit}</span>
+            </RestaurantDetailText>
+            <RestaurantDetailText checked={checked}>
+              메뉴<span>{menue}</span>
+            </RestaurantDetailText>
+          </RestaurantInfo>
+        </RestaurantInfoWrapper>
+      </div>
       <Check checked={checked} handler={setChecked} onClick={onClick} />
     </RestaurantListItemWrapper>
   );

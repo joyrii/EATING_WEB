@@ -12,7 +12,7 @@ import {
   ContentWrapper,
   InputWrapper,
   Label,
-  Textarea,
+  TextInput,
 } from '../style';
 import ClassChip from '@/components/application/ClassChip';
 import { useState } from 'react';
@@ -55,7 +55,7 @@ export default function additional() {
         </InputWrapper>
         <InputWrapper>
           <Label>02 만나고 싶지 않은 MBTI는?</Label>
-          <Textarea type="text" placeholder="입력해주세요." />
+          <TextInput type="text" placeholder="입력해주세요." />
         </InputWrapper>
       </ContentWrapper>
       <ButtonWrapper style={{ paddingTop: '5px' }}>

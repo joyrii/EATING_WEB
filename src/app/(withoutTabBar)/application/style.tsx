@@ -8,7 +8,7 @@ export const DateBox = styled.div`
   height: 50px;
   border: 1px solid #a3a3a3;
   border-radius: 15px;
-  padding-block: 23px;
+  padding-block: 14px;
   font-size: 16px;
   font-weight: 500;
   line-height: 145%;
@@ -90,7 +90,7 @@ export const ClassWrapper = styled.div`
   text-align: center;
 `;
 
-export const Textarea = styled.input`
+export const TextInput = styled.input`
   width: 100%;
   height: 68px;
   border: 1px solid #d6d6d6;

@@ -60,6 +60,7 @@ export const RestaurantInfoWrapper = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 13px;
+  gap: 5px;
 `;
 
 export const CategoryChip = styled.div<{ checked?: boolean }>`
@@ -95,7 +96,7 @@ export const RestaurantDetailText = styled.p<{ checked?: boolean }>`
   }
 `;
 
-export const ClassChipStyle = styled.div<{ checked: boolean }>`
+export const ClassChipStyle = styled.button<{ checked: boolean }>`
   width: 65px;
   height: 65px;
   border: 1px solid ${({ checked }) => (checked ? '#ff5900' : '#d6d6d6')};
@@ -103,8 +104,10 @@ export const ClassChipStyle = styled.div<{ checked: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-inline: 5px;
   font-size: 16px;
   font-weight: 500;
   color: ${({ checked }) => (checked ? '#ff5900' : '#8a8a8a')};
   background-color: ${({ checked }) => (checked ? '#FFDECC' : 'transparent')};
+  cursor: pointer;
 `;
