@@ -1,5 +1,3 @@
-'use client';
-
 import {
   CategoryChip,
   RestaurantDetailText,
@@ -9,7 +7,6 @@ import {
   RestaurantName,
 } from './style';
 import Check from '../Checkbox';
-import { useState } from 'react';
 
 interface RestaurantListItemProps {
   name: string;
@@ -17,8 +14,8 @@ interface RestaurantListItemProps {
   benefit: string;
   menue: string;
   imageUrl?: string;
-  checked?: boolean;
-  onClick?: () => void;
+  checked: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 export default function RestaurantListItem({
@@ -27,13 +24,11 @@ export default function RestaurantListItem({
   benefit,
   menue,
   imageUrl,
-  checked: initialChecked = false,
-  onClick,
+  checked,
+  onCheckedChange,
 }: RestaurantListItemProps) {
-  const [checked, setChecked] = useState(initialChecked);
-
   return (
-    <RestaurantListItemWrapper checked={checked}>
+    <RestaurantListItemWrapper $checked={checked}>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         {imageUrl ? (
           <img
@@ -53,19 +48,19 @@ export default function RestaurantListItem({
           />
         )}
         <RestaurantInfoWrapper>
-          <CategoryChip checked={checked}>{category}</CategoryChip>
-          <RestaurantName checked={checked}>{name}</RestaurantName>
+          <CategoryChip $checked={checked}>{category}</CategoryChip>
+          <RestaurantName $checked={checked}>{name}</RestaurantName>
           <RestaurantInfo>
-            <RestaurantDetailText checked={checked}>
+            <RestaurantDetailText $checked={checked}>
               혜택<span>{benefit}</span>
             </RestaurantDetailText>
-            <RestaurantDetailText checked={checked}>
+            <RestaurantDetailText $checked={checked}>
               메뉴<span>{menue}</span>
             </RestaurantDetailText>
           </RestaurantInfo>
         </RestaurantInfoWrapper>
       </div>
-      <Check checked={checked} handler={setChecked} onClick={onClick} />
+      <Check checked={checked} handler={(next) => onCheckedChange?.(next)} />
     </RestaurantListItemWrapper>
   );
 }

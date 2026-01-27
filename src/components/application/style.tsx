@@ -36,13 +36,13 @@ export const TimeCell = styled.div<{ $active: boolean }>`
   background-color: ${({ $active }) => ($active ? '#ff5900' : '#ffffff')};
 `;
 
-export const RestaurantListItemWrapper = styled.div<{ checked?: boolean }>`
+export const RestaurantListItemWrapper = styled.div<{ $checked?: boolean }>`
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   padding: 12px 15px;
-  border: 1px solid ${({ checked }) => (checked ? '#ff5900' : '#f0f0f0')};
+  border: 1px solid ${({ $checked }) => ($checked ? '#ff5900' : '#f0f0f0')};
   border-radius: 10px;
   margin-bottom: 16px;
   width: 90%;
@@ -63,20 +63,20 @@ export const RestaurantInfoWrapper = styled.div`
   gap: 5px;
 `;
 
-export const CategoryChip = styled.div<{ checked?: boolean }>`
+export const CategoryChip = styled.div<{ $checked?: boolean }>`
   width: fit-content;
   padding: 4px 8px;
-  background-color: ${({ checked }) => (checked ? '#FFEEE5' : '#FCFCFC')};
+  background-color: ${({ $checked }) => ($checked ? '#FFEEE5' : '#FCFCFC')};
   border-radius: 30px;
   font-size: 8px;
   font-weight: 500;
-  color: ${({ checked }) => (checked ? '#FF5900' : '#B0AFB2')};
+  color: ${({ $checked }) => ($checked ? '#FF5900' : '#B0AFB2')};
 `;
 
-export const RestaurantName = styled.h2<{ checked?: boolean }>`
+export const RestaurantName = styled.h2<{ $checked?: boolean }>`
   font-size: 16px;
   font-weight: 700;
-  color: ${({ checked }) => (checked ? '#FF5900' : '#3d3d3d')};
+  color: ${({ $checked }) => ($checked ? '#FF5900' : '#3d3d3d')};
 `;
 
 export const RestaurantInfo = styled.div`
@@ -85,21 +85,21 @@ export const RestaurantInfo = styled.div`
   gap: 5px;
 `;
 
-export const RestaurantDetailText = styled.p<{ checked?: boolean }>`
+export const RestaurantDetailText = styled.p<{ $checked?: boolean }>`
   font-size: 10px;
   font-weight: 500;
-  color: ${({ checked }) => (checked ? '#FFBAA5' : '#d6d6d6')};
+  color: ${({ $checked }) => ($checked ? '#FFBAA5' : '#d6d6d6')};
 
   span {
-    color: ${({ checked }) => (checked ? '#ff5900' : '#8a8a8a')};
+    color: ${({ $checked }) => ($checked ? '#ff5900' : '#8a8a8a')};
     margin-left: 6px;
   }
 `;
 
-export const ClassChipStyle = styled.button<{ checked: boolean }>`
+export const ClassChipStyle = styled.button<{ $checked: boolean }>`
   width: 65px;
   height: 65px;
-  border: 1px solid ${({ checked }) => (checked ? '#ff5900' : '#d6d6d6')};
+  border: 1px solid ${({ $checked }) => ($checked ? '#ff5900' : '#d6d6d6')};
   border-radius: 15px;
   display: flex;
   align-items: center;
@@ -107,7 +107,7 @@ export const ClassChipStyle = styled.button<{ checked: boolean }>`
   padding-inline: 5px;
   font-size: 16px;
   font-weight: 500;
-  color: ${({ checked }) => (checked ? '#ff5900' : '#8a8a8a')};
-  background-color: ${({ checked }) => (checked ? '#FFDECC' : 'transparent')};
+  color: ${({ $checked }) => ($checked ? '#ff5900' : '#8a8a8a')};
+  background-color: ${({ $checked }) => ($checked ? '#FFDECC' : 'transparent')};
   cursor: pointer;
 `;
