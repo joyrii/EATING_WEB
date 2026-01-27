@@ -94,3 +94,17 @@ export const RestaurantDetailText = styled.p<{ checked?: boolean }>`
     margin-left: 6px;
   }
 `;
+
+export const ClassChipStyle = styled.div<{ checked: boolean }>`
+  width: 65px;
+  height: 65px;
+  border: 1px solid ${({ checked }) => (checked ? '#ff5900' : '#d6d6d6')};
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: ${({ checked }) => (checked ? '#ff5900' : '#8a8a8a')};
+  background-color: ${({ checked }) => (checked ? '#FFDECC' : 'transparent')};
+`;

@@ -62,9 +62,47 @@ export const RestaurantListContainer = styled.div`
 export const ButtonWrapper = styled.div`
   position: fixed;
   bottom: 0px;
-  left: 23px;
-  right: 23px;
-  width: calc(100% - 46px);
+  left: 0px;
+  right: 0px;
   background-color: #fafafa;
   padding: 45px 23px;
+`;
+
+export const InputWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 45px;
+`;
+
+export const Label = styled.label`
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 145%;
+  letter-spacing: -0.01em;
+  color: #232323;
+`;
+
+export const ClassWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  text-align: center;
+`;
+
+export const Textarea = styled.input`
+  width: 100%;
+  height: 68px;
+  border: 1px solid #d6d6d6;
+  border-radius: 15px;
+  padding: 23px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 145%;
+  letter-spacing: -0.01em;
+  color: #000000;
+
+  &::placeholder {
+    color: #bdbdbd;
+  }
 `;
