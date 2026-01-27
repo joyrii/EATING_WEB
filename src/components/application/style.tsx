@@ -30,10 +30,10 @@ export const TimeLabel = styled.div`
   letter-spacing: -0.01em;
 `;
 
-export const TimeCell = styled.div<{ active: boolean }>`
+export const TimeCell = styled.div<{ $active: boolean }>`
   height: 30px;
   border: 1px solid #d6d6d6;
-  background-color: ${({ active }) => (active ? '#ff5900' : '#ffffff')};
+  background-color: ${({ $active }) => ($active ? '#ff5900' : '#ffffff')};
 `;
 
 export const RestaurantListItemWrapper = styled.div<{ checked?: boolean }>`

@@ -146,7 +146,7 @@ export default function TimeGrid({ onChange }: Props) {
                     data-cell="1"
                     data-r={r}
                     data-c={c}
-                    active={active}
+                    $active={active}
                   />
                 );
               })}
