@@ -106,3 +106,10 @@ export const Textarea = styled.input`
     color: #bdbdbd;
   }
 `;
+
+export const ContentWrapper = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 100px;
+`;
