@@ -37,8 +37,34 @@ export const CautionWrapper = styled.div`
   }
 `;
 
-export const ButtonWrapper = styled.div`
+export const ModalButtonWrapper = styled.div`
   width: 128px;
   display: flex;
   justify-content: center;
+`;
+
+export const SkipButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
+export const RestaurantListContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 30px;
+  margin-bottom: 100px;
+`;
+
+export const ButtonWrapper = styled.div`
+  position: fixed;
+  bottom: 0px;
+  left: 23px;
+  right: 23px;
+  width: calc(100% - 46px);
+  background-color: #fafafa;
+  padding: 45px 23px;
 `;

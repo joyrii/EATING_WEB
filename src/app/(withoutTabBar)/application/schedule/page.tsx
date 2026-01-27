@@ -5,6 +5,7 @@ import {
   StepText,
   TitleText,
   SubText,
+  ButtonWrapper,
 } from '@/app/(onboarding)/onboarding/style';
 import { CautionWrapper, DateBox, ModalContent } from '../style';
 import TimeGrid from '@/components/application/TimeGrid';
@@ -13,7 +14,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BaseModal } from '@/components/BaseModal';
 import Image from 'next/image';
-import { ButtonWrapper } from '../style';
+import { ModalButtonWrapper } from '../style';
 
 export default function Schedule() {
   const router = useRouter();
@@ -60,12 +61,12 @@ export default function Schedule() {
               노쇼 페널티가 부과됩니다
             </p>
           </CautionWrapper>
-          <ButtonWrapper>
+          <ModalButtonWrapper>
             <Button
               label="확인"
               onClick={() => router.push('/application/dining')}
             />
-          </ButtonWrapper>
+          </ModalButtonWrapper>
         </ModalContent>
       </BaseModal>
     </>

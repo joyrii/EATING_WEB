@@ -139,3 +139,22 @@ export const ButtonText = styled.span`
   font-weight: 600;
   color: #ffffff;
 `;
+
+// 체크박스
+export const Checkbox = styled.input.attrs({ type: 'checkbox' })`
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background-color: #fcfcfc;
+  cursor: pointer;
+
+  background-image: url('/svgs/check-gray.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+
+  &:checked {
+    background-image: url('/svgs/check.svg');
+    background-color: #ff5900;
+  }
+`;
