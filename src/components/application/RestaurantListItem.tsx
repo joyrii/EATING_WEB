@@ -12,7 +12,7 @@ interface RestaurantListItemProps {
   name: string;
   category: string;
   benefit: string;
-  menue: string;
+  menu: string;
   imageUrl?: string;
   checked: boolean;
   onCheckedChange?: (checked: boolean) => void;
@@ -22,7 +22,7 @@ export default function RestaurantListItem({
   name,
   category,
   benefit,
-  menue,
+  menu,
   imageUrl,
   checked,
   onCheckedChange,
@@ -56,7 +56,7 @@ export default function RestaurantListItem({
               혜택<span>{benefit}</span>
             </RestaurantDetailText>
             <RestaurantDetailText $checked={checked}>
-              메뉴<span>{menue}</span>
+              메뉴<span>{menu}</span>
             </RestaurantDetailText>
           </RestaurantInfo>
         </RestaurantInfoWrapper>
