@@ -20,6 +20,7 @@ import { useState } from 'react';
 export default function additional() {
   const CLASS = ['26학번', '25학번', '24학번', '23학번', '22학번 이상'];
   const [selectedClass, setSelectedClass] = useState<string[]>([]);
+  const [excludedMbti, setExcludedMbti] = useState<string>('');
 
   return (
     <div>
@@ -55,7 +56,12 @@ export default function additional() {
         </InputWrapper>
         <InputWrapper>
           <Label>02 만나고 싶지 않은 MBTI는?</Label>
-          <TextInput type="text" placeholder="입력해주세요." />
+          <TextInput
+            type="text"
+            placeholder="입력해주세요."
+            value={excludedMbti}
+            onChange={(e) => setExcludedMbti(e.target.value)}
+          />
         </InputWrapper>
       </ContentWrapper>
       <ButtonWrapper style={{ paddingTop: '5px' }}>

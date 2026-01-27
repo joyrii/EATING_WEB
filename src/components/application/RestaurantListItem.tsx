@@ -27,6 +27,7 @@ export default function RestaurantListItem({
   checked,
   onCheckedChange,
 }: RestaurantListItemProps) {
+  const checkboxLabel = `레스토랑 선택: ${name}`;
   return (
     <RestaurantListItemWrapper $checked={checked}>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -60,7 +61,11 @@ export default function RestaurantListItem({
           </RestaurantInfo>
         </RestaurantInfoWrapper>
       </div>
-      <Check checked={checked} handler={(next) => onCheckedChange?.(next)} />
+      <Check
+        checked={checked}
+        handler={(next) => onCheckedChange?.(next)}
+        ariaLabel={checkboxLabel}
+      />
     </RestaurantListItemWrapper>
   );
 }
