@@ -14,7 +14,7 @@ import ClassChip from '@/components/application/ClassChip';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function additional() {
+export default function Additional() {
   const router = useRouter();
 
   const CLASS = ['26학번', '25학번', '24학번', '23학번', '22학번 이상'];

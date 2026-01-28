@@ -68,7 +68,7 @@ const SkipButton = styled.button`
   cursor: pointer;
 `;
 
-const SkipButtonText = styled.p`
+const SkipButtonText = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: #a3a3a3;

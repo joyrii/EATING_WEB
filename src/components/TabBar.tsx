@@ -139,7 +139,6 @@ const TabLabelWrap = styled.span<{ $active: boolean }>`
 const TabLabel = styled.span<{ $active: boolean }>`
   font-size: 12px;
   font-weight: 700;
-  font-style: bold;
   line-height: 145%;
   letter-spacing: -0.01em;
 

@@ -39,7 +39,7 @@ export default function OnboardingInterests() {
             <InterestsMainTitle>{group.sectionTitle}</InterestsMainTitle>
             {group.items.map((index) => {
               const sub = INTERESTS_SECTION[index];
-              const key = sub.title;
+              const key = sub.title ?? group.sectionTitle;
               const picked = selected[key] ?? [];
 
               const optionList = (

@@ -62,5 +62,5 @@ const ModalContent = styled.div<{ width: string; padding?: string }>`
   background-color: #fcfcfc;
   border-radius: 10px;
   width: ${(p) => p.width};
-  padding: ${(p) => p.padding};
+  ${(p) => p.padding && `padding: ${p.padding};`}
 `;

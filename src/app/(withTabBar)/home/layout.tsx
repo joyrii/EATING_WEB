@@ -216,7 +216,6 @@ const MatchingButton = styled.button<{ $currentStatus?: string }>`
   font-size: 16px;
   font-weight: 700;
   line-height: 145%;
-  font-style: bold;
   border: none;
 `;
 

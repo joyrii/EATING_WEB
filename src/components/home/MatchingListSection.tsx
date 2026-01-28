@@ -72,12 +72,14 @@ export default function MatchingListSection() {
 
 // 상세 보기 모달
 const ModalMainText = styled.h2`
+  margin: 0;
   font-size: 21px;
   font-weight: 600;
   color: #000000;
 `;
 
 const ModalSubText = styled.p`
+  margin: 0;
   font-size: 12px;
   font-weight: 400;
   line-height: 145%;
@@ -92,7 +94,7 @@ const TagsContainer = styled.div`
   margin-top: 30px;
 `;
 
-const ParticipantsInfoContainer = styled.p`
+const ParticipantsInfoContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
