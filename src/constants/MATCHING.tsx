@@ -21,8 +21,12 @@ export const matchingSectionText: Record<MatchingStatus, matchingSectionText> =
         '맞춤 성향 알고리즘을 통해 최적의 매칭 결과를 받아보실 수 있어요!',
     },
     inProgress: {
-      title: <>매칭이 진행 중입니다..</>,
-      description: '이번주 금요일 오후 5시에 결과가 발표됩니다!',
+      title: (
+        <>
+          금요일 <span>오후 5시</span>에 결과가 발표됩니다!
+        </>
+      ),
+      description: '최적의 매칭 상대를 찾는 중...',
     },
     completed: {
       title: <>다음주 매칭을 신청해보세요!</>,

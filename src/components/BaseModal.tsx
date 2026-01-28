@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ModalContent, ModalOverlay } from './style';
+import styled from 'styled-components';
 
 type BaseModalProps = {
   open: boolean;
@@ -43,3 +43,24 @@ export function BaseModal({
     </ModalOverlay>
   );
 }
+
+// 모달
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div<{ width: string; padding?: string }>`
+  background-color: #fcfcfc;
+  border-radius: 10px;
+  width: ${(p) => p.width};
+  ${(p) => p.padding && `padding: ${p.padding};`}
+`;

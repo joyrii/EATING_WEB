@@ -1,5 +1,6 @@
+import styled from 'styled-components';
 import GuideCard from '@/components/home/GuideCard';
-import { GuideScroll, Section, SectionTitle } from './style';
+import { Section, SectionTitle } from './style';
 
 export default function GuideSection() {
   return (
@@ -22,3 +23,15 @@ export default function GuideSection() {
     </Section>
   );
 }
+
+// 가이드 섹션
+const GuideScroll = styled.div`
+  margin-top: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  margin-bottom: 120px;
+`;

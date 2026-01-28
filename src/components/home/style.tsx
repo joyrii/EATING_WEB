@@ -1,29 +1,6 @@
 import Link from 'next/link';
 import styled from 'styled-components';
 
-// 가이드 카드
-export const GuideCardContainer = styled.div<{ $bg: string }>`
-  background-color: #ffffff;
-  width: 160px;
-  height: 200px;
-  border-radius: 4px;
-  box-shadow: 2px 2px 4px rgba(164, 164, 164, 0.25);
-  background-image: url(${(props) => props.$bg});
-  background-size: 110%;
-  background-repeat: no-repeat;
-  background-position: center bottom -10px;
-  padding: 20px;
-  flex: 0 0 auto;
-`;
-
-export const GuideCardTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 145%;
-  color: #3d3d3d;
-  white-space: pre-line;
-`;
-
 // 섹션 타이틀
 export const SectionTitle = styled.h2`
   font-size: 21px;
@@ -41,18 +18,6 @@ export const Section = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
-`;
-
-// 가이드 섹션
-export const GuideScroll = styled.div`
-  margin-top: 16px;
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  margin-bottom: 120px;
 `;
 
 // 매칭 리스트 섹션
@@ -78,44 +43,7 @@ export const MatchingList = styled.div`
   }
 `;
 
-export const MatchingListItemContainer = styled.div`
-  background-color: #ffffff;
-  border: 1px solid #f0f0f0;
-  border-radius: 14px;
-  padding-top: 25px;
-  padding-bottom: 20px;
-  padding-inline: 20px;
-`;
-
-export const ParticipantsWrapper = styled.div`
-  display: flex;
-  justify-content: flex-end;
-`;
-
-export const Participants = styled.p`
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 145%;
-  color: #3d3d3d;
-`;
-
-export const DateTimeWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 25px;
-`;
-
-export const DateTime = styled.h3`
-  font-size: 21px;
-  font-weight: 600;
-`;
-
-export const ButtonContainer = styled.div`
-  display: flex;
-  width: 100%;
-  gap: 6px;
-`;
-
+// 버튼
 export const Button = styled.button<{
   $variant: 'detail' | 'chat' | 'review' | 'enter';
 }>`
@@ -157,46 +85,4 @@ export const Button = styled.button<{
         return ``;
     }
   }}
-`;
-
-// 상세 보기 모달
-export const ModalMainText = styled.h2`
-  font-size: 21px;
-  font-weight: 600;
-  color: #000000;
-`;
-
-export const ModalSubText = styled.p`
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 145%;
-  letter-spacing: -0.01em;
-  color: #232323;
-`;
-
-export const TagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 2px;
-  margin-top: 30px;
-`;
-
-export const ParticipantsInfoContainer = styled.p`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-  margin-top: 5px;
-`;
-
-export const ParticipantsInfoText = styled.span`
-  font-size: 12px;
-  font-weight: 500;
-  color: #8a8a8a;
-`;
-
-export const ModalButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
 `;

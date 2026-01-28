@@ -1,12 +1,6 @@
-import {
-  ButtonWrapper,
-  Container,
-  Content,
-  FormWrapper,
-  InputWrapper,
-  TextWrapper,
-} from '../style';
+import styled from 'styled-components';
 import Button from '@/components/BaseButton';
+import { Container, TextWrapper } from '../style';
 
 function isTextInput(el: Element | null) {
   if (!el) return false;
@@ -47,3 +41,48 @@ export default function StudentVerificationConfirm() {
     </Container>
   );
 }
+
+const Content = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  padding-bottom: 15px;
+`;
+
+const ButtonWrapper = styled.div`
+  padding: 16px 0 45px;
+  background: #fafafa;
+`;
+
+const FormWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin-top: 57px;
+`;
+
+const InputWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  label {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 22px;
+    letter-spacing: 0;
+  }
+
+  input {
+    width: 100%;
+    height: 70px;
+    border: 1px solid #d6d6d6;
+    border-radius: 15px;
+    padding: 23px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 145%;
+    letter-spacing: -0.01em;
+  }
+`;
