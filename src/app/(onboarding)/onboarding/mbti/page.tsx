@@ -99,4 +99,5 @@ const MbtiOptionWrapper = styled.div`
   display: flex;
   flex-direction: row;
   gap: 8px;
+  justify-content: center;
 `;

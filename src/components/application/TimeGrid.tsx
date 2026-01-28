@@ -185,5 +185,5 @@ const TimeLabel = styled.div`
 const TimeCell = styled.div<{ $active: boolean }>`
   height: 30px;
   border: 1px solid #d6d6d6;
-  background-color: ${({ $active }) => ($active ? '#ff5900' : '#ffffff')};
+  background-color: ${({ $active }) => ($active ? '#FFEEE5' : '#ffffff')};
 `;

@@ -5,15 +5,26 @@ import { StepText, SubText, TextWrapper, TitleText } from '../style';
 import Button from '@/components/BaseButton';
 import { useRouter } from 'next/navigation';
 import InterestsOption from '@/components/onboarding/InterestsChip';
-import INTERESTS_SECTION from '@/constants/INTERESTS_SECTION';
+import {
+  INTERESTS_SECTION,
+  INTERESTS_GROUPS,
+} from '@/constants/INTERESTS_SECTION';
 import { useState } from 'react';
 
 export default function OnboardingInterests() {
   const router = useRouter();
 
-  const [univLife, setUnivLife] = useState<string[]>([]);
-  const [music, setMusic] = useState<string[]>([]);
-  const [beauty, setBeauty] = useState<string[]>([]);
+  const [selected, setSelected] = useState<Record<string, string[]>>({});
+
+  const toggle = (key: string, option: string) => {
+    setSelected((prev) => {
+      const cur = prev[key] || [];
+      const next = cur.includes(option)
+        ? cur.filter((x) => x !== option)
+        : [...cur, option];
+      return { ...prev, [key]: next };
+    });
+  };
 
   return (
     <div>
@@ -23,73 +34,42 @@ export default function OnboardingInterests() {
         <SubText>매칭을 위해 부가적으로 사용됩니다.</SubText>
       </TextWrapper>
       <InterestsContent>
-        <InterestsWrapperLarge>
-          <InterestsMainTitle>대학생활</InterestsMainTitle>
-          <InterestsOptionWrapper>
-            {INTERESTS_SECTION[0].options.map((option, index) => (
-              <InterestsOption
-                key={index}
-                label={option}
-                width={option === '방문학생/교환학생' ? '110px' : '75px'}
-                $selected={univLife.includes(option)}
-                onClick={() => {
-                  if (univLife.includes(option)) {
-                    setUnivLife(univLife.filter((item) => item !== option));
-                  } else {
-                    setUnivLife([...univLife, option]);
-                  }
-                }}
-              />
-            ))}
-          </InterestsOptionWrapper>
-        </InterestsWrapperLarge>
-        <InterestsWrapperLarge>
-          <InterestsMainTitle>취미</InterestsMainTitle>
-          <InterestsWrapper>
-            <InterestsSubTitle>뮤직</InterestsSubTitle>
-            <InterestsOptionWrapper>
-              {INTERESTS_SECTION[1].options.map((option, index) => (
-                <InterestsOption
-                  key={index}
-                  label={option}
-                  $selected={music.includes(option)}
-                  onClick={() => {
-                    if (music.includes(option)) {
-                      setMusic(music.filter((item) => item !== option));
-                    } else {
-                      setMusic([...music, option]);
-                    }
-                  }}
-                />
-              ))}
-            </InterestsOptionWrapper>
-          </InterestsWrapper>
-          <InterestsWrapper>
-            <InterestsSubTitle>뷰티</InterestsSubTitle>
-            <InterestsOptionWrapper>
-              {INTERESTS_SECTION[2].options.map((option, index) => (
-                <InterestsOption
-                  key={index}
-                  label={option}
-                  $selected={beauty.includes(option)}
-                  onClick={() => {
-                    if (beauty.includes(option)) {
-                      setBeauty(beauty.filter((item) => item !== option));
-                    } else {
-                      setBeauty([...beauty, option]);
-                    }
-                  }}
-                />
-              ))}
-            </InterestsOptionWrapper>
-          </InterestsWrapper>
-        </InterestsWrapperLarge>
+        {INTERESTS_GROUPS.map((group) => (
+          <InterestsWrapperLarge key={group.sectionTitle}>
+            <InterestsMainTitle>{group.sectionTitle}</InterestsMainTitle>
+            {group.items.map((index) => {
+              const sub = INTERESTS_SECTION[index];
+              const key = sub.title;
+              const picked = selected[key] ?? [];
+
+              const optionList = (
+                <InterestsOptionWrapper>
+                  {sub.options.map((option) => (
+                    <InterestsOption
+                      key={option}
+                      label={option}
+                      width={option === '방문학생/교환학생' ? '110px' : '75px'}
+                      $selected={picked.includes(option)}
+                      onClick={() => toggle(key, option)}
+                    />
+                  ))}
+                </InterestsOptionWrapper>
+              );
+              return group.sectionTitle === '대학생활' ? (
+                <div key={sub.title}>{optionList}</div>
+              ) : (
+                <InterestsWrapper key={sub.title}>
+                  <InterestsSubTitle>{sub.title}</InterestsSubTitle>
+                  {optionList}
+                </InterestsWrapper>
+              );
+            })}
+          </InterestsWrapperLarge>
+        ))}
       </InterestsContent>
       <ButtonWrapper>
         <Button
-          disabled={
-            univLife.length === 0 && music.length === 0 && beauty.length === 0
-          }
+          disabled={Object.values(selected).flat().length === 0}
           label="다음"
           onClick={() => {
             router.push('/onboarding/test');

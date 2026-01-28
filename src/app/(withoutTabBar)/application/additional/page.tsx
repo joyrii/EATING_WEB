@@ -6,12 +6,17 @@ import {
   StepText,
   TitleText,
 } from '@/app/(onboarding)/onboarding/style';
+import { IoChevronForward } from 'react-icons/io5';
+import { SkipButtonWrapper } from '../style';
 import { ButtonWrapper } from '../style';
 import Button from '@/components/BaseButton';
 import ClassChip from '@/components/application/ClassChip';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function additional() {
+  const router = useRouter();
+
   const CLASS = ['26학번', '25학번', '24학번', '23학번', '22학번 이상'];
   const [selectedClass, setSelectedClass] = useState<string[]>([]);
   const [excludedMbti, setExcludedMbti] = useState<string>('');
@@ -20,7 +25,17 @@ export default function additional() {
     <div>
       <ContentWrapper>
         <TextWrapper>
-          <StepText>03</StepText>
+          <SkipButtonWrapper>
+            <StepText>03</StepText>
+            <SkipButton
+              onClick={() => {
+                // Skip to the application complete page
+              }}
+            >
+              <SkipButtonText>건너뛰기</SkipButtonText>
+              <IoChevronForward size={24} color="#a3a3a3" />
+            </SkipButton>
+          </SkipButtonWrapper>
           <TitleText>
             최적의 매칭을 위한
             <br />
@@ -64,6 +79,22 @@ export default function additional() {
     </div>
   );
 }
+
+const SkipButton = styled.button`
+  margin-top: 7px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+`;
+
+const SkipButtonText = styled.p`
+  font-size: 14px;
+  font-weight: 500;
+  color: #a3a3a3;
+`;
 
 const InputWrapper = styled.div`
   display: flex;

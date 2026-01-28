@@ -194,8 +194,7 @@ const MatchingDescription = styled.p<{ $currentStatus?: string }>`
     $currentStatus === 'inProgress' ? '14px' : '10px'};
   font-weight: 400;
   line-height: 145%;
-  color: ${({ $currentStatus }) =>
-    $currentStatus === 'inProgress' ? '#FF5900' : '#a3a3a3'};
+  color: #a3a3a3;
   letter-spacing: -0.01em;
 `;
 

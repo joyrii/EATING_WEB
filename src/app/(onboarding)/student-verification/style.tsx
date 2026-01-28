@@ -18,6 +18,7 @@ export const TextWrapper = styled.div`
   }
 
   p {
+    margin-top: 2px;
     font-size: 14px;
     font-weight: 400;
     line-height: 145%;

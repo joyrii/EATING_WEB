@@ -59,7 +59,7 @@ const SkipButtonWrapper = styled.div`
 `;
 
 const SkipButton = styled.button`
-  margin-top: 7px;
+  margin-top: 15px;
   display: flex;
   flex-direction: row;
   align-items: center;
