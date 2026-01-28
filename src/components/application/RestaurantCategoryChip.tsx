@@ -7,5 +7,5 @@ export default function RestaurantCategoryChip({
   label: string;
   checked?: boolean;
 }) {
-  return <CategoryChip checked={checked}>{label}</CategoryChip>;
+  return <CategoryChip $checked={checked}>{label}</CategoryChip>;
 }

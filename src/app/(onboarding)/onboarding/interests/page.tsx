@@ -1,18 +1,7 @@
 'use client';
 
-import {
-  ButtonWrapper,
-  InterestsContent,
-  InterestsMainTitle,
-  InterestsOptionWrapper,
-  InterestsSubTitle,
-  InterestsWrapper,
-  InterestsWrapperLarge,
-  StepText,
-  SubText,
-  TextWrapper,
-  TitleText,
-} from '../style';
+import styled from 'styled-components';
+import { StepText, SubText, TextWrapper, TitleText } from '../style';
 import Button from '@/components/BaseButton';
 import { useRouter } from 'next/navigation';
 import InterestsOption from '@/components/onboarding/InterestsChip';
@@ -110,3 +99,49 @@ export default function OnboardingInterests() {
     </div>
   );
 }
+
+const ButtonWrapper = styled.div`
+  position: fixed;
+  bottom: 45px;
+  left: 23px;
+  right: 23px;
+`;
+
+const InterestsMainTitle = styled.h2`
+  font-size: 18px;
+  font-weight: 600;
+  color: #000000;
+`;
+
+const InterestsSubTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 500;
+  color: #000000;
+  line-height: 145%;
+  letter-spacing: -0.01em;
+`;
+
+const InterestsContent = styled.div`
+  margin-top: 46px;
+`;
+
+const InterestsWrapperLarge = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 45px;
+`;
+
+const InterestsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 45px;
+`;
+
+const InterestsOptionWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 10px;
+`;

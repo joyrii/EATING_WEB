@@ -1,4 +1,4 @@
-import { Checkbox } from './style';
+import styled from 'styled-components';
 
 export default function Check({
   checked,
@@ -20,3 +20,22 @@ export default function Check({
     />
   );
 }
+
+// 체크박스
+const Checkbox = styled.input.attrs({ type: 'checkbox' })`
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background-color: #fcfcfc;
+  cursor: pointer;
+
+  background-image: url('/svgs/check-gray.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+
+  &:checked {
+    background-image: url('/svgs/check.svg');
+    background-color: #ff5900;
+  }
+`;

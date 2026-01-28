@@ -1,14 +1,8 @@
 'use client';
 
+import styled from 'styled-components';
 import Button from '@/components/BaseButton';
-import {
-  MbtiOptionColumn,
-  MbtiOptionWrapper,
-  StepText,
-  SubText,
-  TextWrapper,
-  TitleText,
-} from '../style';
+import { StepText, SubText, TextWrapper, TitleText } from '../style';
 import { ButtonWrapper } from '../style';
 import MbtiOption from '@/components/onboarding/MbtiOption';
 import { useState } from 'react';
@@ -93,3 +87,16 @@ export default function OnboardingMbti() {
     </div>
   );
 }
+
+const MbtiOptionColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+`;
+
+const MbtiOptionWrapper = styled.div`
+  margin-top: 113px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+`;

@@ -1,19 +1,13 @@
 'use client';
 
+import styled from 'styled-components';
 import {
   TextWrapper,
   StepText,
   TitleText,
 } from '@/app/(onboarding)/onboarding/style';
+import { ButtonWrapper } from '../style';
 import Button from '@/components/BaseButton';
-import {
-  ButtonWrapper,
-  ClassWrapper,
-  ContentWrapper,
-  InputWrapper,
-  Label,
-  TextInput,
-} from '../style';
 import ClassChip from '@/components/application/ClassChip';
 import { useState } from 'react';
 
@@ -70,3 +64,49 @@ export default function additional() {
     </div>
   );
 }
+
+const InputWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 45px;
+`;
+
+const Label = styled.label`
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 145%;
+  letter-spacing: -0.01em;
+  color: #232323;
+`;
+
+const ClassWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  text-align: center;
+`;
+
+const TextInput = styled.input`
+  width: 100%;
+  height: 68px;
+  border: 1px solid #d6d6d6;
+  border-radius: 15px;
+  padding: 23px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 145%;
+  letter-spacing: -0.01em;
+  color: #000000;
+
+  &::placeholder {
+    color: #bdbdbd;
+  }
+`;
+
+const ContentWrapper = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 100px;
+`;

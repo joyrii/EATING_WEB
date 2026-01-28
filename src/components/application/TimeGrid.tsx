@@ -1,13 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import {
-  TimeGridContainer,
-  TimeGridWrapper,
-  DayHeader,
-  TimeLabel,
-  TimeCell,
-} from './style';
+import styled from 'styled-components';
 
 type Cell = { r: number; c: number }; // r=시간, c=요일
 type Props = {
@@ -157,3 +151,39 @@ export default function TimeGrid({ onChange }: Props) {
     </TimeGridContainer>
   );
 }
+
+const TimeGridContainer = styled.div`
+  margin-top: 21px;
+  margin-bottom: 100px;
+`;
+
+const TimeGridWrapper = styled.div`
+  display: grid;
+  gap: 6px;
+  user-select: none;
+  touch-action: none;
+`;
+
+const DayHeader = styled.div`
+  font-size: 12px;
+  font-weight: 400;
+  color: #707070;
+  line-height: 145%;
+  text-align: center;
+  letter-spacing: -0.01em;
+`;
+
+const TimeLabel = styled.div`
+  text-align: right;
+  font-size: 10px;
+  color: #d6d6d6;
+  font-weight: 500;
+  line-height: 145%;
+  letter-spacing: -0.01em;
+`;
+
+const TimeCell = styled.div<{ $active: boolean }>`
+  height: 30px;
+  border: 1px solid #d6d6d6;
+  background-color: ${({ $active }) => ($active ? '#ff5900' : '#ffffff')};
+`;

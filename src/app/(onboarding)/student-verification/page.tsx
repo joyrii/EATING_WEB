@@ -1,9 +1,10 @@
 'use client';
 
+import styled from 'styled-components';
 import Image from 'next/image';
 import Button from '@/components/BaseButton';
-import { Container, ImageWrapper, TextWrapper } from './style';
 import { useRouter } from 'next/navigation';
+import { Container, TextWrapper } from './style';
 
 export default function StudentVerification() {
   const router = useRouter();
@@ -41,3 +42,12 @@ export default function StudentVerification() {
     </Container>
   );
 }
+
+const ImageWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  margin-top: 107px;
+  justify-content: center;
+  align-items: center;
+  gap: 33px;
+`;

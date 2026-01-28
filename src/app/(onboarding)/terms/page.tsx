@@ -1,8 +1,8 @@
 'use client';
 
+import styled from 'styled-components';
 import TermsItem from '@/components/terms/TermsItem';
 import { useState } from 'react';
-import { Title, Page } from './style';
 import { useMemo } from 'react';
 import Button from '@/components/BaseButton';
 
@@ -108,3 +108,18 @@ export default function TermsIndex() {
     </Page>
   );
 }
+
+const Page = styled.div`
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 50px;
+  padding-inline: 25px;
+`;
+
+const Title = styled.h1`
+  font-size: 24px;
+  font-weight: 600;
+  color: #000000;
+  white-space: pre-line;
+`;

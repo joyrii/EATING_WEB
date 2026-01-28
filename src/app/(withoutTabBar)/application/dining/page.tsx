@@ -5,9 +5,8 @@ import {
   StepText,
   TitleText,
   SubText,
-  SkipButton,
-  SkipButtonText,
 } from '@/app/(onboarding)/onboarding/style';
+import styled from 'styled-components';
 import { IoChevronForward } from 'react-icons/io5';
 import { useRouter } from 'next/navigation';
 import {
@@ -45,9 +44,9 @@ export default function Dining() {
           name="다방방"
           category="한식"
           benefit="10% 할인"
-          menue="쌍화커피, 쌍화라떼"
+          menu="쌍화커피, 쌍화라떼"
           checked={checkedItems.includes('다방방')}
-          onClick={() => {
+          onCheckedChange={() => {
             if (checkedItems.includes('다방방')) {
               setCheckedItems(checkedItems.filter((item) => item !== '다방방'));
             } else {
@@ -59,9 +58,9 @@ export default function Dining() {
           name="다방방"
           category="한식"
           benefit="10% 할인"
-          menue="쌍화커피, 쌍화라떼"
+          menu="쌍화커피, 쌍화라떼"
           checked={checkedItems.includes('다방방')}
-          onClick={() => {
+          onCheckedChange={() => {
             if (checkedItems.includes('다방방')) {
               setCheckedItems(checkedItems.filter((item) => item !== '다방방'));
             } else {
@@ -73,9 +72,9 @@ export default function Dining() {
           name="다방방"
           category="한식"
           benefit="10% 할인"
-          menue="쌍화커피, 쌍화라떼"
+          menu="쌍화커피, 쌍화라떼"
           checked={checkedItems.includes('다방방')}
-          onClick={() => {
+          onCheckedChange={() => {
             if (checkedItems.includes('다방방')) {
               setCheckedItems(checkedItems.filter((item) => item !== '다방방'));
             } else {
@@ -87,9 +86,9 @@ export default function Dining() {
           name="다방방"
           category="한식"
           benefit="10% 할인"
-          menue="쌍화커피, 쌍화라떼"
+          menu="쌍화커피, 쌍화라떼"
           checked={checkedItems.includes('다방방')}
-          onClick={() => {
+          onCheckedChange={() => {
             if (checkedItems.includes('다방방')) {
               setCheckedItems(checkedItems.filter((item) => item !== '다방방'));
             } else {
@@ -101,9 +100,9 @@ export default function Dining() {
           name="다방방"
           category="한식"
           benefit="10% 할인"
-          menue="쌍화커피, 쌍화라떼"
+          menu="쌍화커피, 쌍화라떼"
           checked={checkedItems.includes('다방방')}
-          onClick={() => {
+          onCheckedChange={() => {
             if (checkedItems.includes('다방방')) {
               setCheckedItems(checkedItems.filter((item) => item !== '다방방'));
             } else {
@@ -122,3 +121,19 @@ export default function Dining() {
     </div>
   );
 }
+
+const SkipButton = styled.button`
+  margin-top: 7px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+`;
+
+const SkipButtonText = styled.p`
+  font-size: 14px;
+  font-weight: 500;
+  color: #a3a3a3;
+`;
