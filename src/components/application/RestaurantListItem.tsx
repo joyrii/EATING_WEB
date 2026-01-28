@@ -1,11 +1,5 @@
-import {
-  CategoryChip,
-  RestaurantDetailText,
-  RestaurantInfo,
-  RestaurantInfoWrapper,
-  RestaurantListItemWrapper,
-  RestaurantName,
-} from './style';
+import { CategoryChip } from './style';
+import styled from 'styled-components';
 import Check from '../Checkbox';
 
 interface RestaurantListItemProps {
@@ -69,3 +63,53 @@ export default function RestaurantListItem({
     </RestaurantListItemWrapper>
   );
 }
+
+const RestaurantListItemWrapper = styled.div<{ $checked?: boolean }>`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 15px;
+  border: 1px solid ${({ $checked }) => ($checked ? '#ff5900' : '#f0f0f0')};
+  border-radius: 10px;
+  margin-bottom: 16px;
+  width: 90%;
+  background-color: #ffffff;
+`;
+
+const RestaurantImage = styled.img`
+  width: 87px;
+  height: 87px;
+  object-fit: cover;
+  border-radius: 8px;
+`;
+
+const RestaurantInfoWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-left: 13px;
+  gap: 5px;
+`;
+
+const RestaurantName = styled.h2<{ $checked?: boolean }>`
+  font-size: 16px;
+  font-weight: 700;
+  color: ${({ $checked }) => ($checked ? '#FF5900' : '#3d3d3d')};
+`;
+
+const RestaurantInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+`;
+
+const RestaurantDetailText = styled.p<{ $checked?: boolean }>`
+  font-size: 10px;
+  font-weight: 500;
+  color: ${({ $checked }) => ($checked ? '#FFBAA5' : '#d6d6d6')};
+
+  span {
+    color: ${({ $checked }) => ($checked ? '#ff5900' : '#8a8a8a')};
+    margin-left: 6px;
+  }
+`;

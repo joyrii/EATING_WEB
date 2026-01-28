@@ -1,15 +1,5 @@
-import {
-  Section,
-  SectionTitle,
-  MatchingList,
-  Button,
-  ModalMainText,
-  ModalSubText,
-  ModalButtonContainer,
-  ParticipantsInfoText,
-  ParticipantsInfoContainer,
-  TagsContainer,
-} from './style';
+import { Section, SectionTitle, MatchingList, Button } from './style';
+import styled from 'styled-components';
 import MatchingListItem from './MatchingListItem';
 import { BaseModal } from '../BaseModal';
 import { useState } from 'react';
@@ -79,3 +69,47 @@ export default function MatchingListSection() {
     </>
   );
 }
+
+// 상세 보기 모달
+const ModalMainText = styled.h2`
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+  color: #000000;
+`;
+
+const ModalSubText = styled.p`
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 145%;
+  letter-spacing: -0.01em;
+  color: #232323;
+`;
+
+const TagsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 2px;
+  margin-top: 30px;
+`;
+
+const ParticipantsInfoContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  margin-top: 5px;
+`;
+
+const ParticipantsInfoText = styled.span`
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a8a8a;
+`;
+
+const ModalButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+`;

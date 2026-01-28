@@ -1,17 +1,13 @@
 'use client';
 
+import styled from 'styled-components';
 import Image from 'next/image';
 import {
-  ButtonWrapper,
-  ImageWrapper,
-  SkipButton,
-  SkipButtonWrapper,
-  SkipButtonText,
   StepText,
   SubText,
   TextWrapper,
   TitleText,
-  TestButton,
+  ButtonWrapper,
 } from '../style';
 import { IoChevronForward } from 'react-icons/io5';
 import Button from '@/components/BaseButton';
@@ -55,3 +51,52 @@ export default function OnboardingTest() {
     </div>
   );
 }
+
+const SkipButtonWrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+`;
+
+const SkipButton = styled.button`
+  margin-top: 15px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+`;
+
+const SkipButtonText = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: #a3a3a3;
+`;
+
+const ImageWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const TestButton = styled.a`
+  display: flex;
+  width: 100%;
+  height: 55px;
+  background-color: #ff5900;
+  border: none;
+  border-radius: 10px;
+  padding-block: 18px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+
+  &:visited {
+    color: #ffffff;
+  }
+`;
