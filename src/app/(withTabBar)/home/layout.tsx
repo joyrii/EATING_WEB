@@ -218,19 +218,3 @@ const MatchingButton = styled.button<{ $currentStatus?: string }>`
   line-height: 145%;
   border: none;
 `;
-
-// 가이드 섹션
-const GuideSection = styled.div`
-  margin-top: 44px;
-  gap: 16px;
-`;
-
-const GuideScroll = styled.div`
-  margin-top: 16px;
-  display: flex;
-  flex-direction: row;
-  gap: 16px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-`;
