@@ -110,6 +110,11 @@ const OptionLabel = styled.label<{ $selected: boolean }>`
   border: 1px solid ${({ $selected }) => ($selected ? '#FF7A33' : '#D6D6D6')};
   background-color: ${({ $selected }) =>
     $selected ? '#FFDECC' : 'transparent'};
+
+  ${HiddenRadio}:focus-visible + & {
+    outline: 1px solid #ff5900;
+    outline-offset: 2px;
+  }
 `;
 
 const OptionSubLabel = styled.span`
