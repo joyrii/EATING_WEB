@@ -3,7 +3,7 @@
 import styled from 'styled-components';
 import Button from '@/components/BaseButton';
 import { Container, TextWrapper } from '../style';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 
@@ -45,7 +45,7 @@ function useKeyboardOpen() {
   return open;
 }
 
-export default function StudentVerificationConfirm() {
+function ConfirmInner() {
   const router = useRouter();
   const isKeyboardOpen = useKeyboardOpen();
 
@@ -60,13 +60,14 @@ export default function StudentVerificationConfirm() {
   const [department, setDepartment] = useState<string>('');
 
   useEffect(() => {
-    {
-      from === 'enrolled'
-        ? setStudentNo(sessionStorage.getItem('studentNo'))
-        : setStudentNo('26');
+    if (from === 'enrolled') {
+      setStudentNo(sessionStorage.getItem('studentNo') ?? '');
+      setDepartment(sessionStorage.getItem('department') ?? '');
+    } else {
+      setStudentNo('26');
+      setDepartment(sessionStorage.getItem('department') ?? '');
     }
-    setDepartment(sessionStorage.getItem('department') || '');
-  }, []);
+  }, [from]);
 
   return (
     <Container>
@@ -109,6 +110,14 @@ export default function StudentVerificationConfirm() {
         />
       </ButtonWrapper>
     </Container>
+  );
+}
+
+export default function StudentVerificationConfirm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ConfirmInner />
+    </Suspense>
   );
 }
 
