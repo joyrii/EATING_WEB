@@ -1,53 +1,125 @@
 'use client';
 
-import styled from 'styled-components';
-import Image from 'next/image';
-import Button from '@/components/BaseButton';
-import { useRouter } from 'next/navigation';
 import { Container, TextWrapper } from './style';
+import { useId, useState } from 'react';
+import styled from 'styled-components';
+import { useRouter } from 'next/navigation';
+import Button from '@/components/BaseButton';
+
+type Option = 'FRESHMAN' | 'ENROLLED';
+
+function VerificationOption() {
+  const option = useId();
+  const [value, setValue] = useState<Option>();
+  const router = useRouter();
+
+  return (
+    <>
+      <Group role="radiogroup" aria-label="학생 구분">
+        <HiddenRadio
+          type="radio"
+          id={`${option}-enrolled`}
+          name="student-option"
+          value="ENROLLED"
+          checked={value === 'ENROLLED'}
+          onChange={() => setValue('ENROLLED')}
+        />
+        <OptionLabel
+          htmlFor={`${option}-enrolled`}
+          $selected={value === 'ENROLLED'}
+        >
+          재학생
+          <OptionSubLabel>모바일 학생증 캡쳐본</OptionSubLabel>
+        </OptionLabel>
+        <HiddenRadio
+          type="radio"
+          id={`${option}-freshman`}
+          name="student-option"
+          value="FRESHMAN"
+          checked={value === 'FRESHMAN'}
+          onChange={() => setValue('FRESHMAN')}
+        />
+        <OptionLabel
+          htmlFor={`${option}-freshman`}
+          $selected={value === 'FRESHMAN'}
+        >
+          신입생
+          <OptionSubLabel>합격 증명서 캡쳐본</OptionSubLabel>
+        </OptionLabel>
+      </Group>
+      <div style={{ position: 'fixed', bottom: 45, left: 23, right: 23 }}>
+        <Button
+          disabled={!value}
+          label="동의하기"
+          onClick={() => {
+            if (value === 'FRESHMAN') {
+              router.push('/student-verification/freshman');
+            } else if (value === 'ENROLLED') {
+              router.push('/student-verification/enrolled');
+            }
+          }}
+        />
+      </div>
+    </>
+  );
+}
 
 export default function StudentVerification() {
-  const router = useRouter();
   return (
     <Container>
       <TextWrapper>
-        <h1>
-          모바일 학생증을
-          <br />
-          캡쳐해주세요!
-        </h1>
-        <p>헤이영 캠퍼스 홈화면을 캡쳐해주세요</p>
+        <div
+          style={{ height: 36, display: 'flex', justifyContent: 'center' }}
+        />
+        <h1>이대생 신원 인증을 시작합니다!</h1>
+        <p>인증할 수 있는 수단을 선택해주세요.</p>
       </TextWrapper>
-      <ImageWrapper>
-        <Image
-          src="/svgs/student-verification/student-id.svg"
-          alt="student-id"
-          width={150}
-          height={206}
-        />
-        <Image
-          src="/svgs/student-verification/camera.svg"
-          alt="camera"
-          width={84}
-          height={60}
-        />
-      </ImageWrapper>
-      <div style={{ position: 'absolute', bottom: 45, left: 23, right: 23 }}>
-        <Button
-          disabled={false}
-          label="사진 등록하기"
-          onClick={() => router.push('/student-verification/confirm')}
-        />
-      </div>
+      <OptionContainer>
+        <VerificationOption />
+      </OptionContainer>
     </Container>
   );
 }
 
-const ImageWrapper = styled.div`
+const Group = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+`;
+
+const HiddenRadio = styled.input`
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+`;
+
+const OptionContainer = styled.div`
   display: flex;
-  flex-direction: row;
-  margin-top: 107px;
-  justify-content: center;
   align-items: center;
-  gap: 33px;
+  justify-content: center;
+  margin-top: 130px;
+`;
+
+const OptionLabel = styled.label<{ $selected: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 55px 20px;
+  cursor: pointer;
+  border-radius: 10px;
+  font-size: 18px;
+
+  border: 1px solid ${({ $selected }) => ($selected ? '#FF7A33' : '#D6D6D6')};
+  background-color: ${({ $selected }) =>
+    $selected ? '#FFDECC' : 'transparent'};
+
+  ${HiddenRadio}:focus-visible + & {
+    outline: 1px solid #ff5900;
+    outline-offset: 2px;
+  }
+`;
+
+const OptionSubLabel = styled.span`
+  font-size: 12px;
+  color: #3d3d3d;
 `;
