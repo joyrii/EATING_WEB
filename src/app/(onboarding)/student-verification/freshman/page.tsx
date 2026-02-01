@@ -6,7 +6,7 @@ import Button from '@/components/BaseButton';
 import { useRouter } from 'next/navigation';
 import { Container, TextWrapper } from '../style';
 
-export default function StudentVerification() {
+export default function FreshStudentVerification() {
   const router = useRouter();
   return (
     <Container>
