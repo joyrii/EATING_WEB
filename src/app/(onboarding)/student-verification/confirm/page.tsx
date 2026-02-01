@@ -1,18 +1,51 @@
+'use client';
+
 import styled from 'styled-components';
 import Button from '@/components/BaseButton';
 import { Container, TextWrapper } from '../style';
+import { useState, useEffect, useRef } from 'react';
 
-function isTextInput(el: Element | null) {
-  if (!el) return false;
-  const tag = el.tagName;
-  return (
-    tag === 'INPUT' ||
-    tag === 'TEXTAREA' ||
-    (el as HTMLElement).isContentEditable
-  );
+// 키보드 올라왔을 때 버튼 숨김
+function useKeyboardOpen() {
+  const [open, setOpen] = useState(false);
+  const maxVhRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+
+    const update = () => {
+      if (vv) {
+        maxVhRef.current = Math.max(maxVhRef.current ?? 0, vv.height);
+
+        const ratio = vv.height / (maxVhRef.current || vv.height);
+        setOpen(ratio < 0.85);
+      } else {
+        setOpen(window.innerHeight < window.screen.height * 0.75);
+      }
+    };
+
+    if (vv) {
+      vv.addEventListener('resize', update);
+      vv.addEventListener('scroll', update);
+    }
+    window.addEventListener('resize', update);
+
+    update();
+    return () => {
+      if (vv) {
+        vv.removeEventListener('resize', update);
+        vv.removeEventListener('scroll', update);
+      }
+      window.removeEventListener('resize', update);
+    };
+  }, []);
+
+  return open;
 }
 
 export default function StudentVerificationConfirm() {
+  const isKeyboardOpen = useKeyboardOpen();
+
   return (
     <Container>
       <Content>
@@ -35,7 +68,7 @@ export default function StudentVerificationConfirm() {
           </InputWrapper>
         </FormWrapper>
       </Content>
-      <ButtonWrapper>
+      <ButtonWrapper $hidden={isKeyboardOpen}>
         <Button disabled={false} label="확인" />
       </ButtonWrapper>
     </Container>
@@ -50,9 +83,12 @@ const Content = styled.div`
   padding-bottom: 15px;
 `;
 
-const ButtonWrapper = styled.div`
-  padding: 16px 0 45px;
-  background: #fafafa;
+const ButtonWrapper = styled.div<{ $hidden: boolean }>`
+  position: absolute;
+  bottom: 45px;
+  left: 23px;
+  right: 23px;
+  display: ${({ $hidden }) => ($hidden ? 'none' : 'block')};
 `;
 
 const FormWrapper = styled.div`

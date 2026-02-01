@@ -4,26 +4,22 @@ import styled from 'styled-components';
 import Image from 'next/image';
 import Button from '@/components/BaseButton';
 import { useRouter } from 'next/navigation';
-import { Container, TextWrapper } from './style';
+import { Container, TextWrapper } from '../style';
 
 export default function StudentVerification() {
   const router = useRouter();
   return (
     <Container>
       <TextWrapper>
-        <h1>
-          모바일 학생증을
-          <br />
-          캡쳐해주세요!
-        </h1>
-        <p>헤이영 캠퍼스 홈화면을 캡쳐해주세요</p>
+        <h1>합격증명서를 캡쳐해주세요!</h1>
+        <p>이름, 생년월일, 모집단위가 포함되어 있어야 해요</p>
       </TextWrapper>
       <ImageWrapper>
         <Image
-          src="/svgs/student-verification/student-id.svg"
-          alt="student-id"
-          width={150}
-          height={206}
+          src="/svgs/student-verification/admission-certificate.svg"
+          alt="admission-certificate"
+          width={162}
+          height={251}
         />
         <Image
           src="/svgs/student-verification/camera.svg"

@@ -1,11 +1,10 @@
 import styled from 'styled-components';
 
 export const Container = styled.div`
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-top: 70px;
-  padding-inline: 23px;
+  margin-top: 120px;
+  padding-inline: 24px;
 `;
 
 export const TextWrapper = styled.div`
