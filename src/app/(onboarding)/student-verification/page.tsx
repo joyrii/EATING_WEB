@@ -47,7 +47,7 @@ function VerificationOption() {
       </OptionLabel>
       <div style={{ position: 'fixed', bottom: 45, left: 23, right: 23 }}>
         <Button
-          disabled={false}
+          disabled={!value}
           label="동의하기"
           onClick={() => {
             if (value === 'FRESHMAN') {
