@@ -105,6 +105,8 @@ function ConfirmInner() {
         <Button
           label="확인"
           onClick={() => {
+            sessionStorage.setItem('studentNo', studentNo);
+            sessionStorage.setItem('department', department);
             router.push('/onboarding/mbti');
           }}
         />
@@ -130,7 +132,7 @@ const Content = styled.div`
 `;
 
 const ButtonWrapper = styled.div<{ $hidden: boolean }>`
-  position: absolute;
+  position: fixed;
   bottom: 45px;
   left: 23px;
   right: 23px;

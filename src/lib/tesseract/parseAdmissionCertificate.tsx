@@ -27,7 +27,12 @@ export default function parseAdmissionCertificateText(
   if (!line) return undefined;
 
   const after = line.includes(':')
-    ? line.split(':').slice(1).join(':').trim()
+    ? line
+        .split(':')
+        .slice(1)
+        .join(':')
+        .replace(/모\s*집\s*단\s*위\s*/g, '')
+        .trim()
     : line.replace(/모\s*집\s*단\s*위\s*/g, '').trim();
 
   if (!after) return undefined;

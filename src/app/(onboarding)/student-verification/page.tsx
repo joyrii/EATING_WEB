@@ -14,7 +14,7 @@ function VerificationOption() {
   const router = useRouter();
 
   return (
-    <Group role="radiogroup" aria-labelledby="학생 구분">
+    <Group role="radiogroup" aria-label="학생 구분">
       <HiddenRadio
         type="radio"
         id={`${option}-freshman`}
