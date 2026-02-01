@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import Button from '@/components/BaseButton';
 import { Container, TextWrapper } from '../style';
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 // 키보드 올라왔을 때 버튼 숨김
 function useKeyboardOpen() {
@@ -46,6 +47,25 @@ function useKeyboardOpen() {
 export default function StudentVerificationConfirm() {
   const isKeyboardOpen = useKeyboardOpen();
 
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
+  const desc =
+    from === 'enrolled'
+      ? '모바일 학생증과 정보가 동일해야해요'
+      : '합격증명서와 정보가 동일해야해요';
+
+  const [studentNo, setStudentNo] = useState<string>('');
+  const [department, setDepartment] = useState<string>('');
+
+  useEffect(() => {
+    {
+      from === 'enrolled'
+        ? setStudentNo(sessionStorage.getItem('studentNo'))
+        : setStudentNo('26');
+    }
+    setDepartment(sessionStorage.getItem('department') || '');
+  }, []);
+
   return (
     <Container>
       <Content>
@@ -55,16 +75,26 @@ export default function StudentVerificationConfirm() {
             <br />
             정보가 맞는지 확인해주세요!
           </h1>
-          <p>모바일 학생증과 정보가 동일해야해요</p>
+          <p>{desc}</p>
         </TextWrapper>
         <FormWrapper>
           <InputWrapper>
             <label htmlFor="studentId">학번</label>
-            <input id="studentId" name="studentId" />
+            <input
+              id="studentId"
+              name="studentId"
+              value={studentNo}
+              onChange={(e) => setStudentNo(e.target.value)}
+            />
           </InputWrapper>
           <InputWrapper>
             <label htmlFor="department">학과</label>
-            <input id="department" name="department" />
+            <input
+              id="department"
+              name="department"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+            />
           </InputWrapper>
         </FormWrapper>
       </Content>

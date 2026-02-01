@@ -66,6 +66,9 @@ export default function StudentVerification() {
   return (
     <Container>
       <TextWrapper>
+        <div
+          style={{ height: 36, display: 'flex', justifyContent: 'center' }}
+        />
         <h1>이대생 신원 인증을 시작합니다!</h1>
         <p>인증할 수 있는 수단을 선택해주세요.</p>
       </TextWrapper>

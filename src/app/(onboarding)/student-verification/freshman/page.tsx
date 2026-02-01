@@ -5,14 +5,88 @@ import Image from 'next/image';
 import Button from '@/components/BaseButton';
 import { useRouter } from 'next/navigation';
 import { Container, TextWrapper } from '../style';
+import { useRef, useState } from 'react';
+import { tesseractModule } from '@/lib/tesseract/tesseractModule';
+import parseAdmissionCertificate from '@/lib/tesseract/parseAdmissionCertificate';
 
 export default function FreshStudentVerification() {
   const router = useRouter();
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [imgSrc, setImgSrc] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string>('');
+
+  const handlePickImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드할 수 있어요!');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = async (e) => {
+      const result = reader.result;
+      if (typeof result !== 'string') return;
+
+      setImgSrc(result);
+
+      setLoading(true);
+      setProgress(0);
+      setErrorMsg('');
+
+      try {
+        const text = await tesseractModule(result, setProgress);
+        const parsed = parseAdmissionCertificate(text);
+
+        const department = parsed.department ?? '';
+
+        if (!department) {
+          setErrorMsg('인증에 실패하였습니다!');
+          setLoading(false);
+          return;
+        }
+
+        sessionStorage.setItem('studentIdImg', result);
+        sessionStorage.setItem('studentIdText', text);
+        sessionStorage.setItem('department', department);
+
+        router.push('/student-verification/confirm?from=freshman');
+      } catch (error) {
+        setErrorMsg('인증에 실패하였습니다!');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    e.target.value = '';
+  };
+
   return (
     <Container>
       <TextWrapper>
-        <h1>합격증명서를 캡쳐해주세요!</h1>
-        <p>이름, 생년월일, 모집단위가 포함되어 있어야 해요</p>
+        <div style={{ height: 36, display: 'flex', justifyContent: 'center' }}>
+          {errorMsg && (
+            <Image
+              src="/svgs/caution.svg"
+              alt="caution"
+              width={36}
+              height={36}
+            />
+          )}
+        </div>
+        <h1 style={errorMsg ? { color: '#FF5900' } : undefined}>
+          {errorMsg ? errorMsg : '합격 증명서를 캡쳐해주세요!'}
+        </h1>
+        <p>이름, 생년월일, 모집단위가 포함되어있어야해요.</p>
       </TextWrapper>
       <ImageWrapper>
         <Image
@@ -28,11 +102,23 @@ export default function FreshStudentVerification() {
           height={60}
         />
       </ImageWrapper>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {loading && <Status>이미지 인식 중... {progress}%</Status>}
+      </div>
+
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleImageChange}
+      />
+
       <div style={{ position: 'absolute', bottom: 45, left: 23, right: 23 }}>
         <Button
           disabled={false}
           label="사진 등록하기"
-          onClick={() => router.push('/student-verification/confirm')}
+          onClick={handlePickImage}
         />
       </div>
     </Container>
@@ -46,4 +132,11 @@ const ImageWrapper = styled.div`
   justify-content: center;
   align-items: center;
   gap: 33px;
+`;
+
+const Status = styled.p`
+  margin-top: 12px;
+  padding: 0 23px;
+  font-size: 14px;
+  color: #555555;
 `;
