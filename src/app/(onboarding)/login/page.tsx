@@ -28,7 +28,7 @@ const MainContainer = styled.div`
   flex-direction: column;
   padding-inline: 51px;
   align-items: center;
-  padding-top: 287px;
+  justify-content: center;
 `;
 
 const LogoFont = localFont({
@@ -87,6 +87,7 @@ const KakaoLoginButton = styled.button`
   align-items: center;
   justify-content: space-between;
   padding: 11px 14px;
+  margin-bottom: 50px;
 `;
 
 const KaKaoLoginButtonText = styled.span`
