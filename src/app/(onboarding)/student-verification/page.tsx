@@ -14,37 +14,39 @@ function VerificationOption() {
   const router = useRouter();
 
   return (
-    <Group role="radiogroup" aria-label="학생 구분">
-      <HiddenRadio
-        type="radio"
-        id={`${option}-enrolled`}
-        name="student-option"
-        value="ENROLLED"
-        checked={value === 'ENROLLED'}
-        onChange={() => setValue('ENROLLED')}
-      />
-      <OptionLabel
-        htmlFor={`${option}-enrolled`}
-        $selected={value === 'ENROLLED'}
-      >
-        재학생
-        <OptionSubLabel>모바일 학생증 캡쳐본</OptionSubLabel>
-      </OptionLabel>
-      <HiddenRadio
-        type="radio"
-        id={`${option}-freshman`}
-        name="student-option"
-        value="FRESHMAN"
-        checked={value === 'FRESHMAN'}
-        onChange={() => setValue('FRESHMAN')}
-      />
-      <OptionLabel
-        htmlFor={`${option}-freshman`}
-        $selected={value === 'FRESHMAN'}
-      >
-        신입생
-        <OptionSubLabel>합격 증명서 캡쳐본</OptionSubLabel>
-      </OptionLabel>
+    <>
+      <Group role="radiogroup" aria-label="학생 구분">
+        <HiddenRadio
+          type="radio"
+          id={`${option}-enrolled`}
+          name="student-option"
+          value="ENROLLED"
+          checked={value === 'ENROLLED'}
+          onChange={() => setValue('ENROLLED')}
+        />
+        <OptionLabel
+          htmlFor={`${option}-enrolled`}
+          $selected={value === 'ENROLLED'}
+        >
+          재학생
+          <OptionSubLabel>모바일 학생증 캡쳐본</OptionSubLabel>
+        </OptionLabel>
+        <HiddenRadio
+          type="radio"
+          id={`${option}-freshman`}
+          name="student-option"
+          value="FRESHMAN"
+          checked={value === 'FRESHMAN'}
+          onChange={() => setValue('FRESHMAN')}
+        />
+        <OptionLabel
+          htmlFor={`${option}-freshman`}
+          $selected={value === 'FRESHMAN'}
+        >
+          신입생
+          <OptionSubLabel>합격 증명서 캡쳐본</OptionSubLabel>
+        </OptionLabel>
+      </Group>
       <div style={{ position: 'fixed', bottom: 45, left: 23, right: 23 }}>
         <Button
           disabled={!value}
@@ -58,7 +60,7 @@ function VerificationOption() {
           }}
         />
       </div>
-    </Group>
+    </>
   );
 }
 
