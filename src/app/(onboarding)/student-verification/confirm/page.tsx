@@ -5,6 +5,7 @@ import Button from '@/components/BaseButton';
 import { Container, TextWrapper } from '../style';
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 // 키보드 올라왔을 때 버튼 숨김
 function useKeyboardOpen() {
@@ -45,6 +46,7 @@ function useKeyboardOpen() {
 }
 
 export default function StudentVerificationConfirm() {
+  const router = useRouter();
   const isKeyboardOpen = useKeyboardOpen();
 
   const searchParams = useSearchParams();
@@ -99,7 +101,12 @@ export default function StudentVerificationConfirm() {
         </FormWrapper>
       </Content>
       <ButtonWrapper $hidden={isKeyboardOpen}>
-        <Button disabled={false} label="확인" />
+        <Button
+          label="확인"
+          onClick={() => {
+            router.push('/onboarding/mbti');
+          }}
+        />
       </ButtonWrapper>
     </Container>
   );
