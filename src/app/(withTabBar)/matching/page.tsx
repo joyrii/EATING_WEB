@@ -15,22 +15,16 @@ interface RoomData {
 }
 
 const Matching = () => {
-  const [rooms, setRooms] = useState<RoomData[]>([]);
-
-  useEffect(() => {
-    // 더미데이터
-    if (!CHATTINGLIST) return;
-    setRooms(CHATTINGLIST);
-  }, []);
+  const [rooms, setRooms] = useState<RoomData[]>(CHATTINGLIST);
 
   const hasRooms = rooms.length > 0;
 
   // 더미 프로필 이미지 URL
   const imageUrls = [
-    'http://localhost:3000/images/chat/profile-image-1.jpeg',
-    'http://localhost:3000/images/chat/profile-image-2.jpeg',
-    'http://localhost:3000/images/chat/profile-image-3.jpeg',
-    'http://localhost:3000/images/chat/profile-image-4.jpeg',
+    '/images/chat/profile-image-1.jpeg',
+    '/images/chat/profile-image-2.jpeg',
+    '/images/chat/profile-image-3.jpeg',
+    '/images/chat/profile-image-4.jpeg',
   ];
 
   return (
@@ -72,7 +66,7 @@ function EmptyState() {
     <EmptyStateContainer>
       <EmptyStateText>아직 매칭된 방이 없어요!</EmptyStateText>
       <img
-        src="svgs/home/eating-logo-character-empty.svg"
+        src="/svgs/home/eating-logo-character-empty.svg"
         alt="empty-state"
         width={175}
         height={175}
