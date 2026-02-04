@@ -1,35 +1,55 @@
 import styled from 'styled-components';
 
-type SenderType = 'user' | 'other' | 'system';
+export type SenderType = 'user' | 'other' | 'system';
 
-type ChatMessageProps = {
-  roomId: number;
+export type ChatMessageData = {
   senderType: SenderType;
-  senderId?: number; // 'user' 또는 'other'인 경우에만 필요
-  senderName?: string; // 'other'인 경우에만 필요
-  profileImageUrl?: string; // 'other'인 경우에만 필요
+  senderId?: number; // user/other일 때만
+  senderName?: string; // other일 때만
+  profileImageUrl?: string; // other일 때만
   content: string;
-  createdAt: string;
+  createdAt: string; // ISO 원본
+};
+
+export type ChatMessageProps = ChatMessageData & {
+  roomId: number; // 페이지에서 주입
+  createdAtText: string; // "12:00 PM" 표시용
+  showCreatedAt: boolean; // 마지막만 true
+  showSenderName?: boolean; // other/system일 때만
+  showProfileImage?: boolean; // other/system일 때만
 };
 
 const ChatMessage = (props: ChatMessageProps) => {
   switch (props.senderType) {
     case 'user':
       return (
-        <UserMessage content={props.content} createdAt={props.createdAt} />
+        <UserMessage
+          content={props.content}
+          createdAt={props.createdAtText}
+          showCreatedAt={props.showCreatedAt}
+        />
       );
     case 'other':
       return (
         <OtherMessage
           content={props.content}
-          createdAt={props.createdAt}
+          createdAt={props.createdAtText}
           senderName={props.senderName!}
+          showSenderName={props.showSenderName}
           profileImageUrl={props.profileImageUrl}
+          showProfileImage={props.showProfileImage}
+          showCreatedAt={props.showCreatedAt}
         />
       );
     case 'system':
       return (
-        <SystemMessage content={props.content} createdAt={props.createdAt} />
+        <SystemMessage
+          content={props.content}
+          createdAt={props.createdAtText}
+          showSenderName={props.showSenderName}
+          showProfileImage={props.showProfileImage}
+          showCreatedAt={props.showCreatedAt}
+        />
       );
     default:
       return null;
@@ -41,13 +61,15 @@ export default ChatMessage;
 function UserMessage({
   content,
   createdAt,
+  showCreatedAt,
 }: {
   content: string;
   createdAt: string;
+  showCreatedAt?: boolean;
 }) {
   return (
     <MessageContainer style={{ justifyContent: 'flex-end' }}>
-      <CreatedAtText>{createdAt}</CreatedAtText>
+      {showCreatedAt && <CreatedAtText>{createdAt}</CreatedAtText>}
       <MessageText $senderType="user">{content}</MessageText>
     </MessageContainer>
   );
@@ -58,20 +80,30 @@ function OtherMessage({
   createdAt,
   senderName,
   profileImageUrl,
+  showCreatedAt,
+  showSenderName,
+  showProfileImage,
 }: {
   content: string;
   createdAt: string;
   senderName: string;
   profileImageUrl?: string;
+  showSenderName?: boolean;
+  showCreatedAt?: boolean;
+  showProfileImage?: boolean;
 }) {
   return (
     <MessageContainer>
-      <ProfileImage src={profileImageUrl} alt="profile" />
+      {showProfileImage ? (
+        <ProfileImage src={profileImageUrl} alt="profile" />
+      ) : (
+        <ProfileImagePlaceholder />
+      )}
       <MessageBubble>
-        <MessageSenderName>{senderName}</MessageSenderName>
+        {showSenderName && <MessageSenderName>{senderName}</MessageSenderName>}
         <MessageText $senderType="other">{content}</MessageText>
       </MessageBubble>
-      <CreatedAtText>{createdAt}</CreatedAtText>
+      {showCreatedAt && <CreatedAtText>{createdAt}</CreatedAtText>}
     </MessageContainer>
   );
 }
@@ -79,19 +111,31 @@ function OtherMessage({
 function SystemMessage({
   content,
   createdAt,
+  showCreatedAt,
+  showSenderName,
+  showProfileImage,
 }: {
   content: string;
   createdAt: string;
+  showCreatedAt?: boolean;
+  showSenderName?: boolean;
+  showProfileImage?: boolean;
 }) {
+  const name = '잇팅';
+
   return (
     <MessageContainer>
-      <ProfileImage src="/images/chat/profile-image-1.jpeg" alt="profile" />
+      {showProfileImage ? (
+        <ProfileImage src="/images/chat/profile-image-1.jpeg" alt="profile" />
+      ) : (
+        <ProfileImagePlaceholder />
+      )}
       <MessageBubbleContainer>
         <MessageBubble>
-          <MessageSenderName>잇팅</MessageSenderName>
+          {showSenderName && <MessageSenderName>{name}</MessageSenderName>}
           <MessageText $senderType="system">{content}</MessageText>
         </MessageBubble>
-        <CreatedAtText>{createdAt}</CreatedAtText>
+        {showCreatedAt && <CreatedAtText>{createdAt}</CreatedAtText>}
       </MessageBubbleContainer>
     </MessageContainer>
   );
@@ -110,6 +154,12 @@ const ProfileImage = styled.img`
   height: 41px;
   border-radius: 17px;
   object-fit: cover;
+`;
+
+const ProfileImagePlaceholder = styled.div`
+  width: 41px;
+  height: 41px;
+  background-color: transparent;
 `;
 
 const MessageBubbleContainer = styled.div`

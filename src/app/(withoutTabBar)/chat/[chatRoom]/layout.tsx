@@ -28,7 +28,7 @@ export default function ChatRoomLayout({
         </RoomName>
       </Header>
       {/* 채팅 내용 */}
-      <Content>{children}</Content>
+      <Content style={{ marginBottom: '15px' }}>{children}</Content>
       {/* 채팅 입력창 */}
       <ChatInputContainer>
         <ChatInput
