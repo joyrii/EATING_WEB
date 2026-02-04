@@ -4,7 +4,7 @@ import localFont from 'next/font/local';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import CHATTINGLIST from '@/constants/CHATTING_LIST';
-import ChatRoomItem from '@/components/chatting/ChatRoomItem';
+import ChatRoomItem from '@/components/chat/ChatRoomItem';
 
 interface RoomData {
   id: number;
