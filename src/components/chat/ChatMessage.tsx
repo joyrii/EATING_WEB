@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import BaseChip from '../BaseChip';
 import SYSTEM_CARD from '@/constants/SYSTEM_CARD';
+import RestaurantCard from './RestaurantCard';
 
 export type SenderType = 'user' | 'other' | 'system';
 
@@ -215,31 +216,10 @@ function renderSystemBlock(props: ChatMessageProps) {
     case 'restaurant': {
       const payload = props.payload as RestaurantPayload;
       return (
-        <RestaurantCardButton
-          onClick={() => {
-            props.onAction?.({ type: 'OPEN_RESTAURANT', payload });
-          }}
-        >
-          <ThumbnailImage
-            src="/images/chat/placeholder.png"
-            alt={payload.name}
-          />
-          <CardContent>
-            <CategoryChip>{payload.category}</CategoryChip>
-            <CardTitle>{payload.name}</CardTitle>
-            <CardSub>
-              <span>혜택</span>
-              {payload.benefit}
-            </CardSub>
-            <CardSub>
-              <span>메뉴</span>
-              {payload.menu}
-            </CardSub>
-          </CardContent>
-          <Arrow>
-            <img src="/svgs/chat/chevron-right.svg" alt="arrow" />
-          </Arrow>
-        </RestaurantCardButton>
+        <RestaurantCard
+          payload={payload}
+          onClick={() => props.onAction?.({ type: 'OPEN_RESTAURANT', payload })}
+        />
       );
     }
 
@@ -381,74 +361,6 @@ const CreatedAtText = styled.p`
   font-weight: 400;
   color: #8a8a8a;
   align-self: flex-end;
-`;
-
-const RestaurantCardButton = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 12px 15px;
-  background-color: #ffffff;
-  border: none;
-  border-radius: 10px;
-`;
-
-const ThumbnailImage = styled.img`
-  width: 87px;
-  height: 87px;
-  border-radius: 8px;
-  object-fit: cover;
-  flex-shrink: 0;
-`;
-
-const CardContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: 13px;
-  flex-grow: 1;
-`;
-
-const CategoryChip = styled.div`
-  width: fit-content;
-  padding: 4px 8px;
-  background-color: #f0f0f0;
-  border-radius: 30px;
-  font-size: 8px;
-  font-weight: 500;
-  color: #b0afb2;
-`;
-
-const CardTitle = styled.p`
-  font-size: 16px;
-  font-weight: 700;
-  color: #3d3d3d;
-  margin-top: 5px;
-  margin-bottom: 6px;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const CardSub = styled.p`
-  font-size: 10px;
-  font-weight: 500;
-  color: #8a8a8a;
-  text-align: left;
-
-  span {
-    color: #d6d6d6;
-    margin-right: 6px;
-  }
-`;
-
-const Arrow = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: transparent;
-  border: none;
-  width: 24px;
 `;
 
 const CouponRow = styled.div`

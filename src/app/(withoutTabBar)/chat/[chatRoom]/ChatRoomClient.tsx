@@ -9,6 +9,7 @@ import RestaurantModal from '@/components/chat/RestaurantModal';
 import CHAT_DATA from '@/constants/CHAT';
 import { useState } from 'react';
 import styled from 'styled-components';
+import { useRouter } from 'next/navigation';
 
 export default function ChatRoomClient({ roomId }: { roomId: number }) {
   const [restaurantModalOpen, setRestaurantModalOpen] = useState(false);
@@ -22,6 +23,8 @@ export default function ChatRoomClient({ roomId }: { roomId: number }) {
     imageUrl: string;
   }>(null);
 
+  const router = useRouter();
+
   const handleAction = (action: ChatAction) => {
     console.log(action);
     switch (action.type) {
@@ -30,7 +33,7 @@ export default function ChatRoomClient({ roomId }: { roomId: number }) {
         setRestaurantModalOpen(true);
         break;
       case 'OPEN_CAFE_LIST':
-        // 카페 리스트 페이지 이동
+        router.push(`/chat/${roomId}/cafe`);
         break;
       case 'OPEN_NO_SHOW':
       // 노쇼 신고 페이지 이동
@@ -42,7 +45,7 @@ export default function ChatRoomClient({ roomId }: { roomId: number }) {
   };
 
   return (
-    <div>
+    <div style={{ paddingBottom: '60px' }}>
       {CHAT_DATA.map((message, index) => {
         const currentDateKey = getDateKey(message.createdAt);
         const prevDateKey =

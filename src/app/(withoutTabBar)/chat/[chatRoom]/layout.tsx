@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import styled from 'styled-components';
 
@@ -8,6 +9,7 @@ export default function ChatRoomLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const [message, setMessage] = useState('');
 
   const sendMessage = () => {
@@ -16,43 +18,52 @@ export default function ChatRoomLayout({
     setMessage('');
   };
 
+  const hideChatBar = pathname.endsWith('/cafe');
+
   return (
     <>
       {/* 헤더 */}
       <Header>
-        <BackButton>
+        <BackButton onClick={() => window.history.back()}>
           <img src="/svgs/chat/chevron-back.svg" alt="back" />
         </BackButton>
         <RoomName>
           3/2 오후 4시 진미당 <Participant>(4)</Participant>
         </RoomName>
+        <RightSlot />
       </Header>
       {/* 채팅 내용 */}
       <Content style={{ marginBottom: '15px' }}>{children}</Content>
       {/* 채팅 입력창 */}
-      <ChatInputContainer>
-        <ChatInput
-          type="text"
-          placeholder="채팅을 보내세요"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              sendMessage();
-            }
-          }}
-        />
-        <SendButton onClick={sendMessage}>
-          <img src="/svgs/chat/send.svg" alt="send" />
-        </SendButton>
-      </ChatInputContainer>
+      {!hideChatBar && (
+        <ChatInputContainer>
+          <ChatInput
+            type="text"
+            placeholder="채팅을 보내세요"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                sendMessage();
+              }
+            }}
+          />
+          <SendButton onClick={sendMessage}>
+            <img src="/svgs/chat/send.svg" alt="send" />
+          </SendButton>
+        </ChatInputContainer>
+      )}
     </>
   );
 }
 
 const Header = styled.div`
-  display: flex;
-  flex-direction: row;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: auto 1fr 40px;
+  align-items: center;
   padding-left: 24px;
   padding-block: 15px;
   background-color: #fdfdfd;
@@ -68,7 +79,12 @@ const BackButton = styled.button`
 const RoomName = styled.p`
   font-size: 16px;
   font-weight: 500;
-  margin: auto;
+  justify-self: center;
+  text-align: center;
+`;
+
+const RightSlot = styled.div`
+  width: 40px;
 `;
 
 const Participant = styled.span`
