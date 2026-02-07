@@ -44,7 +44,12 @@ export default function RestaurantModal({
   ];
 
   return createPortal(
-    <Overlay onClick={onClose}>
+    <Overlay
+      onClick={() => {
+        onClose();
+        setIsOpenHoursDropdown(false);
+      }}
+    >
       <Modal onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
           <Bar />
@@ -164,7 +169,6 @@ const Modal = styled.div`
   z-index: 1001;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  padding: 16px 24px 50px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;

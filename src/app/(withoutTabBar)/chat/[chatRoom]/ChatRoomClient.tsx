@@ -4,6 +4,7 @@ import ChatMessage, {
   type ChatMessageData,
   ChatAction,
 } from '@/components/chat/ChatMessage';
+import IceBreakingModal from '@/components/chat/IceBreakingModal';
 import RestaurantModal from '@/components/chat/RestaurantModal';
 import CHAT_DATA from '@/constants/CHAT';
 import { useState } from 'react';
@@ -11,6 +12,7 @@ import styled from 'styled-components';
 
 export default function ChatRoomClient({ roomId }: { roomId: number }) {
   const [restaurantModalOpen, setRestaurantModalOpen] = useState(false);
+  const [iceBreakingModalOpen, setIceBreakingModalOpen] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState<null | {
     id: number;
     name: string;
@@ -78,7 +80,7 @@ export default function ChatRoomClient({ roomId }: { roomId: number }) {
           </div>
         );
       })}
-      <IceBreaking onClick={() => {}}>
+      <IceBreaking onClick={() => setIceBreakingModalOpen(true)}>
         <IceBreakingText>
           🧊 아이스브레이킹 주제 추천
           <img
@@ -92,6 +94,10 @@ export default function ChatRoomClient({ roomId }: { roomId: number }) {
         isOpen={restaurantModalOpen}
         onClose={() => setRestaurantModalOpen(false)}
         restaurant={selectedRestaurant}
+      />
+      <IceBreakingModal
+        isOpen={iceBreakingModalOpen}
+        onClose={() => setIceBreakingModalOpen(false)}
       />
     </div>
   );
