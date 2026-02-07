@@ -47,6 +47,16 @@ const CHAT_DATA: ChatMessageData[] = [
     messageType: 'feedback',
     createdAt: new Date().toISOString(),
   },
+  {
+    id: '7',
+    senderType: 'other',
+    senderId: 101,
+    senderName: '홍길동',
+    messageType: 'text',
+    content: '안녕하세요! 반가워요 😊',
+    createdAt: new Date().toISOString(),
+    profileImageUrl: '/images/chat/profile-image-1.jpeg',
+  },
 ];
 
 export default CHAT_DATA;

@@ -10,10 +10,12 @@ import CHAT_DATA from '@/constants/CHAT';
 import { useState } from 'react';
 import styled from 'styled-components';
 import { useRouter } from 'next/navigation';
+import ProfileModal from '@/components/chat/ProfileModal';
 
 export default function ChatRoomClient({ roomId }: { roomId: number }) {
   const [restaurantModalOpen, setRestaurantModalOpen] = useState(false);
   const [iceBreakingModalOpen, setIceBreakingModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState<null | {
     id: number;
     name: string;
@@ -39,6 +41,9 @@ export default function ChatRoomClient({ roomId }: { roomId: number }) {
       // 노쇼 신고 페이지 이동
       case 'OPEN_FEEDBACK':
       // 피드백 페이지 이동
+      case 'OPEN_PROFILE':
+        setProfileModalOpen(true);
+        break;
       default:
         break;
     }
@@ -101,6 +106,10 @@ export default function ChatRoomClient({ roomId }: { roomId: number }) {
       <IceBreakingModal
         isOpen={iceBreakingModalOpen}
         onClose={() => setIceBreakingModalOpen(false)}
+      />
+      <ProfileModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
       />
     </div>
   );

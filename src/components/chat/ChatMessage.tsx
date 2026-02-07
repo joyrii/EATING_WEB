@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import BaseChip from '../BaseChip';
 import SYSTEM_CARD from '@/constants/SYSTEM_CARD';
 import RestaurantCard from './RestaurantCard';
 
@@ -12,6 +11,12 @@ export type MessageType =
   | 'noShowReport'
   | 'cafeList'
   | 'feedback';
+
+export type ProfilePayload = {
+  senderId?: number;
+  senderName?: string;
+  profileImageUrl?: string;
+};
 
 export type RestaurantPayload = {
   id: number;
@@ -38,14 +43,15 @@ export type ChatMessageData = {
   content?: string;
   createdAt: string; // ISO 원본
 
-  payload?: RestaurantPayload | CouponCodePayload;
+  payload?: RestaurantPayload | CouponCodePayload | ProfilePayload;
 };
 
 export type ChatAction =
   | { type: 'OPEN_RESTAURANT'; payload: RestaurantPayload }
   | { type: 'OPEN_NO_SHOW' }
   | { type: 'OPEN_CAFE_LIST' }
-  | { type: 'OPEN_FEEDBACK' };
+  | { type: 'OPEN_FEEDBACK' }
+  | { type: 'OPEN_PROFILE'; payload: ProfilePayload };
 
 export type ChatMessageProps = ChatMessageData & {
   roomId: number; // 페이지에서 주입
@@ -77,11 +83,13 @@ const ChatMessage = (props: ChatMessageProps) => {
         <OtherMessage
           content={content}
           createdAt={props.createdAtText}
+          senderId={props.senderId}
           senderName={props.senderName!}
           showSenderName={props.showSenderName}
           profileImageUrl={props.profileImageUrl}
           showProfileImage={props.showProfileImage}
           showCreatedAt={props.showCreatedAt}
+          onAction={props.onAction}
         />
       );
     case 'system':
@@ -121,24 +129,37 @@ function UserMessage({
 function OtherMessage({
   content,
   createdAt,
+  senderId,
   senderName,
   profileImageUrl,
   showCreatedAt,
   showSenderName,
   showProfileImage,
+  onAction,
 }: {
   content: string;
   createdAt: string;
+  senderId?: number;
   senderName: string;
   profileImageUrl?: string;
   showSenderName?: boolean;
   showCreatedAt?: boolean;
   showProfileImage?: boolean;
+  onAction?: (action: ChatAction) => void;
 }) {
   return (
     <MessageContainer>
       {showProfileImage ? (
-        <ProfileImage src={profileImageUrl} alt="profile" />
+        <ProfileButton
+          onClick={() => {
+            onAction?.({
+              type: 'OPEN_PROFILE',
+              payload: { senderId, senderName, profileImageUrl },
+            });
+          }}
+        >
+          <ProfileImage src={profileImageUrl} alt="profile" />
+        </ProfileButton>
       ) : (
         <ProfileImagePlaceholder />
       )}
@@ -300,6 +321,15 @@ const MessageContainer = styled.div`
   flex-direction: row;
   gap: 8px;
   margin-bottom: 12px;
+`;
+
+const ProfileButton = styled.button`
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
 `;
 
 const ProfileImage = styled.img`
