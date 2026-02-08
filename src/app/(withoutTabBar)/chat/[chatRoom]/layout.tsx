@@ -1,0 +1,133 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import styled from 'styled-components';
+
+export default function ChatRoomLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const [message, setMessage] = useState('');
+
+  const sendMessage = () => {
+    if (message.trim() === '') return;
+    // 메시지 전송 로직 추가
+    setMessage('');
+  };
+
+  const hideChatBar = pathname.endsWith('/cafe');
+
+  return (
+    <>
+      {/* 헤더 */}
+      <Header>
+        <BackButton onClick={() => window.history.back()}>
+          <img src="/svgs/chat/chevron-back.svg" alt="back" />
+        </BackButton>
+        <RoomName>
+          3/2 오후 4시 진미당 <Participant>(4)</Participant>
+        </RoomName>
+        <RightSlot />
+      </Header>
+      {/* 채팅 내용 */}
+      <Content style={{ marginBottom: '15px' }}>{children}</Content>
+      {/* 채팅 입력창 */}
+      {!hideChatBar && (
+        <ChatInputContainer>
+          <ChatInput
+            type="text"
+            placeholder="채팅을 보내세요"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                sendMessage();
+              }
+            }}
+          />
+          <SendButton onClick={sendMessage}>
+            <img src="/svgs/chat/send.svg" alt="send" />
+          </SendButton>
+        </ChatInputContainer>
+      )}
+    </>
+  );
+}
+
+const Header = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: auto 1fr 40px;
+  align-items: center;
+  padding-left: 24px;
+  padding-block: 15px;
+  background-color: #fdfdfd;
+`;
+
+const BackButton = styled.button`
+  border: none;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+`;
+
+const RoomName = styled.p`
+  font-size: 16px;
+  font-weight: 500;
+  justify-self: center;
+  text-align: center;
+`;
+
+const RightSlot = styled.div`
+  width: 40px;
+`;
+
+const Participant = styled.span`
+  color: #ff5900;
+`;
+
+const Content = styled.div`
+  padding-inline: 24px;
+  padding-bottom: 80px;
+`;
+
+const ChatInputContainer = styled.div`
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding: 5px 32px 42px;
+  background-color: #fafafa;
+`;
+
+const ChatInput = styled.input`
+  flex: 1;
+  height: 54px;
+  background-color: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 30px;
+  padding-left: 23px;
+  font-size: 14px;
+  font-weight: 500;
+
+  &::placeholder {
+    color: #8a8a8a;
+  }
+
+  &:focus {
+    outline: none;
+  }
+`;
+
+const SendButton = styled.button`
+  margin-left: 12px;
+  border: none;
+  background-color: transparent;
+`;
