@@ -77,7 +77,7 @@ const KakaoLogo = styled.img.attrs({
 
 const KakaoLoginButton = styled.button`
   margin-top: 95px;
-  width: 100%;
+  width: 300px;
   height: 45px;
   background-color: #fee500;
   border: none;
