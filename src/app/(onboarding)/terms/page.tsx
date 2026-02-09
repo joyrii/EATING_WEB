@@ -5,12 +5,15 @@ import TermsItem from '@/components/terms/TermsItem';
 import { useState } from 'react';
 import { useMemo } from 'react';
 import Button from '@/components/BaseButton';
+import { useRouter } from 'next/navigation';
 
 // 필수 약관 키 목록
 const REQUIRED_TERMS = ['term1', 'term2', 'term3', 'term4'] as const;
 type RequiredTermKey = (typeof REQUIRED_TERMS)[number];
 
 export default function TermsIndex() {
+  const router = useRouter();
+
   const [terms, setTerms] = useState({
     term1: false, // 필수
     term2: false, // 필수
@@ -103,7 +106,13 @@ export default function TermsIndex() {
         />
       </div>
       <div style={{ marginTop: 'auto', marginBottom: 45 }}>
-        <Button disabled={!requiredTermsChecked} label="동의하기" />
+        <Button
+          disabled={!requiredTermsChecked}
+          label="동의하기"
+          onClick={() => {
+            router.replace('/student-verification');
+          }}
+        />
       </div>
     </Page>
   );
