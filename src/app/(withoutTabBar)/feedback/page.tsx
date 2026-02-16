@@ -21,8 +21,8 @@ import { useState } from 'react';
 
 export default function Feedback() {
   const [rating, setRating] = useState(0);
-  const [hasExcludeUser, setHasExcludeUser] = useState(false);
-  const [hasInappropriateUser, setHasInappropriateUser] = useState(false);
+  const [hasExcludeUser, setHasExcludeUser] = useState(null);
+  const [hasInappropriateUser, setHasInappropriateUser] = useState(null);
 
   const [selectedExcludeUserId, setSelectedExcludeUserId] = useState<number[]>(
     [],
@@ -73,19 +73,19 @@ export default function Feedback() {
         </SectionDescription>
         <ButtonWrapper>
           <Button
-            selected={hasExcludeUser}
+            selected={hasExcludeUser === true}
             onClick={() => setHasExcludeUser(true)}
           >
             네
           </Button>
           <Button
-            selected={!hasExcludeUser}
+            selected={hasExcludeUser === false}
             onClick={() => setHasExcludeUser(false)}
           >
             아니요
           </Button>
         </ButtonWrapper>
-        {hasExcludeUser && (
+        {hasExcludeUser === true && (
           <UserList>
             {users.map((user) => (
               <UserItem
@@ -114,19 +114,19 @@ export default function Feedback() {
         </SectionDescription>
         <ButtonWrapper>
           <Button
-            selected={hasInappropriateUser}
+            selected={hasInappropriateUser === true}
             onClick={() => setHasInappropriateUser(true)}
           >
             네
           </Button>
           <Button
-            selected={!hasInappropriateUser}
+            selected={hasInappropriateUser === false}
             onClick={() => setHasInappropriateUser(false)}
           >
             아니요
           </Button>
         </ButtonWrapper>
-        {hasInappropriateUser && (
+        {hasInappropriateUser === true && (
           <>
             <UserList>
               {users.map((user) => (
