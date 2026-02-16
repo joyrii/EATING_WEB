@@ -6,9 +6,11 @@ import { Button } from './style';
 export default function MatchingListItem({
   status = 'default',
   onClick,
+  clickable = false,
 }: {
   status?: 'default' | 'match';
   onClick?: () => void;
+  clickable?: boolean;
 }) {
   const buttonsByStatus = {
     default: [
@@ -27,7 +29,10 @@ export default function MatchingListItem({
   };
 
   return (
-    <MatchingListItemContainer>
+    <MatchingListItemContainer
+      $clickable={clickable}
+      onClick={clickable ? onClick : undefined}
+    >
       <ParticipantsWrapper>
         <Participants>2명/4명</Participants>
       </ParticipantsWrapper>
@@ -36,7 +41,14 @@ export default function MatchingListItem({
       </DateTimeWrapper>
       <ButtonContainer>
         {buttonsByStatus[status].map((b) => (
-          <Button key={b.variant} $variant={b.variant} onClick={b.onClick}>
+          <Button
+            key={b.variant}
+            $variant={b.variant}
+            onClick={(e) => {
+              if (clickable) e.stopPropagation();
+              b.onClick();
+            }}
+          >
             {b.label}
           </Button>
         ))}
@@ -45,13 +57,14 @@ export default function MatchingListItem({
   );
 }
 
-const MatchingListItemContainer = styled.div`
+const MatchingListItemContainer = styled.div<{ $clickable?: boolean }>`
   background-color: #ffffff;
   border: 1px solid #f0f0f0;
   border-radius: 14px;
-  padding-top: 25px;
+  padding-top: 12px;
   padding-bottom: 20px;
   padding-inline: 20px;
+  cursor: ${({ $clickable }) => ($clickable ? 'pointer' : 'default')};
 `;
 
 const ParticipantsWrapper = styled.div`
