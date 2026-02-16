@@ -1,13 +1,19 @@
 'use client';
 
 import {
-  TextWrapper,
   StepText,
   TitleText,
   SubText,
   ButtonWrapper,
 } from '@/app/(onboarding)/onboarding/style';
-import { CautionWrapper, DateBox, ModalContent } from '../style';
+import {
+  CautionWrapper,
+  DateBox,
+  ModalContent,
+  SkipButton,
+  SkipButtonWrapper,
+  TextWrapper,
+} from '../style';
 import TimeGrid from '@/components/application/TimeGrid';
 import Button from '@/components/BaseButton';
 import { useState } from 'react';
@@ -24,6 +30,11 @@ export default function Schedule() {
   return (
     <>
       <div>
+        <SkipButtonWrapper>
+          <SkipButton onClick={() => router.push('/application/dining')}>
+            <span>건너뛰기</span>
+          </SkipButton>
+        </SkipButtonWrapper>
         <TextWrapper>
           <StepText>01</StepText>
           <TitleText>매칭 가능한 일정을 알려주세요.</TitleText>
@@ -57,7 +68,7 @@ export default function Schedule() {
               height={36}
             />
             <p>
-              방이 생성된 후 약속을 파투낼 시<br />
+              방이 생성된 후 약속 불참 시<br />
               노쇼 페널티가 부과됩니다
             </p>
           </CautionWrapper>

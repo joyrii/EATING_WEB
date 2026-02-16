@@ -21,6 +21,9 @@ export default function ApplicationLayout({
     <MainContainer>
       <IndicatorWrapper>
         <StepIndicator>
+          <BackButton onClick={() => history.back()}>
+            <img src="/svgs/back.svg" alt="back" />
+          </BackButton>
           <Segment $active={step[pathname] === 1} />
           <Segment $active={step[pathname] === 2} />
           <Segment $active={step[pathname] === 3} />
@@ -41,12 +44,21 @@ const IndicatorWrapper = styled.div`
   height: 40px;
   position: fixed;
   top: 0;
-  left: 24px;
-  right: 24px;
+  left: 20px;
+  right: 28px;
   z-index: 10;
   padding-top: 35px;
-  padding-bottom: 10px;
+  padding-bottom: 30px;
   background-color: #fafafa;
+`;
+
+const BackButton = styled.button`
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-right: 30px;
 `;
 
 const StepIndicator = styled.div`
@@ -58,9 +70,9 @@ const StepIndicator = styled.div`
 `;
 
 const Segment = styled.div<{ $active?: boolean }>`
-  width: 33%;
+  width: 30%;
   height: 5px;
-  background-color: ${(props) => (props.$active ? '#D6D6D6' : '#f0f0f0')};
+  background-color: ${(props) => (props.$active ? '#707070' : '#f0f0f0')};
   border-radius: 5px;
   transition:
     background-color 0.3s ease,

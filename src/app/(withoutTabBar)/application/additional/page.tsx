@@ -1,41 +1,34 @@
 'use client';
 
 import styled from 'styled-components';
-import {
-  TextWrapper,
-  StepText,
-  TitleText,
-} from '@/app/(onboarding)/onboarding/style';
-import { IoChevronForward } from 'react-icons/io5';
-import { SkipButtonWrapper } from '../style';
-import { ButtonWrapper } from '../style';
+import { TitleText } from '@/app/(onboarding)/onboarding/style';
+import { SkipButton, SkipButtonWrapper } from '../style';
+import { ButtonWrapper, TextWrapper } from '../style';
 import Button from '@/components/BaseButton';
 import ClassChip from '@/components/application/ClassChip';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import MbtiOption from '@/components/onboarding/MbtiOption';
 
 export default function Additional() {
   const router = useRouter();
 
   const CLASS = ['26학번', '25학번', '24학번', '23학번', '22학번 이상'];
   const [selectedClass, setSelectedClass] = useState<string[]>([]);
-  const [excludedMbti, setExcludedMbti] = useState<string>('');
+  const [selectedMbti1, setSelectedMbti1] = useState<string>('');
+  const [selectedMbti2, setSelectedMbti2] = useState<string>('');
+  const [selectedMbti3, setSelectedMbti3] = useState<string>('');
+  const [selectedMbti4, setSelectedMbti4] = useState<string>('');
 
   return (
     <div>
+      <SkipButtonWrapper>
+        <SkipButton onClick={() => router.push('/home')}>
+          <span>건너뛰기</span>
+        </SkipButton>
+      </SkipButtonWrapper>
       <ContentWrapper>
         <TextWrapper>
-          <SkipButtonWrapper>
-            <StepText>03</StepText>
-            <SkipButton
-              onClick={() => {
-                // Skip to the application complete page
-              }}
-            >
-              <SkipButtonText>건너뛰기</SkipButtonText>
-              <IoChevronForward size={24} color="#a3a3a3" />
-            </SkipButton>
-          </SkipButtonWrapper>
           <TitleText>
             최적의 매칭을 위한
             <br />
@@ -65,12 +58,56 @@ export default function Additional() {
         </InputWrapper>
         <InputWrapper>
           <Label>02 만나고 싶지 않은 MBTI는?</Label>
-          <TextInput
-            type="text"
-            placeholder="입력해주세요."
-            value={excludedMbti}
-            onChange={(e) => setExcludedMbti(e.target.value)}
-          />
+          <MbtiOptionWrapper>
+            <MbtiOptionColumn>
+              <MbtiOption
+                label="E"
+                selected={selectedMbti1 === 'E'}
+                onClick={() => setSelectedMbti1('E')}
+              />
+              <MbtiOption
+                label="I"
+                selected={selectedMbti1 === 'I'}
+                onClick={() => setSelectedMbti1('I')}
+              />
+            </MbtiOptionColumn>
+            <MbtiOptionColumn>
+              <MbtiOption
+                label="S"
+                selected={selectedMbti2 === 'S'}
+                onClick={() => setSelectedMbti2('S')}
+              />
+              <MbtiOption
+                label="N"
+                selected={selectedMbti2 === 'N'}
+                onClick={() => setSelectedMbti2('N')}
+              />
+            </MbtiOptionColumn>
+            <MbtiOptionColumn>
+              <MbtiOption
+                label="T"
+                selected={selectedMbti3 === 'T'}
+                onClick={() => setSelectedMbti3('T')}
+              />
+              <MbtiOption
+                label="F"
+                selected={selectedMbti3 === 'F'}
+                onClick={() => setSelectedMbti3('F')}
+              />
+            </MbtiOptionColumn>
+            <MbtiOptionColumn>
+              <MbtiOption
+                label="J"
+                selected={selectedMbti4 === 'J'}
+                onClick={() => setSelectedMbti4('J')}
+              />
+              <MbtiOption
+                label="P"
+                selected={selectedMbti4 === 'P'}
+                onClick={() => setSelectedMbti4('P')}
+              />
+            </MbtiOptionColumn>
+          </MbtiOptionWrapper>
         </InputWrapper>
       </ContentWrapper>
       <ButtonWrapper style={{ paddingTop: '5px' }}>
@@ -79,22 +116,6 @@ export default function Additional() {
     </div>
   );
 }
-
-const SkipButton = styled.button`
-  margin-top: 7px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-`;
-
-const SkipButtonText = styled.p`
-  font-size: 14px;
-  font-weight: 500;
-  color: #a3a3a3;
-`;
 
 const InputWrapper = styled.div`
   display: flex;
@@ -140,4 +161,18 @@ const ContentWrapper = styled.div`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 100px;
+`;
+
+const MbtiOptionColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+`;
+
+const MbtiOptionWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-top: 25px;
+  margin-left: 25px;
 `;

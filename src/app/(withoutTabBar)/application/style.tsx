@@ -1,5 +1,29 @@
 import styled from 'styled-components';
 
+export const TextWrapper = styled.div`
+  margin-top: 5px;
+`;
+
+export const SkipButtonWrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 5px;
+`;
+
+export const SkipButton = styled.button`
+  margin-top: 15px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3d3d3d;
+`;
+
 export const DateBox = styled.div`
   display: flex;
   justify-content: center;
@@ -43,20 +67,14 @@ export const ModalButtonWrapper = styled.div`
   justify-content: center;
 `;
 
-export const SkipButtonWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+export const RestaurantListContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  justify-items: center;
   align-items: center;
   width: 100%;
-`;
-
-export const RestaurantListContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 30px;
-  margin-bottom: 100px;
+  max-width: 400px;
+  margin: 30px auto 100px auto;
 `;
 
 export const ButtonWrapper = styled.div`
