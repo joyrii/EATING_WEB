@@ -39,4 +39,6 @@ const Content = styled.p`
   color: #575757;
   line-height: 1.8;
   letter-spacing: -0.01em;
+  white-space: pre-line;
+  margin-bottom: 50px;
 `;

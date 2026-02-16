@@ -15,12 +15,32 @@ const normalize = (raw: string) => {
     .trim();
 };
 
-const cleanDept = (s: string) =>
-  s
+const fixSpacedHangul = (s: string) => {
+  const tokens = s.trim().split(/\s+/);
+
+  const allSingleHangul = tokens.every((t) => /^[가-힣]$/.test(t));
+  if (allSingleHangul) return tokens.join('');
+
+  if (/(과|학과|학부|전공)$/.test(tokens[tokens.length - 1])) {
+    const hangulTokenCount = tokens.filter((t) => /^[가-힣]+$/.test(t)).length;
+    const singleHangulCount = tokens.filter((t) => /^[가-힣]$/.test(t)).length;
+
+    if (hangulTokenCount > 0 && singleHangulCount / hangulTokenCount >= 0.8) {
+      return tokens.join('');
+    }
+  }
+  return s.trim().replace(/\s{2,}/g, ' ');
+};
+
+const cleanDept = (s: string) => {
+  const cleaned = s
     .trim()
     .replace(/\s{2,}/g, ' ')
     .replace(/^(학과|소속)\s*[:\-]?\s*/g, '')
     .trim();
+
+  return fixSpacedHangul(cleaned);
+};
 
 export default function parseStudentIdText(rawText: string): StudentIdResult {
   const text = normalize(rawText);

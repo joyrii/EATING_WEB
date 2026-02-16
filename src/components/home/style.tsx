@@ -75,7 +75,7 @@ export const Button = styled.button<{
       `;
       case 'enter':
         return `flex: none;
-      width: 128px;
+      width: 100%;
       height: 40px;
       background-color: #ff5900;
       color: #ffffff;

@@ -9,7 +9,7 @@ import {
   INTERESTS_SECTION,
   INTERESTS_GROUPS,
 } from '@/constants/INTERESTS_SECTION';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 
 export default function OnboardingInterests() {
   const router = useRouter();
@@ -44,21 +44,30 @@ export default function OnboardingInterests() {
 
               const optionList = (
                 <InterestsOptionWrapper>
-                  {sub.options.map((option) => (
-                    <InterestsOption
-                      key={option}
-                      label={option}
-                      width={option === '방문학생/교환학생' ? '110px' : '75px'}
-                      $selected={picked.includes(option)}
-                      onClick={() => toggle(key, option)}
-                    />
-                  ))}
+                  {sub.options.flatMap((option, i) => {
+                    const nodes = [
+                      <InterestsOption
+                        key={`opt-${key}-${option}-${i}`}
+                        label={option}
+                        $selected={picked.includes(option)}
+                        onClick={() => toggle(key, option)}
+                      />,
+                    ];
+
+                    if ((i + 1) % 4 === 0) {
+                      nodes.push(<Break key={`br-${key}-${i}`} />);
+                    }
+
+                    return nodes;
+                  })}
                 </InterestsOptionWrapper>
               );
               return group.sectionTitle === '대학생활' ? (
-                <div key={sub.title}>{optionList}</div>
+                <div key={`section-${group.sectionTitle}`}>{optionList}</div>
               ) : (
-                <InterestsWrapper key={sub.title}>
+                <InterestsWrapper
+                  key={`section-${group.sectionTitle}-${sub.title}`}
+                >
                   <InterestsSubTitle>{sub.title}</InterestsSubTitle>
                   {optionList}
                 </InterestsWrapper>
@@ -103,6 +112,34 @@ const InterestsSubTitle = styled.h3`
 
 const InterestsContent = styled.div`
   margin-top: 46px;
+
+  max-height: calc(100vh - 300px);
+  position: relative;
+  overflow-y: auto;
+  padding-right: 10px;
+
+  &::after {
+    content: '';
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 180px;
+    pointer-events: none;
+    z-index: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0),
+      rgba(250, 250, 250, 1)
+    );
+  }
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const InterestsWrapperLarge = styled.div`
@@ -124,4 +161,9 @@ const InterestsOptionWrapper = styled.div`
   flex-direction: row;
   flex-wrap: wrap;
   gap: 10px;
+`;
+
+const Break = styled.div`
+  flex-basis: 100%;
+  height: 0;
 `;

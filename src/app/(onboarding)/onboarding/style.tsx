@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 export const TextWrapper = styled.div`
-  margin-top: 37px;
+  margin-top: 70px;
 `;
 
 export const StepText = styled.h2`

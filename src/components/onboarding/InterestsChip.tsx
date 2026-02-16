@@ -12,7 +12,7 @@ export default function InterestsOption({
   width?: string;
 }) {
   return (
-    <InterestsChip $selected={$selected} onClick={onClick} width={width}>
+    <InterestsChip $selected={$selected} onClick={onClick}>
       {label}
     </InterestsChip>
   );
@@ -20,15 +20,18 @@ export default function InterestsOption({
 
 const InterestsChip = styled.button<{
   $selected?: boolean;
-  width?: string;
 }>`
-  width: ${({ width }) => width || '75px'};
+  cursor: pointer;
+  width: fit-content;
   height: 37px;
   border: 1px solid ${({ $selected }) => ($selected ? '#ff5900' : '#bdbdbd')};
-  color: ${({ $selected }) => ($selected ? '#ff5900' : '#B0AFB2')};
+  color: ${({ $selected }) => ($selected ? '#ff5900' : '#707070')};
   text-align: center;
   font-size: 12px;
-  align-content: center;
-  padding-inline: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-radius: 30px;
+  background-color: #ffffff;
+  padding: 10px;
 `;

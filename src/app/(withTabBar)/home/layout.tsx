@@ -18,27 +18,22 @@ export default function HomeLayout({
   return (
     <MatchingContext.Provider value={{ currentStatus, setCurrentStatus }}>
       <div style={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
-        {currentStatus === 'completed' ? (
-          <>
-            <Header $variant="title">
-              <LogoTitle alt="logo-title" />
-              <IoChevronForward size={24} color="#3D3D3D" />
-            </Header>
-          </>
-        ) : (
-          <Header $variant="logo">
-            <HeaderText>잇팅</HeaderText>
-            <LogoCharacter alt="logo-character" />
-          </Header>
-        )}
+        <Header $variant="logo">
+          <HeaderText>잇팅</HeaderText>
+          <LogoCharacter alt="logo-character" />
+        </Header>
         <Body>
-          <AdBanner>
-            <AdBannerTextContainer>
-              <AdBannerUpperText>광고 배너 으아아악</AdBannerUpperText>
-              <AdBannerLowerText>블라블라블라블라</AdBannerLowerText>
-            </AdBannerTextContainer>
-            <AdBannerIcon alt="ad-banner-icon" />
-          </AdBanner>
+          <TipBanner>
+            <TipBannerTextWrapper>
+              <TipMainText>이대 메일 계정 만드는 법</TipMainText>
+              <TipSubText>새내기 꿀팁!</TipSubText>
+            </TipBannerTextWrapper>
+            <TipBannerImage
+              src="/svgs/home/tip-character.svg"
+              alt="tip-banner-character"
+              width={80}
+            />
+          </TipBanner>
           <MatchingSection>
             <MatchingText>
               <SectionTitle>
@@ -84,6 +79,7 @@ const Header = styled.header<{ $variant: 'logo' | 'title' }>`
   display: flex;
   flex-direction: row;
   align-items: center;
+  margin-top: 10px;
   padding-block: 8px;
   padding-left: 24px;
   position: sticky;
@@ -120,43 +116,42 @@ const LogoTitle = styled.img.attrs({
   margin-block: 7px;
 `;
 
-// 광고 배너
-const AdBanner = styled.div`
-  height: 72px;
+// 팁 배너
+const TipBanner = styled.button`
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  background-color: #ffffff;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 23px;
-  margin-top: 8px;
-  background-color: #f5f5f5;
-  border-radius: 10px;
+  width: 100%;
+  padding: 13px 17px;
+  margin-top: 15px;
 `;
 
-const AdBannerIcon = styled.img.attrs({
-  src: '/svgs/home/ad-banner-icon.svg',
-  width: 46,
-  height: 44,
-})``;
-
-const AdBannerTextContainer = styled.div`
+const TipBannerTextWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 `;
 
-const AdBannerUpperText = styled.span`
-  font-size: 18px;
-  font-weight: 600;
-  color: #575757;
-  line-height: 150%;
+const TipMainText = styled.span`
+  font-size: 16px;
+  font-weight: 500;
+  color: #3d3d3d;
+  text-align: left;
 `;
 
-const AdBannerLowerText = styled.span`
+const TipSubText = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: #575757;
-  line-height: 145%;
+  text-align: left;
+`;
+
+const TipBannerImage = styled.img`
+  margin-right: 5px;
 `;
 
 // 바디
