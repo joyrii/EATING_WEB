@@ -4,6 +4,8 @@ interface UserItemProps {
   name: string;
   profileImage: string;
   selected?: boolean;
+  width?: number;
+  height?: number;
   onClick?: () => void;
 }
 
@@ -12,22 +14,35 @@ export default function UserItem({
   profileImage,
   selected = false,
   onClick,
+  width,
+  height,
 }: UserItemProps & { selected?: boolean; onClick?: () => void }) {
   return (
-    <UserItemContainer selected={selected} onClick={onClick}>
+    <UserItemContainer
+      selected={selected}
+      onClick={onClick}
+      width={width}
+      height={height}
+    >
       <ProfileImage src={profileImage} alt="사용자 프로필 이미지" />
       <Username selected={selected}>{name}</Username>
     </UserItemContainer>
   );
 }
 
-const UserItemContainer = styled.div<{ selected?: boolean }>`
+const UserItemContainer = styled.div<{
+  selected?: boolean;
+  width?: number;
+  height?: number;
+}>`
   display: flex;
   flex-direction: column;
   align-items: center;
   background: ${({ selected }) => (selected ? '#ffeee5' : '#f8f8f8')};
   border-radius: 10px;
   padding: 10px 23px;
+  width: ${({ width }) => (width ? `${width}px` : '100px')};
+  height: ${({ height }) => (height ? `${height}px` : '120px')};
 `;
 
 const ProfileImage = styled.img`

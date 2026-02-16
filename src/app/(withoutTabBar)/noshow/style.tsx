@@ -72,3 +72,54 @@ export const DescriptionText = styled.p`
   position: absolute;
   right: 24px;
 `;
+
+export const TitleContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 32px;
+`;
+
+export const Title = styled.h2`
+  font-size: 18px;
+  font-weight: 600;
+  color: #232323;
+  margin-bottom: 2px;
+`;
+
+export const Description = styled.p`
+  font-size: 14px;
+  color: #707070;
+`;
+
+export const MatchingList = styled.div`
+  margin-top: 27px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-inline: 24px;
+  padding-bottom: 50px;
+`;
+
+export const UserGrid = styled.div`
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin: 45px auto 0;
+  max-width: calc(2 * 105px + 18px);
+`;
+
+export const SubmitButton = styled.button`
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  background-color: #ff5900;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 15px 0;
+  font-size: 16px;
+  font-weight: 700;
+`;

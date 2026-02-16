@@ -1,7 +1,7 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
 import {
-  BackButton,
-  Header,
-  HeaderText,
   List,
   ListItem,
   DescriptionWrapper,
@@ -10,17 +10,17 @@ import {
 } from './style';
 
 export default function Noshow() {
+  const router = useRouter();
+
   return (
     <>
-      <Header>
-        <BackButton>
-          <img src="/svgs/back.svg" alt="뒤로가기" />
-        </BackButton>
-        <HeaderText>신고하기</HeaderText>
-      </Header>
       <List>
-        <ListItem>노쇼한 사람이 있어요</ListItem>
-        <ListItem>취지와 다른 목적으로 접근한 사람이 있어요</ListItem>
+        <ListItem onClick={() => router.push('/noshow/matching')}>
+          노쇼한 사람이 있어요
+        </ListItem>
+        <ListItem onClick={() => router.push('/noshow/other')}>
+          취지와 다른 목적으로 접근한 사람이 있어요
+        </ListItem>
       </List>
       <DescriptionWrapper>
         <Character
