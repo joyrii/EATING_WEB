@@ -88,6 +88,7 @@ function ConfirmInner() {
               name="studentId"
               value={studentNo}
               onChange={(e) => setStudentNo(e.target.value)}
+              style={{ height: '60px' }}
             />
           </InputWrapper>
           <InputWrapper>
@@ -97,6 +98,7 @@ function ConfirmInner() {
               name="department"
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
+              style={{ height: '60px' }}
             />
           </InputWrapper>
         </FormWrapper>
