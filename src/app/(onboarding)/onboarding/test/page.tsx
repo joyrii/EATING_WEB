@@ -10,9 +10,28 @@ import {
   ButtonWrapper,
 } from '../style';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { supabase } from '@/lib/supabase/client';
 
 export default function OnboardingTest() {
   const router = useRouter();
+
+  useEffect(() => {
+    (async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
+      console.log('🔎 session:', session);
+      console.log('🔎 access_token:', session?.access_token);
+      console.log('🔎 expires_at:', session?.expires_at);
+
+      if (error) {
+        console.error('❌ session error:', error);
+      }
+    })();
+  }, []);
 
   type UserState = 'beforeTest' | 'afterTest' | 'done';
   const currentState: UserState = 'done'; // This would be determined by actual user data
@@ -53,7 +72,9 @@ export default function OnboardingTest() {
       primary: {
         kind: 'complete',
         label: '완료',
-        onClick: () => router.push('/home'),
+        onClick: () => {
+          router.push('/home');
+        },
       },
     },
   };

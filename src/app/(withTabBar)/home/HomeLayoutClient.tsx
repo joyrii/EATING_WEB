@@ -9,6 +9,7 @@ import localFont from 'next/font/local';
 import { useRouter } from 'next/navigation';
 import { api } from '@/api/axios-client';
 import { getOnboardingStatus, getMe } from '@/api/home';
+import { useUser } from '@/context/userContext';
 
 type MatchingStatusRes = {
   has_applied: boolean;
@@ -70,20 +71,12 @@ export default function HomeLayoutClient({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const [ready, setReady] = useState(false);
 
-  // 사용자 이름
-  const [name, setName] = useState<string>('회원');
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await getMe();
-        setName(res.name);
-      } catch (error) {
-        console.error('Failed to fetch user name', error);
-      }
-    })();
-  }, []);
-
+  // 사용자 정보
+  const { me } = useUser();
+  const name = me?.name ?? '회원';
+  const onboardingStep = me?.onboarding_step ?? null;
   // 매칭 상태
   const [currentStatus, setCurrentStatus] = useState<MatchingStatus>('before');
   const text = getMatchingSectionText(currentStatus, name);
@@ -93,50 +86,45 @@ export default function HomeLayoutClient({
 
     const load = async () => {
       try {
-        const { data } = await api.get(`/matching/status`);
-        setCurrentStatus(calcUiStatus(data));
+        const [me, step, match] = await Promise.all([
+          getMe(),
+          getOnboardingStatus(),
+          api.get<MatchingStatusRes>('/matching/status').then((r) => r.data),
+        ]);
+
+        setCurrentStatus(calcUiStatus(match));
+
+        setReady(true);
+
         // 다음 전환 시각 예약
-        if (data.week_start) {
+        if (match.week_start) {
           const now = new Date();
-
-          const fri17 = atKstFromWeekStart(data.week_start, 4, 17, 0); // 금 17:00
-          const nextMon0 = atKstFromWeekStart(data.week_start, 7, 0, 0); // 다음주 월 0:00
-
+          const fri17 = atKstFromWeekStart(match.week_start, 4, 17, 0);
+          const nextMon0 = atKstFromWeekStart(match.week_start, 7, 0, 0);
           const next = now < fri17 ? fri17 : now < nextMon0 ? nextMon0 : null;
 
           if (next) {
             const delay = Math.max(0, next.getTime() - now.getTime());
-            timer = setTimeout(() => {
-              load(); // 금 17시/월 0시에 다시 조회해서 자동 갱신
-            }, delay + 200);
+            timer = setTimeout(() => load(), delay + 200);
           }
         }
-      } catch (error) {
-        console.error('Failed to fetch matching status', error);
+      } catch (e) {
+        console.error('Failed to init home', e);
+        setReady(true);
       }
     };
+
     load();
+
     return () => {
       if (timer) clearTimeout(timer);
     };
   }, []);
 
-  const [onboardingStep, setOnboardingStep] = useState<string>(null);
-
-  useEffect(() => {
-    (async () => {
-      // 온보딩 상태 가져오기
-      try {
-        const res = await getOnboardingStatus();
-        setOnboardingStep(res);
-      } catch (error) {
-        console.error('Failed to fetch onboarding status', error);
-        return null; // 에러 시 null 반환
-      }
-    })();
-  }, []);
-
   const banner = banners[0];
+
+  if (!ready)
+    return <div style={{ minHeight: '100vh', backgroundColor: '#fafafa' }} />;
 
   return (
     <MatchingContext.Provider value={{ currentStatus, setCurrentStatus }}>

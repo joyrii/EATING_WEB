@@ -7,6 +7,8 @@ import { ButtonWrapper } from '../style';
 import MbtiOption from '@/components/onboarding/MbtiOption';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/context/userContext';
+import { updateMbti } from '@/api/onboarding';
 
 export default function OnboardingMbti() {
   const router = useRouter();
@@ -16,11 +18,14 @@ export default function OnboardingMbti() {
   const [selectedMbti3, setSelectedMbti3] = useState<string | null>(null);
   const [selectedMbti4, setSelectedMbti4] = useState<string | null>(null);
 
+  const { me } = useUser();
+  const name = me?.name || '';
+
   return (
     <div>
       <TextWrapper>
         <StepText>01</StepText>
-        <TitleText>주연님의 MBTI를 알려주세요.</TitleText>
+        <TitleText>{name}님의 MBTI를 알려주세요.</TitleText>
         <SubText>매칭을 위해 부가적으로 사용됩니다.</SubText>
       </TextWrapper>
       <MbtiOptionWrapper>
@@ -79,7 +84,15 @@ export default function OnboardingMbti() {
             !selectedMbti1 || !selectedMbti2 || !selectedMbti3 || !selectedMbti4
           }
           label="다음"
-          onClick={() => {
+          onClick={async () => {
+            try {
+              await updateMbti(
+                `${selectedMbti1}${selectedMbti2}${selectedMbti3}${selectedMbti4}`,
+              );
+              router.push('/onboarding/interests');
+            } catch (error) {
+              console.error('Failed to update MBTI:', error);
+            }
             router.push('/onboarding/interests');
           }}
         />

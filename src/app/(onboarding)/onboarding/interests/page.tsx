@@ -9,12 +9,56 @@ import {
   INTERESTS_SECTION,
   INTERESTS_GROUPS,
 } from '@/constants/INTERESTS_SECTION';
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
+import { useUser } from '@/context/userContext';
+import { useEffect } from 'react';
+import { getInterests, updateInterests } from '@/api/onboarding';
+
+type InterestItem = {
+  id: string;
+  name: string;
+  category: string;
+  subcategory: string | null;
+};
 
 export default function OnboardingInterests() {
   const router = useRouter();
 
+  const { me } = useUser();
+  const name = me?.name || '';
+
+  const [optionsByKey, setOptionsByKey] = useState<Record<string, string[]>>(
+    {},
+  );
+  const [idByName, setIdByName] = useState<Record<string, string>>({});
+
   const [selected, setSelected] = useState<Record<string, string[]>>({});
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data: InterestItem[] = await getInterests();
+
+        const nextOptions: Record<string, string[]> = {};
+        const nextIdByName: Record<string, string> = {};
+
+        for (const item of data) {
+          nextIdByName[item.name] = item.id;
+
+          const key = item.subcategory ?? item.category;
+
+          if (!nextOptions[key]) {
+            nextOptions[key] = [];
+          }
+          nextOptions[key].push(item.name);
+        }
+        setOptionsByKey(nextOptions);
+        setIdByName(nextIdByName);
+      } catch (error) {
+        console.error('Failed to load interests:', error);
+      }
+    })();
+  }, []);
 
   const toggle = (key: string, option: string) => {
     setSelected((prev) => {
@@ -30,7 +74,7 @@ export default function OnboardingInterests() {
     <div>
       <TextWrapper>
         <StepText>02</StepText>
-        <TitleText>주연님의 관심사를 선택해주세요.</TitleText>
+        <TitleText>{name}님의 관심사를 선택해주세요.</TitleText>
         <SubText>매칭을 위해 부가적으로 사용됩니다.</SubText>
       </TextWrapper>
       <InterestsContent>
@@ -44,7 +88,7 @@ export default function OnboardingInterests() {
 
               const optionList = (
                 <InterestsOptionWrapper>
-                  {sub.options.flatMap((option, i) => {
+                  {optionsByKey[key]?.flatMap((option, i) => {
                     const nodes = [
                       <InterestsOption
                         key={`opt-${key}-${option}-${i}`}
@@ -80,8 +124,19 @@ export default function OnboardingInterests() {
         <Button
           disabled={Object.values(selected).flat().length === 0}
           label="다음"
-          onClick={() => {
-            router.push('/onboarding/test');
+          onClick={async () => {
+            try {
+              const selectedNames = Object.values(selected).flat();
+              const interestIds = Array.from(
+                new Set(
+                  selectedNames.map((name) => idByName[name]).filter(Boolean),
+                ),
+              );
+              await updateInterests(interestIds);
+              router.push('/onboarding/test');
+            } catch (error) {
+              console.error('Failed to update interests:', error);
+            }
           }}
         />
       </ButtonWrapper>
