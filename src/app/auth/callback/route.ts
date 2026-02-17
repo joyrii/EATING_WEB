@@ -1,6 +1,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import axios from 'axios';
+import { useEffect } from 'react';
+import { fetchUsername } from '@/api/login';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);

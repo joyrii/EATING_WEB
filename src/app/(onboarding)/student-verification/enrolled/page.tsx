@@ -47,10 +47,10 @@ export default function EnrolledStudentVerification() {
         const text = await tesseractModule(result, setProgress);
         const parsed = parseStudentIdText(text);
 
-        const studentNo = parsed.studentNo ?? '';
+        const studentId = parsed.studentId ?? '';
         const department = parsed.department ?? '';
 
-        if (!studentNo || !department) {
+        if (!studentId || !department) {
           setErrorMsg('인증에 실패하였습니다!');
           setLoading(false);
           return;
@@ -58,7 +58,7 @@ export default function EnrolledStudentVerification() {
 
         sessionStorage.setItem('studentIdImg', result);
         sessionStorage.setItem('studentIdText', text);
-        sessionStorage.setItem('studentNo', studentNo);
+        sessionStorage.setItem('studentId', studentId);
         sessionStorage.setItem('department', department);
 
         router.push('/student-verification/confirm?from=enrolled');

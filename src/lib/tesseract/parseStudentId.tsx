@@ -1,5 +1,5 @@
 export type StudentIdResult = {
-  studentNo?: string;
+  studentId?: string;
   department?: string;
   raw: string;
 };
@@ -50,17 +50,17 @@ export default function parseStudentIdText(rawText: string): StudentIdResult {
     .map((line) => line.trim())
     .filter(Boolean);
 
-  let studentNo: string | undefined;
+  let studentId: string | undefined;
   let department: string | undefined;
 
   const parenMatch = text.match(/\((\d{6,12})\)/);
-  if (parenMatch) studentNo = parenMatch[1];
+  if (parenMatch) studentId = parenMatch[1];
 
   const idx = lines.findIndex((line) => /\(\s*\d{6,12}\s*\)/.test(line));
 
   if (idx !== -1) {
     const m = lines[idx].match(/\(\s*(\d{6,12})\s*\)/);
-    if (m) studentNo = m[1];
+    if (m) studentId = m[1];
 
     const nextLine = lines[idx + 1];
     if (nextLine) {
@@ -73,14 +73,14 @@ export default function parseStudentIdText(rawText: string): StudentIdResult {
     }
   }
 
-  if (!studentNo) {
+  if (!studentId) {
     const nums = text.match(/\b\d{6,12}\b/g);
-    studentNo = nums?.[0];
+    studentId = nums?.[0];
   }
 
   if (!department) {
     department = lines.find((l) => /(과|학과|학부|전공)$/.test(l));
   }
 
-  return { studentNo, department, raw: text };
+  return { studentId, department, raw: text };
 }
