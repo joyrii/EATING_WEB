@@ -7,9 +7,60 @@ import { getMatchingSectionText } from '@/constants/MATCHING';
 import styled from 'styled-components';
 import localFont from 'next/font/local';
 import { useRouter } from 'next/navigation';
-
 import { api } from '@/api/axios-client';
 import { getOnboardingStatus, getMe } from '@/api/home';
+
+type MatchingStatusRes = {
+  has_applied: boolean;
+  round_id?: string;
+  week_start?: string | null; // "YYYY-MM-DD" (월요일)
+  week_end?: string | null; // "YYYY-MM-DD" (일요일)
+};
+
+const KST_OFFSET_MIN = 9 * 60;
+
+function kstToUtcDate(y: number, m: number, d: number, hh = 0, mm = 0) {
+  const utcMs = Date.UTC(y, m - 1, d, hh, mm) - KST_OFFSET_MIN * 60 * 1000;
+  return new Date(utcMs);
+}
+
+function parseYmd(ymd: string) {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return { y, m, d };
+}
+
+function atKstFromWeekStart(
+  weekStart: string,
+  addDays: number,
+  hh: number,
+  mm: number,
+) {
+  const { y, m, d } = parseYmd(weekStart);
+
+  // weekStart의 KST 00:00을 UTC Date로
+  const base = kstToUtcDate(y, m, d, 0, 0);
+
+  // addDays 만큼 이동
+  const moved = new Date(base.getTime() + addDays * 24 * 60 * 60 * 1000);
+
+  // moved를 KST 날짜로 환산해서 그 날짜의 hh:mm(KST)을 다시 UTC Date로 생성
+  const movedKst = new Date(moved.getTime() + KST_OFFSET_MIN * 60 * 1000);
+  const ny = movedKst.getUTCFullYear();
+  const nm = movedKst.getUTCMonth() + 1;
+  const nd = movedKst.getUTCDate();
+
+  return kstToUtcDate(ny, nm, nd, hh, mm);
+}
+
+function calcUiStatus(ms: MatchingStatusRes, now = new Date()): MatchingStatus {
+  if (!ms.round_id || !ms.week_start) return 'completed';
+
+  // 금요일 17:00 = 월요일 + 4일 + 17:00
+  const fri17 = atKstFromWeekStart(ms.week_start, 4, 17, 0);
+
+  if (now >= fri17) return 'completed';
+  return ms.has_applied ? 'inProgress' : 'before';
+}
 
 export default function HomeLayoutClient({
   children,
@@ -20,7 +71,8 @@ export default function HomeLayoutClient({
 }) {
   const router = useRouter();
 
-  const [name, setName] = useState<string>('');
+  // 사용자 이름
+  const [name, setName] = useState<string>('회원');
   useEffect(() => {
     (async () => {
       try {
@@ -28,29 +80,45 @@ export default function HomeLayoutClient({
         setName(res.name);
       } catch (error) {
         console.error('Failed to fetch user name', error);
-        throw error;
       }
     })();
   }, []);
 
+  // 매칭 상태
   const [currentStatus, setCurrentStatus] = useState<MatchingStatus>('before');
   const text = getMatchingSectionText(currentStatus, name);
 
   useEffect(() => {
-    (async () => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const load = async () => {
       try {
         const { data } = await api.get(`/matching/status`);
-        const status: MatchingStatus = data?.round_id
-          ? data.has_applied
-            ? 'inProgress'
-            : 'before'
-          : 'completed';
-        setCurrentStatus(status);
+        setCurrentStatus(calcUiStatus(data));
+        // 다음 전환 시각 예약
+        if (data.week_start) {
+          const now = new Date();
+
+          const fri17 = atKstFromWeekStart(data.week_start, 4, 17, 0); // 금 17:00
+          const nextMon0 = atKstFromWeekStart(data.week_start, 7, 0, 0); // 다음주 월 0:00
+
+          const next = now < fri17 ? fri17 : now < nextMon0 ? nextMon0 : null;
+
+          if (next) {
+            const delay = Math.max(0, next.getTime() - now.getTime());
+            timer = setTimeout(() => {
+              load(); // 금 17시/월 0시에 다시 조회해서 자동 갱신
+            }, delay + 200);
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch matching status', error);
-        throw error;
       }
-    })();
+    };
+    load();
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   const [onboardingStep, setOnboardingStep] = useState<string>(null);
