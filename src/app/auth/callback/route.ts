@@ -35,6 +35,7 @@ export async function GET(request: Request) {
   }
 
   const jwtToken = data.session.access_token;
+  console.log('JWT Token obtained from Supabase:', jwtToken);
 
   // 2) 백엔드 호출
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;

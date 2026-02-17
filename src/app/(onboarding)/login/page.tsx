@@ -6,10 +6,11 @@ import { supabase } from '@/lib/supabase/client';
 
 export default function Login() {
   async function kakaoLogin() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: 'kakao',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: `phone_number name`,
       },
     });
   }
