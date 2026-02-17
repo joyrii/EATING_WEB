@@ -1,10 +1,22 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import axios from 'axios';
-import { useEffect } from 'react';
-import { fetchUsername } from '@/api/login';
 
 export async function GET(request: Request) {
+  const stepToPath = (step?: string | null) => {
+    switch (step) {
+      case 'terms':
+        return '/terms';
+      case 'verification':
+        return '/student-verification';
+      case 'mbti':
+      case 'completed':
+        return '/home';
+      default:
+        return '/terms';
+    }
+  };
+
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const next = searchParams.get('next') || '/terms';
@@ -60,9 +72,22 @@ export async function GET(request: Request) {
         timeout: 10000,
       },
     );
-    // 성공
     console.log('Backend API Response:', res.data);
-    return NextResponse.redirect(`${origin}${next}`);
+
+    // 3) 다음 페이지로 리다이렉트
+    const myInfo = await axios.get(`${apiUrl}/users/me`, {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      timeout: 10000,
+    });
+
+    const onboardingStep = myInfo.data?.onboarding_step;
+    console.log('User Onboarding Step:', onboardingStep);
+
+    const redirectPath = stepToPath(onboardingStep);
+
+    return NextResponse.redirect(`${origin}${redirectPath}`);
   } catch (e: any) {
     console.error('Backend API Error raw:', {
       message: e?.message,
