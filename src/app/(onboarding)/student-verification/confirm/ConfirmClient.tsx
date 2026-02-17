@@ -108,7 +108,7 @@ function ConfirmInner({ name }: Props) {
       if (isEnrolled) sessionStorage.setItem('studentId', studentId.trim());
       sessionStorage.setItem('department', department.trim());
 
-      router.push('/onboarding/mbti');
+      router.push('/home');
     } catch (error) {
       console.log('Verification submission error:', error);
       toast.error('인증 정보 제출에 실패했어요. 다시 시도해주세요.');

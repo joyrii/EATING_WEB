@@ -1,16 +1,5 @@
 import { api } from './axios-client';
 
-// 사용자 이름 조회
-export const fetchUsername = async (): Promise<string> => {
-  try {
-    const res = await api.get('/users/me');
-    return res.data.name;
-  } catch (error) {
-    console.error('Error fetching username:', error);
-    throw error;
-  }
-};
-
 // 학생 인증 정보 제출
 export type StudentType = 'enrolled' | 'freshman';
 
