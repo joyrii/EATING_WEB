@@ -6,7 +6,7 @@ import { Container, TextWrapper } from '../style';
 import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { fetchUsername, submitVerification } from '@/api/student-verification';
+import { submitVerification } from '@/api/student-verification';
 import toast from 'react-hot-toast';
 
 type Props = {
@@ -82,7 +82,7 @@ function ConfirmInner({ name }: Props) {
     if (!department.trim()) return false;
     if (isEnrolled && !studentId.trim()) return false;
     return true;
-  }, [name, department, studentId, isSubmitting, isEnrolled]);
+  }, [department, studentId, isSubmitting, isEnrolled]);
 
   const onConfirm = async () => {
     if (!department.trim()) {

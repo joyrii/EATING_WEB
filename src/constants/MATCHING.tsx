@@ -2,17 +2,20 @@ import { ReactNode } from 'react';
 
 export type MatchingStatus = 'before' | 'inProgress' | 'completed';
 
-type matchingSectionText = {
+type MatchingSectionText = {
   title: ReactNode;
   description: string;
 };
 
-export const matchingSectionText: Record<MatchingStatus, matchingSectionText> =
-  {
+export const getMatchingSectionText = (
+  status: MatchingStatus,
+  name: string,
+): MatchingSectionText => {
+  const texts: Record<MatchingStatus, MatchingSectionText> = {
     before: {
       title: (
         <>
-          주연님께 <span>딱!</span> 맞는 친구들을
+          {name}님께 <span>딱!</span> 맞는 친구들을
           <br />
           매칭해드릴게요
         </>
@@ -34,3 +37,6 @@ export const matchingSectionText: Record<MatchingStatus, matchingSectionText> =
         '빠르게 신청할수록 자신과 관심사가 비슷한 사람과 만날 기회가 높아져요!',
     },
   };
+
+  return texts[status];
+};

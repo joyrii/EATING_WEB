@@ -2,10 +2,14 @@
 
 import { MatchingContext } from './context';
 import { MatchingStatus } from '@/constants/MATCHING';
-import { useState } from 'react';
-import { matchingSectionText } from '@/constants/MATCHING';
+import { useState, useEffect } from 'react';
+import { getMatchingSectionText } from '@/constants/MATCHING';
 import styled from 'styled-components';
 import localFont from 'next/font/local';
+import { useRouter } from 'next/navigation';
+
+import { api } from '@/api/axios-client';
+import { getOnboardingStatus, getMe } from '@/api/home';
 
 export default function HomeLayoutClient({
   children,
@@ -14,7 +18,55 @@ export default function HomeLayoutClient({
   banners: any[];
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  const [name, setName] = useState<string>('');
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getMe();
+        setName(res.name);
+      } catch (error) {
+        console.error('Failed to fetch user name', error);
+        throw error;
+      }
+    })();
+  }, []);
+
   const [currentStatus, setCurrentStatus] = useState<MatchingStatus>('before');
+  const text = getMatchingSectionText(currentStatus, name);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get(`/matching/status`);
+        const status: MatchingStatus = data?.round_id
+          ? data.has_applied
+            ? 'inProgress'
+            : 'before'
+          : 'completed';
+        setCurrentStatus(status);
+      } catch (error) {
+        console.error('Failed to fetch matching status', error);
+        throw error;
+      }
+    })();
+  }, []);
+
+  const [onboardingStep, setOnboardingStep] = useState<string>(null);
+
+  useEffect(() => {
+    (async () => {
+      // 온보딩 상태 가져오기
+      try {
+        const res = await getOnboardingStatus();
+        setOnboardingStep(res);
+      } catch (error) {
+        console.error('Failed to fetch onboarding status', error);
+        return null; // 에러 시 null 반환
+      }
+    })();
+  }, []);
 
   const banner = banners[0];
 
@@ -39,22 +91,22 @@ export default function HomeLayoutClient({
           </TipBanner>
           <MatchingSection>
             <MatchingText>
-              <SectionTitle>
-                {matchingSectionText[currentStatus].title}
-              </SectionTitle>
+              <SectionTitle>{text.title}</SectionTitle>
               <MatchingDescription $currentStatus={currentStatus}>
-                {matchingSectionText[currentStatus].description}
+                {text.description}
               </MatchingDescription>
             </MatchingText>
             <MatchingButtonArea $currentStatus={currentStatus}>
               <MatchingButton
                 onClick={() => {
-                  // (임의) 매칭 상태 변경
-                  if (currentStatus === 'before')
-                    setCurrentStatus('inProgress');
-                  else if (currentStatus === 'inProgress')
-                    setCurrentStatus('completed');
-                  else setCurrentStatus('before');
+                  if (
+                    currentStatus === 'before' ||
+                    currentStatus === 'completed'
+                  ) {
+                    if (onboardingStep === 'completed')
+                      router.push('/application/schedule');
+                    else router.push('/onboarding/mbti');
+                  }
                 }}
                 $currentStatus={currentStatus}
               >

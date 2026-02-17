@@ -1,5 +1,6 @@
 import { getBanners } from '@/api/home';
 import HomeLayoutClient from './HomeLayoutClient';
+import { MatchingStatus } from '@/constants/MATCHING';
 
 export default async function HomeLayout({
   children,
