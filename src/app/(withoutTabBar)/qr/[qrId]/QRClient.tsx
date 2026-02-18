@@ -25,8 +25,12 @@ export default function QRPage({ qrId }: { qrId: string }) {
         <SubText>사장님께 쿠폰을 보여드리고 서비스를 제공 받으세요!</SubText>
       </TextWrapper>
       <ImageWrapper>
-        <img src="/svgs/qr/service.svg" />
-        <ServiceText>{qrInfo?.promotion}</ServiceText>
+        <img
+          src={qrInfo?.coupon_image_url}
+          alt="coupon"
+          width={217}
+          height={270}
+        />
       </ImageWrapper>
       <Description>
         해당 쿠폰은 1회성 쿠폰이며, 가게 내부에서만
@@ -62,7 +66,7 @@ const TextWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 130px;
+  margin-top: 100px;
 `;
 
 const MainText = styled.h1`
@@ -84,17 +88,6 @@ const ImageWrapper = styled.div`
   align-items: center;
   justify-content: center;
   margin-top: 23px;
-  background: #ffeee5;
-  width: 210px;
-  padding: 20px 40px;
-  border-radius: 10px;
-`;
-
-const ServiceText = styled.p`
-  font-size: 21px;
-  font-weight: 600;
-  color: #000;
-  text-align: center;
 `;
 
 const Description = styled.p`
