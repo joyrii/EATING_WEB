@@ -3,12 +3,14 @@ import styled from 'styled-components';
 export default function GuideCard({
   title,
   bg,
+  onClick,
 }: {
   title: string;
   bg: string;
+  onClick?: () => void;
 }) {
   return (
-    <GuideCardContainer $bg={bg}>
+    <GuideCardContainer $bg={bg} onClick={onClick}>
       <GuideCardTitle>{title}</GuideCardTitle>
     </GuideCardContainer>
   );
