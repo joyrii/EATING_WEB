@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
 type Cell = { r: number; c: number }; // r=시간, c=요일
+export type Slot = { day: number; hour: number }; // day=0~6, hour=11~20
 type Props = {
-  onChange?: (selectedCount: number) => void; // 셀 선택
+  value?: Slot[];
+  onChange?: (selected: Slot[]) => void; // 셀 선택
 };
 
 const DAYS = ['월', '화', '수', '목', '금', '토', '일'] as const;
@@ -19,9 +21,58 @@ const COLS = DAYS.length;
 const SHOW_LABEL_HOURS = new Set([12, 15, 18]);
 
 const keyOf = (cell: Cell) => `${cell.r},${cell.c}`;
+const parseKey = (key: string): Cell => {
+  const [r, c] = key.split(',').map(Number);
+  return { r, c };
+};
 
-export default function TimeGrid({ onChange }: Props) {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+// Cell -> Slot
+const cellToSlot = (cell: Cell): Slot => ({
+  day: cell.c,
+  hour: START_HOUR + cell.r,
+});
+
+// Slot -> Cell
+const slotToCell = (slot: Slot): Cell => ({
+  r: slot.hour - START_HOUR,
+  c: slot.day,
+});
+
+// slot 배열 -> Set<String>
+const slotsToKeySet = (slots: Slot[]) => {
+  const set = new Set<string>();
+  for (const slot of slots) {
+    const cell = slotToCell(slot);
+    if (cell.r >= 0 && cell.r < ROWS && cell.c >= 0 && cell.c < COLS) {
+      set.add(keyOf(cell));
+    }
+  }
+  return set;
+};
+
+export default function TimeGrid({ value = [], onChange }: Props) {
+  const externalKeySet = useMemo(() => slotsToKeySet(value), [value]);
+  const [selected, setSelected] = useState<Set<string>>(externalKeySet);
+  const lastEmittedRef = useRef<string>('');
+
+  // 주 이동
+  useEffect(() => {
+    setSelected((prev) => {
+      if (prev.size === externalKeySet.size) {
+        let same = true;
+        for (const k of prev) {
+          if (!externalKeySet.has(k)) {
+            same = false;
+            break;
+          }
+        }
+        if (same) return prev;
+      }
+
+      lastEmittedRef.current = Array.from(externalKeySet).sort().join('|');
+      return externalKeySet;
+    });
+  }, [externalKeySet]);
 
   const isPressing = useRef(false);
   const lastHit = useRef<string | null>(null);
@@ -86,7 +137,16 @@ export default function TimeGrid({ onChange }: Props) {
   };
 
   useEffect(() => {
-    onChange?.(selected.size);
+    if (!onChange) return;
+
+    const keys = Array.from(selected).sort();
+    const signature = keys.join('|');
+
+    if (signature === lastEmittedRef.current) return;
+    lastEmittedRef.current = signature;
+
+    const nextSlots: Slot[] = keys.map((k) => cellToSlot(parseKey(k)));
+    onChange(nextSlots);
   }, [selected, onChange]);
 
   return (

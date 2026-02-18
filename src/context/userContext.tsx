@@ -4,7 +4,11 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '@/api/axios-client';
 import { supabase } from '@/lib/supabase/client';
 
-type Me = { name?: string; onboarding_step?: string };
+type Me = {
+  name?: string;
+  onboarding_step?: string;
+  is_pre_registered?: boolean;
+};
 
 const UserContext = createContext<{
   me: Me | null;

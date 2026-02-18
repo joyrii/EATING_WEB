@@ -8,7 +8,9 @@ export default function Home() {
 
   return (
     <>
-      {currentStatus === 'before' || currentStatus === 'inProgress' ? (
+      {currentStatus === 'before' ||
+      currentStatus === 'inProgress' ||
+      currentStatus === 'pre_registered' ? (
         <GuideSection />
       ) : (
         <MathchingListSection />

@@ -1,6 +1,10 @@
 import { ReactNode } from 'react';
 
-export type MatchingStatus = 'before' | 'inProgress' | 'completed';
+export type MatchingStatus =
+  | 'pre_registered'
+  | 'before'
+  | 'inProgress'
+  | 'completed';
 
 type MatchingSectionText = {
   title: ReactNode;
@@ -12,6 +16,10 @@ export const getMatchingSectionText = (
   name: string,
 ): MatchingSectionText => {
   const texts: Record<MatchingStatus, MatchingSectionText> = {
+    pre_registered: {
+      title: <>사전신청해주신 {name}님 반가워요!</>,
+      description: '매칭 성사를 위해 아래 버튼을 눌러 진행해주세요',
+    },
     before: {
       title: (
         <>

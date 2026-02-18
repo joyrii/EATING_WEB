@@ -8,24 +8,60 @@ import {
 } from '@/app/(onboarding)/onboarding/style';
 import {
   CautionWrapper,
-  DateBox,
   ModalContent,
   TextWrapper,
 } from '@/app/(withoutTabBar)/application/style';
-import TimeGrid, { Slot } from '@/components/application/TimeGrid';
+import { Slot } from '@/components/application/TimeGrid';
 import Button from '@/components/BaseButton';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BaseModal } from '@/components/BaseModal';
 import Image from 'next/image';
 import { ModalButtonWrapper } from '@/app/(withoutTabBar)/application/style';
+import { WeekScheduleCard } from '@/components/application/pre/WeekScheduleCard';
+import { useMatchingDraftByWeek } from '@/context/matchingDraft';
+
+const weeks = [
+  { id: 'w1', start: '2월 23일', end: '3월 1일' },
+  { id: 'w2', start: '3월 2일', end: '3월 8일' },
+] as const;
+
+type WeekId = (typeof weeks)[number]['id'];
 
 export default function Schedule() {
   const router = useRouter();
 
-  const [slots, setSlots] = useState<Slot[]>([]); // 선택된 시간 슬롯
   const [isModalVisible, setIsModalVisible] = useState(false); // 확인 모달
-  const hasSelection = slots.length > 0; // 선택된 셀이 있어야 다음으로
+
+  const [activeWeekIndex, setActiveWeekIndex] = useState(0);
+  const [selectedByWeek, setSelectedByWeek] = useState<Record<WeekId, Slot[]>>({
+    w1: [],
+    w2: [],
+  });
+
+  const setAvailableSlots = useMatchingDraftByWeek(
+    (state) => state.setAvailableSlots,
+  );
+
+  const setActiveWeekKey = useMatchingDraftByWeek(
+    (state) => state.setActiveWeekKey,
+  );
+
+  useEffect(() => {
+    setActiveWeekKey('2026-02-23');
+  }, [setActiveWeekKey]);
+
+  const hasSelection = useMemo(
+    () => Object.values(selectedByWeek).some((slots) => slots.length > 0),
+    [selectedByWeek],
+  );
+
+  const payload = useMemo(
+    () => ({
+      available_slots: [...selectedByWeek.w1, ...selectedByWeek.w2],
+    }),
+    [selectedByWeek],
+  );
 
   return (
     <>
@@ -39,14 +75,27 @@ export default function Schedule() {
             <span>최대 2개</span>의 방이 생성될 수 있어요
           </SubText>
         </TextWrapper>
-        <DateBox>2월 23일 ~ 3월 1일</DateBox>
-        <TimeGrid value={slots} onChange={setSlots} />
+        <WeekScheduleCard
+          week={weeks[activeWeekIndex]}
+          value={selectedByWeek[weeks[activeWeekIndex].id]}
+          onChange={(next) => {
+            setSelectedByWeek((prev) => ({
+              ...prev,
+              [weeks[activeWeekIndex].id]: next,
+            }));
+          }}
+          onPrev={() => setActiveWeekIndex((i) => Math.max(0, i - 1))}
+          onNext={() =>
+            setActiveWeekIndex((i) => Math.min(weeks.length - 1, i + 1))
+          }
+          disablePrev={activeWeekIndex === 0}
+          disableNext={activeWeekIndex === weeks.length - 1}
+        />
         <ButtonWrapper>
           <Button
             label="다음"
             disabled={!hasSelection}
             onClick={() => {
-              const payload = { available_slots: slots };
               console.log('선택된 시간 슬롯:', payload);
               setIsModalVisible(true);
             }}
@@ -75,6 +124,7 @@ export default function Schedule() {
             <Button
               label="확인"
               onClick={() => {
+                setAvailableSlots(payload.available_slots);
                 router.push('/pre/dining');
               }}
             />

@@ -13,43 +13,15 @@ import toast from 'react-hot-toast';
 const TERM_DEPS = [
   {
     id: 'term1',
-    key: 'term1',
-    label: '[필수] 만 14세 이상입니다.',
-    required: true,
-    detailHref: null,
-  },
-  {
-    id: 'term2',
-    key: 'term2',
-    label: '[필수] 서비스 이용약관 동의',
-    required: true,
-    detailHref: '/terms/service',
-  },
-  {
-    id: 'term3',
-    key: 'term3',
-    label: '[필수] 개인정보 수집 및 이용 동의',
-    required: true,
-    detailHref: '/terms/privacy',
-  },
-  // {
-  //   id: 'term4',
-  //   key: 'term4',
-  //   label: '[필수] 개인정보 제3자 제공 동의',
-  //   required: true,
-  //   detailHref: '/terms/thirdParty',
-  // },
-  {
-    id: 'term5',
-    key: 'term5',
-    label: '[선택] 마케팅 정보 수신 동의',
-    required: false,
-    detailHref: '/terms/marketing',
+    title: '만 14세 이상입니다.',
+    is_required: true,
+    url: null,
   },
 ] as const;
 
 export default function TermsIndex() {
   const router = useRouter();
+  const [ready, setReady] = useState(false);
 
   const [serverTerms, setServerTerms] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,23 +32,37 @@ export default function TermsIndex() {
       const data = await getTerms();
       console.log('약관 데이터:', data);
       setServerTerms(data);
+      setReady(true);
     })();
   }, []);
 
   // 서버에서 받은 약관과 기본 약관을 병합하여 ID를 보장
   const mergedTerms = useMemo(() => {
-    if (!serverTerms.length) return TERM_DEPS;
-
-    return TERM_DEPS.map((term, index) => {
-      if (term.key === 'term1') return term;
-      const serverTerm = serverTerms[index - 1];
-      if (!serverTerm) return term;
-
-      return {
-        ...term,
-        id: String(serverTerm.id),
-      };
-    });
+    const serverTermsWithId = serverTerms.map((term) => ({
+      id: term.id,
+      key: term.id,
+      label: term.title,
+      required: term.is_required,
+      detailHref: term.url,
+    }));
+    const defaultTermsWithId = TERM_DEPS.map((term) => ({
+      id: term.id,
+      key: term.id,
+      label: term.title,
+      required: term.is_required,
+      detailHref: term.url,
+    }));
+    const allTerms = [...defaultTermsWithId, ...serverTermsWithId];
+    const uniqueTerms = allTerms.reduce(
+      (acc, term) => {
+        if (!acc.some((t) => t.id === term.id)) {
+          acc.push(term);
+        }
+        return acc;
+      },
+      [] as typeof serverTermsWithId,
+    );
+    return uniqueTerms;
   }, [serverTerms]);
 
   // 약관 ID별 체크 상태 관리
@@ -152,6 +138,13 @@ export default function TermsIndex() {
     }
   };
 
+  if (!ready)
+    return (
+      <LoadingWrapper>
+        <Spinner />
+      </LoadingWrapper>
+    );
+
   return (
     <Page>
       <div>
@@ -174,7 +167,9 @@ export default function TermsIndex() {
           <TermsItem
             key={term.id}
             id={term.id}
-            label={term.label}
+            label={
+              term.required ? `[필수] ${term.label}` : `[선택] ${term.label}`
+            }
             checked={!!checkedById[term.id]}
             handler={() => {
               toggle(term.id);
@@ -207,4 +202,28 @@ const Title = styled.h1`
   font-weight: 600;
   color: #000000;
   white-space: pre-line;
+`;
+
+// loading spinner
+const LoadingWrapper = styled.div`
+  min-height: 100vh;
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Spinner = styled.div`
+  width: 36px;
+  height: 36px;
+  border: 4px solid #f0f0f0;
+  border-top: 4px solid #ff5900;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 `;

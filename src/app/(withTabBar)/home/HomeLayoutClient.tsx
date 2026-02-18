@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/api/axios-client';
 import { getOnboardingStatus, getMe } from '@/api/home';
 import { useUser } from '@/context/userContext';
+import { supabase } from '@/lib/supabase/client';
 
 type MatchingStatusRes = {
   has_applied: boolean;
@@ -18,50 +19,50 @@ type MatchingStatusRes = {
   week_end?: string | null; // "YYYY-MM-DD" (일요일)
 };
 
-const KST_OFFSET_MIN = 9 * 60;
+// const KST_OFFSET_MIN = 9 * 60;
 
-function kstToUtcDate(y: number, m: number, d: number, hh = 0, mm = 0) {
-  const utcMs = Date.UTC(y, m - 1, d, hh, mm) - KST_OFFSET_MIN * 60 * 1000;
-  return new Date(utcMs);
-}
+// function kstToUtcDate(y: number, m: number, d: number, hh = 0, mm = 0) {
+//   const utcMs = Date.UTC(y, m - 1, d, hh, mm) - KST_OFFSET_MIN * 60 * 1000;
+//   return new Date(utcMs);
+// }
 
-function parseYmd(ymd: string) {
-  const [y, m, d] = ymd.split('-').map(Number);
-  return { y, m, d };
-}
+// function parseYmd(ymd: string) {
+//   const [y, m, d] = ymd.split('-').map(Number);
+//   return { y, m, d };
+// }
 
-function atKstFromWeekStart(
-  weekStart: string,
-  addDays: number,
-  hh: number,
-  mm: number,
-) {
-  const { y, m, d } = parseYmd(weekStart);
+// function atKstFromWeekStart(
+//   weekStart: string,
+//   addDays: number,
+//   hh: number,
+//   mm: number,
+// ) {
+//   const { y, m, d } = parseYmd(weekStart);
 
-  // weekStart의 KST 00:00을 UTC Date로
-  const base = kstToUtcDate(y, m, d, 0, 0);
+//   // weekStart의 KST 00:00을 UTC Date로
+//   const base = kstToUtcDate(y, m, d, 0, 0);
 
-  // addDays 만큼 이동
-  const moved = new Date(base.getTime() + addDays * 24 * 60 * 60 * 1000);
+//   // addDays 만큼 이동
+//   const moved = new Date(base.getTime() + addDays * 24 * 60 * 60 * 1000);
 
-  // moved를 KST 날짜로 환산해서 그 날짜의 hh:mm(KST)을 다시 UTC Date로 생성
-  const movedKst = new Date(moved.getTime() + KST_OFFSET_MIN * 60 * 1000);
-  const ny = movedKst.getUTCFullYear();
-  const nm = movedKst.getUTCMonth() + 1;
-  const nd = movedKst.getUTCDate();
+//   // moved를 KST 날짜로 환산해서 그 날짜의 hh:mm(KST)을 다시 UTC Date로 생성
+//   const movedKst = new Date(moved.getTime() + KST_OFFSET_MIN * 60 * 1000);
+//   const ny = movedKst.getUTCFullYear();
+//   const nm = movedKst.getUTCMonth() + 1;
+//   const nd = movedKst.getUTCDate();
 
-  return kstToUtcDate(ny, nm, nd, hh, mm);
-}
+//   return kstToUtcDate(ny, nm, nd, hh, mm);
+// }
 
-function calcUiStatus(ms: MatchingStatusRes, now = new Date()): MatchingStatus {
-  if (!ms.round_id || !ms.week_start) return 'completed';
+// function calcUiStatus(ms: MatchingStatusRes, now = new Date()): MatchingStatus {
+//   if (!ms.round_id || !ms.week_start) return 'completed';
 
-  // 금요일 17:00 = 월요일 + 4일 + 17:00
-  const fri17 = atKstFromWeekStart(ms.week_start, 4, 17, 0);
+//   // 금요일 17:00 = 월요일 + 4일 + 17:00
+//   const fri17 = atKstFromWeekStart(ms.week_start, 4, 17, 0);
 
-  if (now >= fri17) return 'completed';
-  return ms.has_applied ? 'inProgress' : 'before';
-}
+//   if (now >= fri17) return 'completed';
+//   return ms.has_applied ? 'inProgress' : 'before';
+// }
 
 export default function HomeLayoutClient({
   children,
@@ -78,11 +79,37 @@ export default function HomeLayoutClient({
   const name = me?.name ?? '회원';
   const onboardingStep = me?.onboarding_step ?? null;
   // 매칭 상태
-  const [currentStatus, setCurrentStatus] = useState<MatchingStatus>('before');
+  const [currentStatus, setCurrentStatus] =
+    useState<MatchingStatus>('pre_registered');
+  useEffect(() => {
+    if (!me) return;
+
+    if (me.is_pre_registered) {
+      setCurrentStatus('pre_registered');
+    } else {
+      setCurrentStatus('before');
+    }
+  }, [me]);
+  console.log('currentStatus:', currentStatus);
   const text = getMatchingSectionText(currentStatus, name);
 
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null;
+    const checkToken = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      console.log('session:', session);
+      console.log('access_token:', session?.access_token);
+      console.log('refresh_token:', session?.refresh_token);
+      console.log('user:', session?.user);
+    };
+
+    checkToken();
+  }, []);
+
+  useEffect(() => {
+    // let timer: ReturnType<typeof setTimeout> | null = null;
 
     const load = async () => {
       try {
@@ -90,22 +117,29 @@ export default function HomeLayoutClient({
           api.get<MatchingStatusRes>('/matching/status').then((r) => r.data),
         ]);
 
-        setCurrentStatus(calcUiStatus(match));
+        // 사전 등록자는 무조건 사전 등록 상태
+        if (me?.is_pre_registered) {
+          setReady(true);
+          return;
+        }
+
+        console.log('매칭 상태:', match);
+        setCurrentStatus(match.has_applied ? 'inProgress' : 'before');
 
         setReady(true);
 
-        // 다음 전환 시각 예약
-        if (match.week_start) {
-          const now = new Date();
-          const fri17 = atKstFromWeekStart(match.week_start, 4, 17, 0);
-          const nextMon0 = atKstFromWeekStart(match.week_start, 7, 0, 0);
-          const next = now < fri17 ? fri17 : now < nextMon0 ? nextMon0 : null;
+        //       // 다음 전환 시각 예약
+        //       if (match.week_start) {
+        //         const now = new Date();
+        //         const fri17 = atKstFromWeekStart(match.week_start, 4, 17, 0);
+        //         const nextMon0 = atKstFromWeekStart(match.week_start, 7, 0, 0);
+        //         const next = now < fri17 ? fri17 : now < nextMon0 ? nextMon0 : null;
 
-          if (next) {
-            const delay = Math.max(0, next.getTime() - now.getTime());
-            timer = setTimeout(() => load(), delay + 200);
-          }
-        }
+        //         if (next) {
+        //           const delay = Math.max(0, next.getTime() - now.getTime());
+        //           timer = setTimeout(() => load(), delay + 200);
+        //         }
+        //       }
       } catch (e) {
         console.error('Failed to init home', e);
         setReady(true);
@@ -114,12 +148,12 @@ export default function HomeLayoutClient({
 
     load();
 
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
+    //   return () => {
+    //     if (timer) clearTimeout(timer);
+    //   };
   }, []);
 
-  const banner = banners[0];
+  const banner = banners.find((b) => b.display_order === 1);
 
   if (!ready)
     return (
@@ -142,7 +176,7 @@ export default function HomeLayoutClient({
               <TipSubText>{banner.subtitle}</TipSubText>
             </TipBannerTextWrapper>
             <TipBannerImage
-              src={`/images/${banner.image_url}`}
+              src={banner.image_url}
               alt="banner-character"
               width={80}
             />
@@ -157,7 +191,9 @@ export default function HomeLayoutClient({
             <MatchingButtonArea $currentStatus={currentStatus}>
               <MatchingButton
                 onClick={() => {
-                  if (
+                  if (currentStatus === 'pre_registered') {
+                    router.push('/pre/schedule');
+                  } else if (
                     currentStatus === 'before' ||
                     currentStatus === 'completed'
                   ) {
@@ -168,7 +204,9 @@ export default function HomeLayoutClient({
                 }}
                 $currentStatus={currentStatus}
               >
-                매칭 신청하러 가기
+                {currentStatus === 'pre_registered'
+                  ? '사전 매칭 신청하러 가기'
+                  : '매칭 신청하러 가기'}
               </MatchingButton>
             </MatchingButtonArea>
           </MatchingSection>
@@ -314,7 +352,8 @@ const MatchingButtonArea = styled.div<{ $currentStatus?: string }>`
 `;
 
 const MatchingButton = styled.button<{ $currentStatus?: string }>`
-  width: 170px;
+  width: ${({ $currentStatus }) =>
+    $currentStatus === 'pre_registered' ? '225px' : '170px'};
   height: 50px;
   border-radius: 10px;
   background-color: ${({ $currentStatus }) =>
