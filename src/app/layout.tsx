@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import StyledComponentsRegistry from '../lib/styled-components/registry';
 import 'pretendard/dist/web/static/pretendard.css';
+import { Toaster } from 'react-hot-toast';
+import { UserProvider } from '@/context/userContext';
 
 export const metadata: Metadata = {
   title: 'EATING - 이화여대 밥약 매칭',
@@ -32,7 +34,12 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased max-w-[430px] mx-auto bg-[#FFFEFE] min-h-screen">
-        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+        <UserProvider>
+          <StyledComponentsRegistry>
+            {children}
+            <Toaster position="top-center" />
+          </StyledComponentsRegistry>
+        </UserProvider>
       </body>
     </html>
   );

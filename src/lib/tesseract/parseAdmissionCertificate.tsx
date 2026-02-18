@@ -37,10 +37,13 @@ export default function parseAdmissionCertificateText(
 
   if (!after) return undefined;
 
-  const m = after.match(/(?:^|\s)([가-힣A-Za-z]+대학)\s+(.+)$/);
-  if (m?.[2]) {
-    return { department: m[2].trim(), raw: after };
-  }
+  // OCR 한 글자씩 띄어진 거 복구
+  const fixed = after
+    .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g, ' ')
+    .replace(/([가-힣A-Za-z0-9])\s+(?=[가-힣A-Za-z0-9])/g, '$1')
+    .replace(/(대학)(?=[가-힣A-Za-z0-9])/g, '$1 ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
-  return { department: after.trim(), raw: after };
+  return { department: fixed, raw: fixed };
 }

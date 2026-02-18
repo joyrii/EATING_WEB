@@ -10,7 +10,7 @@ export default function BaseButton({
   onClick?: () => void;
 }) {
   return (
-    <Button disabled={disabled} onClick={onClick}>
+    <Button type="button" disabled={disabled} onClick={onClick}>
       <ButtonText>{label}</ButtonText>
     </Button>
   );

@@ -15,11 +15,20 @@ import {
 } from '../style';
 import RestaurantListItem from '@/components/application/RestaurantListItem';
 import Button from '@/components/BaseButton';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getRestaurants } from '@/api/application';
 
 export default function Dining() {
   const router = useRouter();
+  const [restaurants, setRestaurants] = useState([]);
   const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    (async () => {
+      const data = await getRestaurants();
+      setRestaurants(data);
+    })();
+  }, []);
 
   const toggle = (index: number) => {
     setCheckedItems((prev) => {
@@ -43,55 +52,17 @@ export default function Dining() {
         <SubText>2개 이상 선택할 시 매칭 확률이 낮아집니다.</SubText>
       </TextWrapper>
       <RestaurantListContainer>
-        <RestaurantListItem
-          name="다방방"
-          category="한식"
-          menu="쌍화커피, 쌍화라떼"
-          checked={checkedItems.has(0)}
-          onCheckedChange={() => toggle(0)}
-        />
-        <RestaurantListItem
-          name="다방방"
-          category="한식"
-          menu="쌍화커피, 쌍화라떼"
-          checked={checkedItems.has(1)}
-          onCheckedChange={() => toggle(1)}
-        />
-        <RestaurantListItem
-          name="다방방"
-          category="한식"
-          menu="쌍화커피, 쌍화라떼"
-          checked={checkedItems.has(2)}
-          onCheckedChange={() => toggle(2)}
-        />
-        <RestaurantListItem
-          name="다방방"
-          category="한식"
-          menu="쌍화커피, 쌍화라떼"
-          checked={checkedItems.has(3)}
-          onCheckedChange={() => toggle(3)}
-        />
-        <RestaurantListItem
-          name="다방방"
-          category="한식"
-          menu="쌍화커피, 쌍화라떼"
-          checked={checkedItems.has(4)}
-          onCheckedChange={() => toggle(4)}
-        />
-        <RestaurantListItem
-          name="다방방"
-          category="한식"
-          menu="쌍화커피, 쌍화라떼"
-          checked={checkedItems.has(5)}
-          onCheckedChange={() => toggle(5)}
-        />
-        <RestaurantListItem
-          name="다방방"
-          category="한식"
-          menu="쌍화커피, 쌍화라떼"
-          checked={checkedItems.has(6)}
-          onCheckedChange={() => toggle(6)}
-        />
+        {restaurants.map((restaurant, index) => (
+          <RestaurantListItem
+            key={restaurant.id}
+            imageUrl={restaurant.image_url}
+            name={restaurant.name}
+            category={restaurant.category}
+            menu={restaurant.menu_items.slice(0, 2).join(', ')}
+            checked={checkedItems.has(index)}
+            onCheckedChange={() => toggle(index)}
+          />
+        ))}
       </RestaurantListContainer>
       <ButtonWrapper>
         <Button

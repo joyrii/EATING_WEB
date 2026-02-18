@@ -2,10 +2,18 @@
 
 import styled from 'styled-components';
 import localFont from 'next/font/local';
-import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
 
 export default function Login() {
-  const router = useRouter();
+  async function kakaoLogin() {
+    await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: `phone_number name`,
+      },
+    });
+  }
 
   return (
     <MainContainer>
@@ -14,7 +22,7 @@ export default function Login() {
         <LogoCharacter alt="logo-character" />
       </LogoContainer>
       <TitleText>매칭으로 친구 사귀고 다같이 모여 할인 받자</TitleText>
-      <KakaoLoginButton onClick={() => router.push('/terms')}>
+      <KakaoLoginButton onClick={kakaoLogin}>
         <KakaoLogo alt="kakao-logo" />
         <KaKaoLoginButtonText>카카오 로그인</KaKaoLoginButtonText>
       </KakaoLoginButton>
