@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '@/api/axios-client';
+import { supabase } from '@/lib/supabase/client';
 
 type Me = { name?: string; onboarding_step?: string };
 
@@ -17,9 +18,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   const refresh = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      setMe(null);
+      localStorage.removeItem('me');
+      return;
+    }
+
     const { data } = await api.get('/users/me');
     setMe(data);
-    // ✅ 캐시는 여기서(렌더 후)
     localStorage.setItem('me', JSON.stringify(data));
   };
 

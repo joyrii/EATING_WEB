@@ -3,6 +3,7 @@
 import styled from 'styled-components';
 import localFont from 'next/font/local';
 import { supabase } from '@/lib/supabase/client';
+import { useEffect } from 'react';
 
 export default function Login() {
   async function kakaoLogin() {
@@ -14,6 +15,20 @@ export default function Login() {
       },
     });
   }
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      console.log('현재 session:', session);
+      console.log('access_token:', session?.access_token);
+      console.log('refresh_token:', session?.refresh_token);
+    };
+
+    checkToken();
+  }, []);
 
   return (
     <MainContainer>
