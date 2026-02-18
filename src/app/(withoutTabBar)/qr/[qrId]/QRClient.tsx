@@ -1,9 +1,22 @@
 'use client';
 
+import { getQRInfo } from '@/api/qr';
 import BaseButton from '@/components/BaseButton';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 export default function QRPage({ qrId }: { qrId: string }) {
+  const router = useRouter();
+  const [qrInfo, setQRInfo] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      const res = await getQRInfo(qrId);
+      setQRInfo(res);
+    })();
+  }, [qrId]);
+
   return (
     <Wrapper>
       <Background src="/svgs/qr/bg.svg" />
@@ -13,7 +26,7 @@ export default function QRPage({ qrId }: { qrId: string }) {
       </TextWrapper>
       <ImageWrapper>
         <img src="/svgs/qr/service.svg" />
-        <ServiceText>서비스 추가</ServiceText>
+        <ServiceText>{qrInfo?.promotion}</ServiceText>
       </ImageWrapper>
       <Description>
         해당 쿠폰은 1회성 쿠폰이며, 가게 내부에서만
@@ -21,7 +34,7 @@ export default function QRPage({ qrId }: { qrId: string }) {
         사용 가능합니다. 즐거운 잇팅 되세요!
       </Description>
       <ButtonWrapper>
-        <BaseButton label="완료" onClick={() => {}} />
+        <BaseButton label="완료" onClick={() => router.push('/home')} />
       </ButtonWrapper>
     </Wrapper>
   );
@@ -49,7 +62,7 @@ const TextWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 150px;
+  margin-top: 130px;
 `;
 
 const MainText = styled.h1`
@@ -81,6 +94,7 @@ const ServiceText = styled.p`
   font-size: 21px;
   font-weight: 600;
   color: #000;
+  text-align: center;
 `;
 
 const Description = styled.p`

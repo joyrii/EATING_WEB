@@ -6,5 +6,6 @@ export default async function QRPage({
   params: Promise<{ qrId: string }>;
 }) {
   const { qrId } = await params;
+
   return <QRClient qrId={qrId} />;
 }
