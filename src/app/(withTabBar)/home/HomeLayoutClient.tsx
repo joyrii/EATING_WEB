@@ -90,6 +90,7 @@ export default function HomeLayoutClient({
       setCurrentStatus('before');
     }
   }, [me]);
+  console.log('currentStatus:', currentStatus);
   const text = getMatchingSectionText(currentStatus, name);
 
   useEffect(() => {
@@ -115,6 +116,12 @@ export default function HomeLayoutClient({
         const [match] = await Promise.all([
           api.get<MatchingStatusRes>('/matching/status').then((r) => r.data),
         ]);
+
+        // 사전 등록자는 무조건 사전 등록 상태
+        if (me?.is_pre_registered) {
+          setReady(true);
+          return;
+        }
 
         console.log('매칭 상태:', match);
         setCurrentStatus(match.has_applied ? 'inProgress' : 'before');
