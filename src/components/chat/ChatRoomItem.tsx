@@ -2,7 +2,7 @@ import ProfileImage from './ProfileImage';
 import styled from 'styled-components';
 
 type ChatRoomItemProps = {
-  roomId: number;
+  roomId: string;
   roomName: string;
   timeStamp: string;
   content: string;

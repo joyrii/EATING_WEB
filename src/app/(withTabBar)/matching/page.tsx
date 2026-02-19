@@ -1,31 +1,122 @@
 'use client';
 
 import localFont from 'next/font/local';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import CHATTINGLIST from '@/constants/CHATTING_LIST';
+import { ensureSendbirdConnected } from '@/lib/sendbird/client';
 import ChatRoomItem from '@/components/chat/ChatRoomItem';
+import { useUser } from '@/context/userContext';
+import { getSendbirdInstance } from '@/lib/sendbird/client';
 
 interface RoomData {
-  id: number;
+  id: string;
   title: string;
   lastChat: string;
   lastChatAt: string;
   unreadCount: number;
+  profileImageUrls: string[];
 }
 
 const Matching = () => {
-  const [rooms, setRooms] = useState<RoomData[]>(CHATTINGLIST);
+  const [rooms, setRooms] = useState<RoomData[]>([]);
+  const [isFetching, setIsFetching] = useState(false);
+  const fetchingRef = useRef(false);
+
+  const { me, isLoaded } = useUser();
 
   const hasRooms = rooms.length > 0;
 
-  // 더미 프로필 이미지 URL
-  const imageUrls = [
-    '/images/chat/profile-image-1.jpeg',
-    '/images/chat/profile-image-2.jpeg',
-    '/images/chat/profile-image-3.jpeg',
-    '/images/chat/profile-image-4.jpeg',
-  ];
+  const fetchRooms = async () => {
+    if (!me?.id) return;
+    if (fetchingRef.current) return; // 중복 요청 방지
+
+    fetchingRef.current = true;
+    setIsFetching(true);
+
+    try {
+      await ensureSendbirdConnected(me.id, me.name);
+
+      const sb = getSendbirdInstance();
+
+      const query = sb.groupChannel.createMyGroupChannelListQuery({
+        includeEmpty: true,
+        limit: 50,
+        order: 'latest_last_message',
+      });
+
+      const channels = await query.next();
+
+      const mapped: RoomData[] = channels.map((channel: any) => {
+        const last = channel.lastMessage;
+        const lastText = last?.message ?? (last?.url ? '[파일]' : '');
+
+        const createdAtMs = last?.createdAt ?? channel.createdAt ?? Date.now();
+        const lastChatAt = new Date(createdAtMs).toLocaleString('ko-KR', {
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        });
+
+        const profileImageUrls = (channel.members ?? [])
+          .slice(0, 4)
+          .map((m: any) => m.profileUrl || '/images/chat/profile-image-1.jpeg');
+
+        return {
+          id: channel.url,
+          title: channel.name || '채팅방',
+          lastChat: lastText || '',
+          lastChatAt,
+          unreadCount: channel.unreadMessageCount || 0,
+          profileImageUrls,
+        };
+      });
+
+      setRooms(mapped);
+    } catch (error) {
+      console.error('Failed to fetch chat rooms:', error);
+      setRooms([]);
+    } finally {
+      fetchingRef.current = false;
+      setIsFetching(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isLoaded || !me?.id) return;
+    fetchRooms();
+  }, [isLoaded, me?.id]);
+
+  // 자동 업데이트
+  useEffect(() => {
+    if (!isLoaded || !me?.id) return;
+
+    const onFocus = () => {
+      fetchRooms();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchRooms();
+      }
+    };
+
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [isLoaded, me?.id]);
+
+  if (!isLoaded)
+    return (
+      <LoadingWrapper>
+        <Spinner />
+      </LoadingWrapper>
+    );
 
   return (
     <>
@@ -47,7 +138,7 @@ const Matching = () => {
                 timeStamp={room.lastChatAt}
                 content={room.lastChat}
                 unreadCount={room.unreadCount}
-                profileImageUrls={imageUrls}
+                profileImageUrls={room.profileImageUrls}
               />
             ))}
           </>
@@ -141,4 +232,28 @@ const NoticeText = styled.p`
   font-size: 14px;
   font-weight: 400;
   color: #707070;
+`;
+
+// loading spinner
+const LoadingWrapper = styled.div`
+  min-height: 100vh;
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Spinner = styled.div`
+  width: 36px;
+  height: 36px;
+  border: 4px solid #f0f0f0;
+  border-top: 4px solid #ff5900;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 `;

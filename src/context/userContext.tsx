@@ -5,6 +5,7 @@ import { api } from '@/api/axios-client';
 import { supabase } from '@/lib/supabase/client';
 
 type Me = {
+  id: string;
   name?: string;
   onboarding_step?: string;
   is_pre_registered?: boolean;
