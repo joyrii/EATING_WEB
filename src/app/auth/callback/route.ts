@@ -17,12 +17,27 @@ export async function GET(request: Request) {
     }
   };
 
+  const isSafeInternalPath = (path: string) => {
+    // 내부 경로만 허용
+    return path.startsWith('/') && !path.startsWith('//');
+  };
+
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') || '/terms';
+
+  const redirectParam = searchParams.get('redirect');
+  const nextParam = searchParams.get('next');
+  const requestedRedirect =
+    (redirectParam && isSafeInternalPath(redirectParam)
+      ? redirectParam
+      : null) ??
+    (nextParam && isSafeInternalPath(nextParam) ? nextParam : null) ??
+    '/terms';
 
   console.log('--- Auth Callback Start ---');
   console.log('Code:', code);
+  console.log('redirect Param:', requestedRedirect);
+  console.log('next param:', nextParam);
 
   if (!code) {
     return NextResponse.redirect(
@@ -73,6 +88,11 @@ export async function GET(request: Request) {
       },
     );
     console.log('Backend API Response:', res.data);
+
+    // redirect 우선
+    if (requestedRedirect) {
+      return NextResponse.redirect(`${origin}${requestedRedirect}`);
+    }
 
     // 3) 다음 페이지로 리다이렉트
     const myInfo = await axios.get(`${apiUrl}/users/me`, {
