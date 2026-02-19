@@ -4,14 +4,20 @@ import styled from 'styled-components';
 import localFont from 'next/font/local';
 import { supabase } from '@/lib/supabase/client';
 import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function Login() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get('redirect') || '/home';
+  const safeRedirect = redirectPath.startsWith('/') ? redirectPath : '/home';
+
   async function kakaoLogin() {
     await supabase.auth.signInWithOAuth({
       provider: 'kakao',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        scopes: `phone_number name`,
+        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(safeRedirect)}`,
+        scopes: `profile_nickname profile_image account_email name phone_number`,
       },
     });
   }

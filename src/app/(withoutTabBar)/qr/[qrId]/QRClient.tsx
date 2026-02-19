@@ -2,20 +2,50 @@
 
 import { getQRInfo } from '@/api/qr';
 import BaseButton from '@/components/BaseButton';
-import { useRouter } from 'next/navigation';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 export default function QRPage({ qrId }: { qrId: string }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [qrInfo, setQRInfo] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const res = await getQRInfo(qrId);
-      setQRInfo(res);
-    })();
-  }, [qrId]);
+    const fetchQR = async () => {
+      try {
+        const res = await getQRInfo(qrId);
+        setQRInfo(res);
+      } catch (e: any) {
+        const status = e?.response?.status;
+
+        if (status === 403) {
+          alert('로그인이 필요합니다.');
+          const currentUrl = `${pathname}${searchParams?.toString() ? `?${searchParams.toString()}` : ''}`;
+          router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+          return;
+        }
+
+        console.error('QR fetch error:', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQR();
+  }, [qrId, router]);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!qrInfo) {
+    return null;
+  }
 
   return (
     <Wrapper>
