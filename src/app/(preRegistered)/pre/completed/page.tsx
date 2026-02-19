@@ -15,7 +15,7 @@ export default function PreCompleted() {
         <SubText>잇팅에 관심을 가져주셔서 감사합니다!</SubText>
       </CompleteSection>
       <Announcement>
-        <Date>2월 22일 오후 5시</Date>
+        <Date>2월 23일</Date>
         <Content>매칭 결과를 카카오톡으로 발송해드립니다!</Content>
       </Announcement>
     </Wrapper>

@@ -21,3 +21,22 @@ export async function getRestaurants() {
     throw error;
   }
 }
+
+// 신청서 제출
+type ApiSlot = { date: string; hour: number };
+type ApplyMatchingPayload = {
+  available_slots: ApiSlot[];
+  excluded_restaurant_ids: string[];
+  preferred_years: number[];
+  excluded_mbti: string[];
+};
+
+export async function applyMatching(payload: ApplyMatchingPayload) {
+  try {
+    const res = await api.post(`/matching/apply`, payload);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to apply for matching:', error);
+    throw error;
+  }
+}
