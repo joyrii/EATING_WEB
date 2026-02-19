@@ -1,20 +1,26 @@
 import styled from 'styled-components';
 import GuideCard from '@/components/home/GuideCard';
 import { Section, SectionTitle } from './style';
+import { useEffect, useState } from 'react';
+import { getGuide } from '@/api/home';
 
 export default function GuideSection() {
+  const [guides, setGuides] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const res = await getGuide();
+      setGuides(res);
+    })();
+  }, []);
+
   return (
     <Section>
       <SectionTitle>잇팅 가이드</SectionTitle>
       <GuideScroll>
-        <GuideCard
-          title={'잇팅\n신청 과정에 대해\n알아봐요!'}
-          bg="/svgs/home/guide-card-bg-1.svg"
-        />
-        <GuideCard
-          title={'이대 메일 계정\n만드는 법에 대해\n알려드릴게요'}
-          bg="/svgs/home/guide-card-bg-2.svg"
-        />
+        {guides.map((guide) => (
+          <GuideCard key={guide.id} title={guide.name} bg={guide.image_url} />
+        ))}
       </GuideScroll>
     </Section>
   );

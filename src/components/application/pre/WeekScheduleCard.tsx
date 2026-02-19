@@ -6,8 +6,8 @@ import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 
 type WeekRange = {
   id: string;
-  start: string;
-  end: string;
+  week_start: string;
+  week_end: string;
 };
 
 export function WeekScheduleCard({
@@ -27,6 +27,12 @@ export function WeekScheduleCard({
   disablePrev: boolean;
   disableNext: boolean;
 }) {
+  // 날짜 포맷팅 함수
+  function formatDate(dateStr: string) {
+    const [year, month, day] = dateStr.split('-');
+    return `${Number(month)}월 ${Number(day)}일`;
+  }
+
   return (
     <div style={{ width: '100%', flex: '0 0 100%' }}>
       <DateBox
@@ -41,7 +47,7 @@ export function WeekScheduleCard({
         <Button onClick={onPrev} disabled={disablePrev}>
           <IoChevronBack size={20} />
         </Button>
-        {week.start} ~ {week.end}
+        {formatDate(week.week_start)} ~ {formatDate(week.week_end)}
         <Button onClick={onNext} disabled={disableNext}>
           <IoChevronForward size={20} />
         </Button>

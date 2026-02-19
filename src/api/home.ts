@@ -32,3 +32,14 @@ export async function getMe() {
     throw error;
   }
 }
+
+// 가이드 가져오기
+export async function getGuide() {
+  try {
+    const res = await api.get(`/eating-guides`);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to fetch guide', error);
+    throw error;
+  }
+}

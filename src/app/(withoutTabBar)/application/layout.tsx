@@ -29,7 +29,7 @@ export default function ApplicationLayout({
           <Segment $active={step[pathname] === 3} />
         </StepIndicator>
       </IndicatorWrapper>
-      <div style={{ marginTop: 10 }}>{children}</div>
+      <div style={{ marginTop: 50 }}>{children}</div>
     </MainContainer>
   );
 }
