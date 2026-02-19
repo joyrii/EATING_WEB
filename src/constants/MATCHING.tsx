@@ -11,9 +11,15 @@ type MatchingSectionText = {
   description: string;
 };
 
+type MatchingTextOptions = {
+  // 사전매칭 신청자가 신청 완료해서 inProgress로 온 케이스
+  isFirstPreInProgress?: boolean;
+};
+
 export const getMatchingSectionText = (
   status: MatchingStatus,
   name: string,
+  options?: MatchingTextOptions,
 ): MatchingSectionText => {
   const texts: Record<MatchingStatus, MatchingSectionText> = {
     pre_registered: {
@@ -45,6 +51,18 @@ export const getMatchingSectionText = (
         '빠르게 신청할수록 자신과 관심사가 비슷한 사람과 만날 기회가 높아져요!',
     },
   };
+
+  // 사전매칭 기간만 텍스트 변경
+  if (status === 'inProgress' && options?.isFirstPreInProgress) {
+    return {
+      ...texts.inProgress,
+      title: (
+        <>
+          <span>2월 23일</span>에 결과가 발표됩니다!
+        </>
+      ),
+    };
+  }
 
   return texts[status];
 };

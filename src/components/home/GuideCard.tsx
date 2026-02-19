@@ -34,4 +34,6 @@ const GuideCardTitle = styled.h3`
   line-height: 145%;
   color: #3d3d3d;
   white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 `;
