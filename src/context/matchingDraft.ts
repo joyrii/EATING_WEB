@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Slot } from '@/components/application/TimeGrid';
+
+export type ApiSlot = { date: string; hour: number };
 
 export type MatchingDraft = {
   // 공통(사전/일반)
-  available_slots: Slot[];
+  available_slots: ApiSlot[];
   excluded_restaurant_ids: string[];
 
   // 일반 매칭에서만 사용(사전 단계에서는 비워둠)
@@ -26,10 +27,10 @@ type State = {
   setActiveWeekKey: (weekKey: string) => void;
 
   // setters (현재 activeWeekKey에 적용)
-  setAvailableSlots: (slots: Slot[]) => void;
-  setExcludedRestaurantIds: (ids: string[]) => void;
+  setAvailableSlots: (available_slots: ApiSlot[]) => void;
+  setExcludedRestaurantIds: (excluded_restaurant_ids: string[]) => void;
   setPreferredYears: (years: number[]) => void;
-  setExcludedMbti: (mbti: string[]) => void;
+  setExcludedMbti: (excluded_mbti: string[]) => void;
 
   // getters/util
   getDraft: (weekKey?: string) => MatchingDraft;

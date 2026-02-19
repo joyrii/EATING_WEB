@@ -20,24 +20,45 @@ import Image from 'next/image';
 import { ModalButtonWrapper } from '@/app/(withoutTabBar)/application/style';
 import { WeekScheduleCard } from '@/components/application/pre/WeekScheduleCard';
 import { useMatchingDraftByWeek } from '@/context/matchingDraft';
+import { getMatchingStatus } from '@/api/application';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
-const weeks = [
-  { id: 'w1', start: '2월 23일', end: '3월 1일' },
-  { id: 'w2', start: '3월 2일', end: '3월 8일' },
-] as const;
-
-type WeekId = (typeof weeks)[number]['id'];
+type Week = { id: string; week_start: string; week_end: string };
+type ApiSlot = { date: string; hour: number };
 
 export default function Schedule() {
   const router = useRouter();
 
-  const [isModalVisible, setIsModalVisible] = useState(false); // 확인 모달
-
+  const [weeks, setWeeks] = useState<Week[]>([]);
   const [activeWeekIndex, setActiveWeekIndex] = useState(0);
-  const [selectedByWeek, setSelectedByWeek] = useState<Record<WeekId, Slot[]>>({
-    w1: [],
-    w2: [],
-  });
+  const [selectedByWeek, setSelectedByWeek] = useState<Record<string, Slot[]>>(
+    {},
+  );
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  // 주차 조회
+  useEffect(() => {
+    const run = async () => {
+      const res = await getMatchingStatus();
+
+      const nextWeeks: Week[] = (res.rounds ?? []).map((r: any) => ({
+        id: r.round_id,
+        week_start: r.week_start,
+        week_end: r.week_end,
+      }));
+
+      setWeeks(nextWeeks);
+    };
+
+    run();
+  }, []);
+
+  // activeWeekIndex 범위 보정
+  useEffect(() => {
+    setActiveWeekIndex((i) => Math.min(i, Math.max(weeks.length - 1, 0)));
+  }, [weeks.length]);
+
+  const activeWeek = weeks[activeWeekIndex];
 
   const setAvailableSlots = useMatchingDraftByWeek(
     (state) => state.setAvailableSlots,
@@ -47,21 +68,51 @@ export default function Schedule() {
     (state) => state.setActiveWeekKey,
   );
 
+  // 현재 활성 주차 key 동기화
   useEffect(() => {
-    setActiveWeekKey('2026-02-23');
-  }, [setActiveWeekKey]);
+    if (activeWeek) {
+      setActiveWeekKey(activeWeek.week_start);
+    }
+  }, [activeWeek, setActiveWeekKey]);
 
   const hasSelection = useMemo(
     () => Object.values(selectedByWeek).some((slots) => slots.length > 0),
     [selectedByWeek],
   );
 
-  const payload = useMemo(
-    () => ({
-      available_slots: [...selectedByWeek.w1, ...selectedByWeek.w2],
-    }),
-    [selectedByWeek],
-  );
+  // yyyy-mm-dd + day(0~6) → 실제 날짜 계산
+  const addDaysISO = (isoDate: string, add: number) => {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    const utc = new Date(Date.UTC(y, m - 1, d));
+    utc.setUTCDate(utc.getUTCDate() + add);
+
+    const yy = utc.getUTCFullYear();
+    const mm = String(utc.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(utc.getUTCDate()).padStart(2, '0');
+    return `${yy}-${mm}-${dd}`;
+  };
+
+  // 서버 전송용 payload 생성 (date/hour 형태)
+  const payload = useMemo(() => {
+    const roundIdToWeekStart = new Map<string, string>();
+    weeks.forEach((w) => roundIdToWeekStart.set(w.id, w.week_start));
+
+    const apiSlots: ApiSlot[] = Object.entries(selectedByWeek).flatMap(
+      ([roundId, slots]) => {
+        const weekStart = roundIdToWeekStart.get(roundId);
+        if (!weekStart) return [];
+
+        return slots.map((s) => ({
+          date: addDaysISO(weekStart, s.day),
+          hour: s.hour,
+        }));
+      },
+    );
+
+    return { available_slots: apiSlots };
+  }, [selectedByWeek, weeks]);
+
+  if (weeks.length === 0) return <LoadingSpinner />;
 
   return (
     <>
@@ -75,13 +126,14 @@ export default function Schedule() {
             <span>최대 2개</span>의 방이 생성될 수 있어요
           </SubText>
         </TextWrapper>
+
         <WeekScheduleCard
-          week={weeks[activeWeekIndex]}
-          value={selectedByWeek[weeks[activeWeekIndex].id]}
+          week={activeWeek}
+          value={selectedByWeek[activeWeek.id] ?? []}
           onChange={(next) => {
             setSelectedByWeek((prev) => ({
               ...prev,
-              [weeks[activeWeekIndex].id]: next,
+              [activeWeek.id]: next,
             }));
           }}
           onPrev={() => setActiveWeekIndex((i) => Math.max(0, i - 1))}
@@ -91,17 +143,19 @@ export default function Schedule() {
           disablePrev={activeWeekIndex === 0}
           disableNext={activeWeekIndex === weeks.length - 1}
         />
+
         <ButtonWrapper>
           <Button
             label="다음"
             disabled={!hasSelection}
             onClick={() => {
-              console.log('선택된 시간 슬롯:', payload);
+              console.log('전송 payload:', payload);
               setIsModalVisible(true);
             }}
           />
         </ButtonWrapper>
       </div>
+
       <BaseModal
         open={isModalVisible}
         onClose={() => setIsModalVisible(false)}
@@ -120,6 +174,7 @@ export default function Schedule() {
               노쇼 페널티가 부과됩니다
             </p>
           </CautionWrapper>
+
           <ModalButtonWrapper>
             <Button
               label="확인"
