@@ -31,23 +31,30 @@ export default function Schedule() {
   const [week, setWeek] = useState<Week | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]); // 선택된 시간 슬롯(day/hour)
   const [isModalVisible, setIsModalVisible] = useState(false); // 확인 모달
+  const [loading, setLoading] = useState(true); // 로딩 상태
 
   // 주차 조회 (여기 페이지는 1주차만 사용)
   useEffect(() => {
     const run = async () => {
-      const res = await getMatchingStatus();
-      const first = res.rounds?.[0];
+      try {
+        const res = await getMatchingStatus();
+        const first = res.rounds?.[0];
 
-      if (!first) {
-        setWeek(null);
-        return;
+        if (!first) {
+          setWeek(null);
+          return;
+        }
+
+        setWeek({
+          id: first.round_id,
+          week_start: first.week_start,
+          week_end: first.week_end,
+        });
+      } catch (e) {
+        console.error('주차 조회 실패:', e);
+      } finally {
+        setLoading(false);
       }
-
-      setWeek({
-        id: first.round_id,
-        week_start: first.week_start,
-        week_end: first.week_end,
-      });
     };
 
     run();
@@ -85,7 +92,7 @@ export default function Schedule() {
     };
   }, [slots, week]);
 
-  if (!week) return <LoadingSpinner />;
+  if (!loading) return <LoadingSpinner />;
 
   return (
     <>

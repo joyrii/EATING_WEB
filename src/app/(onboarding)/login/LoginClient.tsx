@@ -30,10 +30,6 @@ export default function LoginClient() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-
-      if (session) {
-        router.replace(safeRedirect ?? '/home');
-      }
     };
 
     check();

@@ -84,7 +84,7 @@ export default function PreDining() {
 
       await applyMatching(payload);
 
-      router.push('/application/additional');
+      router.push('/pre/completed');
     } catch (e: any) {
       const status = e?.response?.status;
 
