@@ -36,9 +36,12 @@ export default function StepShell({
 
       <ButtonWrapper>
         <BaseButton
-          label="다음"
-          onClick={() => go(step + 1)}
-          disabled={step >= totalSteps}
+          label={step >= totalSteps ? '확인' : '다음'}
+          onClick={() => {
+            if (step >= totalSteps) {
+              router.replace('/home');
+            } else go(step + 1);
+          }}
         />
       </ButtonWrapper>
     </div>

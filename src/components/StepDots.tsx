@@ -39,7 +39,14 @@ export default function StepIndicator({
 
   return (
     <LayoutGroup>
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+      <div
+        style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          zIndex: 999,
+        }}
+      >
         <div
           style={{
             width: trackWidth,
