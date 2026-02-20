@@ -40,7 +40,13 @@ export default function QRPage({ qrId }: { qrId: string }) {
   }, [qrId, router]);
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return (
+      <LoadingPage>
+        <Spinner />
+        <LoadingMainText>쿠폰 발급 중입니다...</LoadingMainText>
+        <LoadingSubText>조금만 기다려주세요!</LoadingSubText>
+      </LoadingPage>
+    );
   }
 
   if (!qrInfo) {
@@ -132,4 +138,41 @@ const ButtonWrapper = styled.div`
   width: 85%;
   margin-top: auto;
   margin-bottom: 30px;
+`;
+
+const LoadingPage = styled.div`
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Spinner = styled.div`
+  width: 36px;
+  height: 36px;
+  border: 4px solid #f0f0f0;
+  border-top: 4px solid #ff5900;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const LoadingMainText = styled.h1`
+  font-size: 26px;
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 7px;
+`;
+
+const LoadingSubText = styled.p`
+  font-size: 16px;
+  font-weight: 500;
+  color: #a3a3a3;
 `;

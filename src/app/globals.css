@@ -19,7 +19,7 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family: var(--font-family);
+  font-family: var(--font-pretendard), var(--font-family);
   color: var(--text-color);
   line-height: 1.5;
   letter-spacing: -0.02em;
