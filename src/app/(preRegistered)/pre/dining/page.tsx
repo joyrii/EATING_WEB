@@ -44,11 +44,19 @@ export default function PreDining() {
     })();
   }, []);
 
+  useEffect(() => {
+    const draft = getDraft();
+    const ids = draft.excluded_restaurant_ids ?? [];
+    setCheckedIds(new Set(ids));
+  }, [getDraft, activeWeekKey]);
+
   const toggle = (id: string) => {
     setCheckedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+
+      setExcludedRestaurantIds(Array.from(next));
       return next;
     });
   };
@@ -85,7 +93,7 @@ export default function PreDining() {
       else if (status === 409) alert('이미 모든 라운드에 신청하셨습니다.');
       else alert('매칭 신청에 실패했습니다.');
 
-      router.push('/home');
+      router.push('/pre/completed');
     } finally {
       setIsSubmitting(false);
     }
@@ -131,7 +139,6 @@ export default function PreDining() {
           disabled={isSubmitting || checkedIds.size === 0}
           onClick={() => {
             submit(Array.from(checkedIds));
-            router.push('/home');
           }}
         />
       </ButtonWrapper>
