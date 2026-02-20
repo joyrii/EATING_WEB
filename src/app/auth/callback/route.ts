@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       ? redirectParam
       : null) ??
     (nextParam && isSafeInternalPath(nextParam) ? nextParam : null) ??
-    '/terms';
+    null;
 
   console.log('--- Auth Callback Start ---');
   console.log('Code:', code);
@@ -89,11 +89,6 @@ export async function GET(request: Request) {
     );
     console.log('Backend API Response:', res.data);
 
-    // redirect 우선
-    if (requestedRedirect) {
-      return NextResponse.redirect(`${origin}${requestedRedirect}`);
-    }
-
     // 3) 다음 페이지로 리다이렉트
     const myInfo = await axios.get(`${apiUrl}/users/me`, {
       headers: {
@@ -106,6 +101,17 @@ export async function GET(request: Request) {
     console.log('User Onboarding Step:', onboardingStep);
 
     const redirectPath = stepToPath(onboardingStep);
+
+    const isOnboardingDone = onboardingStep === 'completed';
+
+    if (isOnboardingDone && requestedRedirect) {
+      return NextResponse.redirect(`${origin}${requestedRedirect}`);
+    }
+
+    console.log('requestedRedirect:', requestedRedirect);
+    console.log('myInfo.data:', myInfo.data);
+    console.log('onboardingStep(raw):', myInfo.data?.onboarding_step);
+    console.log('redirectPath(from stepToPath):', redirectPath);
 
     return NextResponse.redirect(`${origin}${redirectPath}`);
   } catch (e: any) {

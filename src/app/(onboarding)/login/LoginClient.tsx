@@ -9,31 +9,34 @@ import { useRouter, useSearchParams } from 'next/navigation';
 export default function LoginClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get('redirect') || '/home';
-  const safeRedirect = redirectPath.startsWith('/') ? redirectPath : '/home';
+  const redirectPath = searchParams.get('redirect');
+  const safeRedirect =
+    redirectPath && redirectPath.startsWith('/') ? redirectPath : null;
 
   async function kakaoLogin() {
     await supabase.auth.signInWithOAuth({
       provider: 'kakao',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(safeRedirect)}`,
+        redirectTo: safeRedirect
+          ? `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(safeRedirect)}`
+          : `${window.location.origin}/auth/callback`,
         scopes: `profile_nickname profile_image account_email name phone_number`,
       },
     });
   }
 
   useEffect(() => {
-    const checkToken = async () => {
+    const check = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      console.log('현재 session:', session);
-      console.log('access_token:', session?.access_token);
-      console.log('refresh_token:', session?.refresh_token);
+      if (session) {
+        router.replace(safeRedirect ?? '/home');
+      }
     };
 
-    checkToken();
+    check();
   }, []);
 
   return (
