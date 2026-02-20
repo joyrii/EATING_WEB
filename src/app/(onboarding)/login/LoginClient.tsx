@@ -35,6 +35,24 @@ export default function LoginClient() {
     check();
   }, []);
 
+  useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      window.location.hash?.includes('error=')
+    ) {
+      history.replaceState(
+        null,
+        '',
+        window.location.pathname + window.location.search,
+      );
+    }
+
+    const err = searchParams.get('error');
+    if (err) {
+      supabase.auth.signOut();
+    }
+  }, [searchParams]);
+
   return (
     <MainContainer>
       <LogoContainer>
