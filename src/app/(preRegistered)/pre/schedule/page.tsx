@@ -35,6 +35,8 @@ export default function Schedule() {
     {},
   );
   const [isModalVisible, setIsModalVisible] = useState(false);
+  // 첫째주 월요일 제외
+  const isFirstWeek = activeWeekIndex === 0;
 
   // 주차 조회
   useEffect(() => {
@@ -121,7 +123,7 @@ export default function Schedule() {
           <StepText>01</StepText>
           <TitleText>매칭 가능한 일정을 알려주세요.</TitleText>
           <SubText>
-            꼭 나갈 수 있는 시간만 스크롤해서 선택해주세요!
+            {'>'}를 눌러 2주 동안 가능한 시간 모두 스크롤 해주세요!
             <br />
             <span>최대 2개</span>의 방이 생성될 수 있어요
           </SubText>
@@ -142,6 +144,7 @@ export default function Schedule() {
           }
           disablePrev={activeWeekIndex === 0}
           disableNext={activeWeekIndex === weeks.length - 1}
+          isFirstWeek={isFirstWeek}
         />
 
         <ButtonWrapper>
