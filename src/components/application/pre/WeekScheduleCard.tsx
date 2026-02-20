@@ -18,6 +18,7 @@ export function WeekScheduleCard({
   onNext,
   disablePrev,
   disableNext,
+  isFirstWeek,
 }: {
   week: WeekRange;
   value: Slot[];
@@ -26,6 +27,7 @@ export function WeekScheduleCard({
   onNext: () => void;
   disablePrev: boolean;
   disableNext: boolean;
+  isFirstWeek: boolean;
 }) {
   // 날짜 포맷팅 함수
   function formatDate(dateStr: string) {
@@ -52,7 +54,12 @@ export function WeekScheduleCard({
           <IoChevronForward size={20} />
         </Button>
       </DateBox>
-      <TimeGrid key={week.id} value={value} onChange={onChange} />
+      <TimeGrid
+        key={week.id}
+        value={value}
+        onChange={onChange}
+        disabledCell={(slot) => isFirstWeek && slot.day === 0}
+      />
     </div>
   );
 }

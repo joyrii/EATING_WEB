@@ -8,6 +8,7 @@ export type Slot = { day: number; hour: number }; // day=0~6, hour=11~20
 type Props = {
   value?: Slot[];
   onChange?: (selected: Slot[]) => void; // 셀 선택
+  disabledCell?: (slot: Slot) => boolean; // 셀 비활성화 여부
 };
 
 const DAYS = ['월', '화', '수', '목', '금', '토', '일'] as const;
@@ -50,7 +51,11 @@ const slotsToKeySet = (slots: Slot[]) => {
   return set;
 };
 
-export default function TimeGrid({ value = [], onChange }: Props) {
+export default function TimeGrid({
+  value = [],
+  onChange,
+  disabledCell,
+}: Props) {
   const externalKeySet = useMemo(() => slotsToKeySet(value), [value]);
   const [selected, setSelected] = useState<Set<string>>(externalKeySet);
   const lastEmittedRef = useRef<string>('');
@@ -80,7 +85,14 @@ export default function TimeGrid({ value = [], onChange }: Props) {
 
   const isSelected = (cell: Cell) => selected.has(keyOf(cell));
 
+  const isDisabled = (cell: Cell) => {
+    const slot = cellToSlot(cell);
+    return disabledCell?.(slot) ?? false;
+  };
+
   const setCell = (cell: Cell, mode: 'PAINT' | 'ERASE') => {
+    if (isDisabled(cell)) return;
+
     const k = keyOf(cell);
     setSelected((prev) => {
       const next = new Set(prev);
@@ -113,6 +125,9 @@ export default function TimeGrid({ value = [], onChange }: Props) {
     const cell = hitTestCell(e.clientX, e.clientY);
     if (!cell) return;
 
+    // 비활성
+    if (isDisabled(cell)) return;
+
     paintMode.current = isSelected(cell) ? 'ERASE' : 'PAINT';
     setCell(cell, paintMode.current);
     lastHit.current = keyOf(cell);
@@ -126,6 +141,8 @@ export default function TimeGrid({ value = [], onChange }: Props) {
 
     const k = keyOf(cell);
     if (k === lastHit.current) return;
+
+    if (isDisabled(cell)) return;
 
     setCell(cell, paintMode.current);
     lastHit.current = k;
@@ -148,6 +165,24 @@ export default function TimeGrid({ value = [], onChange }: Props) {
     const nextSlots: Slot[] = keys.map((k) => cellToSlot(parseKey(k)));
     onChange(nextSlots);
   }, [selected, onChange]);
+
+  // 비활성 셀 제거
+  useEffect(() => {
+    if (!disabledCell) return;
+
+    setSelected((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const k of prev) {
+        const slot = cellToSlot(parseKey(k));
+        if (disabledCell(slot)) {
+          next.delete(k);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [disabledCell]);
 
   return (
     <TimeGridContainer>
@@ -200,6 +235,7 @@ export default function TimeGrid({ value = [], onChange }: Props) {
                     data-cell="1"
                     data-r={r}
                     data-c={c}
+                    $disabled={isDisabled(cell)}
                     $active={active}
                   />
                 );
@@ -242,8 +278,9 @@ const TimeLabel = styled.div`
   letter-spacing: -0.01em;
 `;
 
-const TimeCell = styled.div<{ $active: boolean }>`
+const TimeCell = styled.div<{ $disabled: boolean; $active: boolean }>`
   height: 30px;
   border: 1px solid #d6d6d6;
-  background-color: ${({ $active }) => ($active ? '#FFEEE5' : '#ffffff')};
+  background-color: ${({ $disabled, $active }) =>
+    $disabled ? '#f3f3f3' : $active ? '#FFEEE5' : '#ffffff'};
 `;

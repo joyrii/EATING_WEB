@@ -18,23 +18,35 @@ export default function PreRegisteredLayout({
   const isHidden = hiddenPaths.includes(pathname);
 
   return (
-    // Step Indicator
-    <MainContainer>
-      {!isHidden && (
-        <IndicatorWrapper>
-          <StepIndicator>
-            <BackButton onClick={() => history.back()}>
-              <img src="/svgs/back.svg" alt="back" />
-            </BackButton>
-            <Segment $active={step[pathname] === 1} />
-            <Segment $active={step[pathname] === 2} />
-          </StepIndicator>
-        </IndicatorWrapper>
-      )}
-      <div style={{ marginTop: 50 }}>{children}</div>
-    </MainContainer>
+    <>
+      <SafeAreaTop />
+      <MainContainer>
+        {!isHidden && (
+          <IndicatorWrapper>
+            <StepIndicator>
+              <BackButton onClick={() => history.back()}>
+                <img src="/svgs/back.svg" alt="back" />
+              </BackButton>
+              <Segment $active={step[pathname] === 1} />
+              <Segment $active={step[pathname] === 2} />
+            </StepIndicator>
+          </IndicatorWrapper>
+        )}
+        <div style={{ marginTop: 50 }}>{children}</div>
+      </MainContainer>
+    </>
   );
 }
+
+const SafeAreaTop = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  background: #fafafa;
+  z-index: 9999;
+`;
 
 const MainContainer = styled.div`
   display: flex;
