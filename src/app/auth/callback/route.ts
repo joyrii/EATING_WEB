@@ -86,7 +86,7 @@ export async function GET(request: Request) {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
         },
-        timeout: 10000,
+        timeout: 30000,
       },
     );
     console.log('Backend API Response:', res.data);
@@ -96,7 +96,7 @@ export async function GET(request: Request) {
       headers: {
         Authorization: `Bearer ${jwtToken}`,
       },
-      timeout: 10000,
+      timeout: 30000,
     });
 
     const { student_id, student_type, department } = myInfo.data || {};
