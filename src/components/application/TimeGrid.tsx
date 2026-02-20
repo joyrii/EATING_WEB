@@ -60,6 +60,10 @@ export default function TimeGrid({
   const [selected, setSelected] = useState<Set<string>>(externalKeySet);
   const lastEmittedRef = useRef<string>('');
 
+  useEffect(() => {
+    setSelected(externalKeySet);
+  }, [externalKeySet]);
+
   // 주 이동
   useEffect(() => {
     setSelected((prev) => {
