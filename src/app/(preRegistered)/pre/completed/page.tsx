@@ -1,7 +1,21 @@
+'use client';
+
 import styled from 'styled-components';
 import Image from 'next/image';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function PreCompleted() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.replace('/home');
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [router]);
+
   return (
     <Wrapper>
       <CompleteSection>
