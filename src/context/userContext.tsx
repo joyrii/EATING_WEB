@@ -8,6 +8,7 @@ type Me = {
   name?: string;
   onboarding_step?: string;
   is_pre_registered?: boolean;
+  is_admin?: boolean;
 };
 
 const UserContext = createContext<{
@@ -40,7 +41,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        // ✅ 캐시는 effect에서 읽기(하이드레이션 이후)
+        // 캐시는 effect에서 읽기(하이드레이션 이후)
         const cached = localStorage.getItem('me');
         if (cached) setMe(JSON.parse(cached));
 
