@@ -16,7 +16,7 @@ export default function TabBar() {
       label: '홈',
     },
     {
-      href: '/matching',
+      href: '/ready',
       icon: {
         active: '/svgs/home/navbar/matching-active.svg',
         inactive: '/svgs/home/navbar/matching-inactive.svg',
@@ -24,7 +24,7 @@ export default function TabBar() {
       label: '매칭',
     },
     {
-      href: '/settings',
+      href: '/ready-2',
       icon: {
         active: '/svgs/home/navbar/setting-active.svg',
         inactive: '/svgs/home/navbar/setting-inactive.svg',
