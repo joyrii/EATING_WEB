@@ -28,7 +28,7 @@ export default function TabBar() {
       label: '매칭',
     },
     {
-      href: isAdmin ? '/setting' : '/ready-2',
+      href: isAdmin ? '/settings' : '/ready-2',
       icon: {
         active: '/svgs/home/navbar/setting-active.svg',
         inactive: '/svgs/home/navbar/setting-inactive.svg',
