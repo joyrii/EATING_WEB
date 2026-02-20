@@ -92,7 +92,8 @@ export default function Schedule() {
     };
   }, [slots, week]);
 
-  if (!loading) return <LoadingSpinner />;
+  if (loading) return <LoadingSpinner />;
+  if (!week) return <div>현재 매칭 가능한 주차가 없어요.</div>;
 
   return (
     <>
