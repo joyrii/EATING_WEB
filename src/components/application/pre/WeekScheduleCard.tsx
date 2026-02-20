@@ -52,7 +52,7 @@ export function WeekScheduleCard({
           <IoChevronForward size={20} />
         </Button>
       </DateBox>
-      <TimeGrid value={value} onChange={onChange} />
+      <TimeGrid key={week.id} value={value} onChange={onChange} />
     </div>
   );
 }
