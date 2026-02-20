@@ -89,6 +89,11 @@ export default function HomeLayoutClient({
     isFirstPreInProgress,
   });
 
+  console.log('canApply', currentStatus, {
+    isPreRegistered,
+    isFirstPreInProgress,
+  });
+
   useEffect(() => {
     if (!me) return;
 
@@ -105,9 +110,15 @@ export default function HomeLayoutClient({
           return;
         }
 
+        const hasAppliedAnyRound = (res.rounds ?? []).some(
+          (r: any) => r.has_applied === true,
+        );
+
+        const effectiveCanApply = !hasAppliedAnyRound;
+
         const now = new Date();
         const uiStatus = calcUiStatus({
-          canApply: res.can_apply, // 매칭 신청 가능 여부
+          canApply: effectiveCanApply, // 매칭 신청 가능 여부
           isPreRegistered: !!me.is_pre_registered, // 사전 등록 여부
           weekStart, // 이번 라운드 시작
           now, // 현재 시각

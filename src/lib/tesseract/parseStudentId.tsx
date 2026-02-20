@@ -16,19 +16,36 @@ const normalize = (raw: string) => {
 };
 
 const fixSpacedHangul = (s: string) => {
-  const tokens = s.trim().split(/\s+/);
+  let tokens = s.trim().split(/\s+/);
 
-  const allSingleHangul = tokens.every((t) => /^[가-힣]$/.test(t));
-  if (allSingleHangul) return tokens.join('');
+  tokens = tokens.map((t) => {
+    if (/^[&＆][0-9IlO]{3,}$/.test(t)) return '&';
+    return t;
+  });
 
-  if (/(과|학과|학부|전공)$/.test(tokens[tokens.length - 1])) {
-    const hangulTokenCount = tokens.filter((t) => /^[가-힣]+$/.test(t)).length;
-    const singleHangulCount = tokens.filter((t) => /^[가-힣]$/.test(t)).length;
+  tokens = tokens.filter((t) => {
+    if (t === '&') return true;
+    if (/^[0-9IlO]{3,}$/.test(t)) return false;
+    return true;
+  });
 
-    if (hangulTokenCount > 0 && singleHangulCount / hangulTokenCount >= 0.8) {
-      return tokens.join('');
-    }
+  const isHangul = (t: string) => /^[가-힣]+$/.test(t);
+  const isSingleHangul = (t: string) => /^[가-힣]$/.test(t);
+
+  const hangulTokens = tokens.filter(isHangul);
+  const singleHangulCount = tokens.filter(isSingleHangul).length;
+
+  const ratio =
+    hangulTokens.length === 0 ? 0 : singleHangulCount / hangulTokens.length;
+
+  const looksLikeDeptBySuffix =
+    /(과|학과|학부|전공)$/.test(tokens.join('')) ||
+    /(과|학과|학부|전공)$/.test(tokens[tokens.length - 1] ?? '');
+
+  if (ratio >= 0.8 || looksLikeDeptBySuffix) {
+    return tokens.join('');
   }
+
   return s.trim().replace(/\s{2,}/g, ' ');
 };
 
@@ -66,8 +83,16 @@ export default function parseStudentIdText(rawText: string): StudentIdResult {
     if (nextLine) {
       const candidate = cleanDept(nextLine);
 
+      const hasDeptSuffix = /(과|학과|학부|전공)$/.test(candidate);
+
+      const hangulCount = (candidate.match(/[가-힣]/g) ?? []).length;
+      const totalCount = candidate.replace(/\s/g, '').length || 1;
+      const hangulRatio = hangulCount / totalCount;
+
       const looksLikeDept =
-        /(과|학과|학부|전공)$/.test(candidate) || candidate.length >= 2;
+        hasDeptSuffix || (hangulCount >= 3 && hangulRatio >= 0.5);
+
+      if (looksLikeDept) department = candidate;
 
       if (looksLikeDept) department = candidate;
     }
@@ -79,7 +104,10 @@ export default function parseStudentIdText(rawText: string): StudentIdResult {
   }
 
   if (!department) {
-    department = lines.find((l) => /(과|학과|학부|전공)$/.test(l));
+    department = lines.find((l) =>
+      /(과|학과|학부|전공)$/.test(l.replace(/\s+/g, '')),
+    );
+    if (department) department = cleanDept(department);
   }
 
   return { studentId, department, raw: text };
