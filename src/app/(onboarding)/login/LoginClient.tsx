@@ -3,17 +3,22 @@
 import styled from 'styled-components';
 import localFont from 'next/font/local';
 import { supabase } from '@/lib/supabase/client';
-import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function LoginClient() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect');
   const safeRedirect =
     redirectPath && redirectPath.startsWith('/') ? redirectPath : null;
 
+  // 중복 호출 방지를 위한 로딩
+  const [loading, setLoading] = useState(false);
+
   async function kakaoLogin() {
+    if (loading) return;
+    setLoading(true);
+
     await supabase.auth.signInWithOAuth({
       provider: 'kakao',
       options: {
@@ -60,7 +65,7 @@ export default function LoginClient() {
         <LogoCharacter alt="logo-character" />
       </LogoContainer>
       <TitleText>매칭으로 친구 사귀고 다같이 모여 할인 받자</TitleText>
-      <KakaoLoginButton onClick={kakaoLogin}>
+      <KakaoLoginButton onClick={kakaoLogin} disabled={loading}>
         <KakaoLogo alt="kakao-logo" />
         <KaKaoLoginButtonText>카카오 로그인</KaKaoLoginButtonText>
       </KakaoLoginButton>
