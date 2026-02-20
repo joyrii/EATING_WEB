@@ -1,11 +1,25 @@
 export default function MatchingGuideStep2() {
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold mb-4">Your Profile Information</h2>
-      <p className="text-lg mb-6">
-        Please provide some basic information about yourself to help us find the
-        best matches for you.
-      </p>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '100dvh',
+        overflow: 'hidden',
+      }}
+    >
+      <img
+        src="/images/eating-guide/step2.png"
+        alt="Matching Guide Step 2"
+        style={{
+          width: 'auto%',
+          height: '100%',
+          objectFit: 'contain',
+          display: 'block',
+        }}
+      />
     </div>
   );
 }
