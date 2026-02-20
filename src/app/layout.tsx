@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import StyledComponentsRegistry from '../lib/styled-components/registry';
-import 'pretendard/dist/web/static/pretendard.css';
+import localFont from 'next/font/local';
 import { Toaster } from 'react-hot-toast';
 import { UserProvider } from '@/context/userContext';
 
@@ -18,6 +18,13 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
+const pretendard = localFont({
+  src: './fonts/PretendardVariable.woff2',
+  display: 'swap',
+  weight: '100 900',
+  variable: '--font-pretendard',
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,7 +40,9 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
         />
       </head>
-      <body className="antialiased max-w-[430px] mx-auto bg-[#FFFEFE] min-h-screen">
+      <body
+        className={`${pretendard.variable} antialiased max-w-[430px] mx-auto bg-[#FFFEFE] min-h-screen`}
+      >
         <UserProvider>
           <StyledComponentsRegistry>
             {children}
