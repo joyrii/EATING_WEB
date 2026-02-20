@@ -171,17 +171,19 @@ export default function HomeLayoutClient({
           <LogoCharacter alt="logo-character" />
         </Header>
         <Body>
-          <TipBanner>
-            <TipBannerTextWrapper>
-              <TipMainText>{banner.title}</TipMainText>
-              <TipSubText>{banner.subtitle}</TipSubText>
-            </TipBannerTextWrapper>
-            <TipBannerImage
-              src={banner.image_url}
-              alt="banner-character"
-              width={80}
-            />
-          </TipBanner>
+          {banner && (
+            <TipBanner>
+              <TipBannerTextWrapper>
+                <TipMainText>{banner?.title}</TipMainText>
+                <TipSubText>{banner?.subtitle}</TipSubText>
+              </TipBannerTextWrapper>
+              <TipBannerImage
+                src={banner?.image_url}
+                alt="banner-character"
+                width={80}
+              />
+            </TipBanner>
+          )}
           <MatchingSection>
             <MatchingText>
               <SectionTitle>{text.title}</SectionTitle>
@@ -289,6 +291,7 @@ const TipBanner = styled.button`
   width: 100%;
   padding: 13px 17px;
   margin-top: 15px;
+  margin-bottom: 20px;
 `;
 
 const TipBannerTextWrapper = styled.div`
@@ -322,7 +325,7 @@ const Body = styled.main`
 
 // 매칭 섹션
 const MatchingSection = styled.div`
-  margin-top: 40px;
+  margin-top: 20px;
   background-color: #ffffff;
   border-radius: 10px;
   padding: 30px 20px;

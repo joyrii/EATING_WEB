@@ -4,8 +4,12 @@ import Link from 'next/link';
 import styled from 'styled-components';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import { useUser } from '@/context/userContext';
 
 export default function TabBar() {
+  const { me } = useUser();
+  const isAdmin = me?.is_admin ?? false;
+
   const tabs = [
     {
       href: '/home',
@@ -16,7 +20,7 @@ export default function TabBar() {
       label: '홈',
     },
     {
-      href: '/ready',
+      href: isAdmin ? '/matching' : '/ready',
       icon: {
         active: '/svgs/home/navbar/matching-active.svg',
         inactive: '/svgs/home/navbar/matching-inactive.svg',
@@ -24,7 +28,7 @@ export default function TabBar() {
       label: '매칭',
     },
     {
-      href: '/ready-2',
+      href: isAdmin ? '/setting' : '/ready-2',
       icon: {
         active: '/svgs/home/navbar/setting-active.svg',
         inactive: '/svgs/home/navbar/setting-inactive.svg',

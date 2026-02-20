@@ -115,7 +115,10 @@ export default function PreDining() {
             imageUrl={restaurant.image_url}
             name={restaurant.name}
             category={restaurant.category}
-            menu={restaurant.menu_items.slice(0, 2).join(', ')}
+            menu={restaurant.menu_items
+              .slice(0, 2)
+              .map((m: any) => m.name)
+              .join(', ')}
             checked={checkedIds.has(restaurant.id)}
             onCheckedChange={() => toggle(restaurant.id)}
           />
@@ -126,7 +129,10 @@ export default function PreDining() {
         <Button
           label={isSubmitting ? '제출 중...' : '다음'}
           disabled={isSubmitting || checkedIds.size === 0}
-          onClick={() => submit(Array.from(checkedIds))}
+          onClick={() => {
+            submit(Array.from(checkedIds));
+            router.push('/home');
+          }}
         />
       </ButtonWrapper>
     </div>
