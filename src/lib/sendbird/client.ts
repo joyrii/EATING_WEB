@@ -17,7 +17,11 @@ export function getSendbirdInstance(): SBWithGroupChannel {
   return sb;
 }
 
-export async function connectSendbird(userId: string, nickname?: string) {
+export async function connectSendbird(
+  userId: string,
+  nickname?: string,
+  profileUrl?: string,
+) {
   if (typeof window === 'undefined')
     throw new Error('Sendbird cannot be initialized on the server side.');
 
@@ -33,8 +37,11 @@ export async function connectSendbird(userId: string, nickname?: string) {
   await sb.connect(userId);
 
   // 닉네임 세팅
-  if (nickname) {
-    await sb.updateCurrentUserInfo({ nickname });
+  if (profileUrl || nickname) {
+    await sb.updateCurrentUserInfo({
+      nickname: nickname ?? undefined,
+      profileUrl: profileUrl ?? undefined,
+    });
   }
 
   return sb;
@@ -56,12 +63,13 @@ let connectPromise: Promise<any> | null = null;
 export async function ensureSendbirdConnected(
   userId: string,
   nickname?: string,
+  profileUrl?: string,
 ) {
   // 이미 연결 중이면 그 Promise를 공유
   if (connectPromise) return connectPromise;
 
   connectPromise = (async () => {
-    const sb = await connectSendbird(userId, nickname);
+    const sb = await connectSendbird(userId, nickname, profileUrl);
     return sb;
   })();
 

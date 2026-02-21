@@ -25,13 +25,28 @@ const pretendard = localFont({
   variable: '--font-pretendard',
 });
 
+const HeaderFont = localFont({
+  src: './fonts/Hakgyoansim-Dunggeunmiso-OTF-R.otf',
+  weight: '400',
+  variable: '--font-header',
+});
+
+const EmptyStateFont = localFont({
+  src: './fonts/Ownglyph-PDH-Regular.ttf',
+  weight: '400',
+  variable: '--font-empty',
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html
+      lang="ko"
+      className={`${pretendard.variable} ${HeaderFont.variable} ${EmptyStateFont.variable}`}
+    >
       <head>
         <link
           rel="stylesheet"

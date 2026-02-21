@@ -2,10 +2,9 @@
 
 import { MatchingContext } from './context';
 import { MatchingStatus } from '@/constants/MATCHING';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getMatchingSectionText } from '@/constants/MATCHING';
 import styled from 'styled-components';
-import localFont from 'next/font/local';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/userContext';
 import { getMatchingStatus } from '@/api/application';
@@ -242,15 +241,10 @@ export default function HomeLayoutClient({
 }
 
 // 헤더
-const HeaderFont = localFont({
-  src: '../../fonts/Hakgyoansim-Dunggeunmiso-OTF-R.otf',
-  weight: '400',
-});
-
 const Header = styled.header<{ $variant: 'logo' | 'title' }>`
   width: 100%;
   background-color: #fafafa;
-  font-family: ${HeaderFont.style.fontFamily};
+  font-family: var(--font-header);
   display: flex;
   flex-direction: row;
   align-items: center;

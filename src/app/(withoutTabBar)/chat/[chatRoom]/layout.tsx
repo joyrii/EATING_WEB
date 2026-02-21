@@ -1,5 +1,6 @@
 'use client';
 
+import { formatRoomTitle } from '@/app/(withTabBar)/matching/page';
 import { useUser } from '@/context/userContext';
 import {
   ensureSendbirdConnected,
@@ -25,6 +26,9 @@ export default function ChatRoomLayout({
 
   const hideChatBar = pathname.endsWith('/cafe');
 
+  const [memberCount, setMemberCount] = useState<number | null>(null);
+  const [slotTitle, setSlotTitle] = useState<string>('채팅방');
+
   useEffect(() => {
     if (!isLoaded || !me?.id || !roomId) return;
 
@@ -35,6 +39,25 @@ export default function ChatRoomLayout({
         await ensureSendbirdConnected(me.id, me.name);
         const sb = getSendbirdInstance();
         const channel = await sb.groupChannel.getChannel(roomId);
+
+        // slot 정보
+        const sp = new URLSearchParams(window.location.search);
+        const date = sp.get('date') ?? undefined;
+        const hourRaw = sp.get('hour');
+        const hour = hourRaw ? Number(hourRaw) : undefined;
+        const restaurantName = sp.get('restaurant') ?? undefined;
+
+        const count =
+          typeof channel.memberCount === 'number'
+            ? channel.memberCount
+            : Array.isArray(channel.members)
+              ? channel.members.length
+              : null;
+
+        setMemberCount(count);
+        setSlotTitle(
+          formatRoomTitle({ date, hour, restaurantName, memberCount: count }),
+        );
 
         if (cancelled) return;
         roomRef.current = channel;
@@ -86,9 +109,7 @@ export default function ChatRoomLayout({
         <BackButton onClick={() => window.history.back()}>
           <img src="/svgs/chat/chevron-back.svg" alt="back" />
         </BackButton>
-        <RoomName>
-          채팅방 <Participant />
-        </RoomName>
+        <RoomName>{slotTitle}</RoomName>
         <RightSlot />
       </Header>
 

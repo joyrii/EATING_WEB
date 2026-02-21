@@ -8,6 +8,7 @@ import ChatRoomItem from '@/components/chat/ChatRoomItem';
 import { useUser } from '@/context/userContext';
 import { getSendbirdInstance } from '@/lib/sendbird/client';
 import { useRouter } from 'next/navigation';
+import { fetchPendingMatches } from '@/api/matching';
 
 interface RoomData {
   id: string;
@@ -16,6 +17,60 @@ interface RoomData {
   lastChatAtMs: number;
   unreadCount: number;
   profileImageUrls: string[];
+}
+
+// 기본 프로필 이미지
+const DEFAULT_PROFILE_URL = [
+  '/images/chat/profile-default-1.png',
+  '/images/chat/profile-default-2.png',
+  '/images/chat/profile-default-3.png',
+] as const;
+
+export function formatRoomTitle(params: {
+  date: string; // 'YYYY-MM-DD'
+  hour: number; // 0~23
+  restaurantName: string;
+  memberCount?: number | null;
+}) {
+  const { date, hour, restaurantName, memberCount } = params;
+  const countText = typeof memberCount === 'number' ? ` (${memberCount})` : '';
+
+  const [y, m, d] = date.split('-').map(Number);
+  const dt = new Date(y, m - 1, d, hour, 0, 0);
+
+  const mm = dt.getMonth() + 1;
+  const dd = dt.getDate();
+
+  const h = dt.getHours();
+  const isPM = h >= 12;
+  const hh12 = ((h + 11) % 12) + 1;
+  const ampm = isPM ? '오후' : '오전';
+
+  return `${mm}/${dd} ${ampm} ${hh12}시 ${restaurantName}${countText}`;
+}
+
+// 프로필이 없는 멤버 리스트
+function mapMemberProfileUrls(members: any[]) {
+  const noProfile = members
+    .filter((m) => !m.profileUrl || String(m.profileUrl).trim() === '')
+    .slice()
+    .sort((a, b) => a.userId.localeCompare(b.userId));
+
+  const assigned = new Map<string, string>();
+  noProfile.forEach((member, index) => {
+    assigned.set(
+      String(member.userId),
+      DEFAULT_PROFILE_URL[index % DEFAULT_PROFILE_URL.length],
+    );
+  });
+
+  return members.map((m) => {
+    const url =
+      m.profileUrl && String(m.profileUrl).trim() !== ''
+        ? m.profileUrl
+        : assigned.get(String(m.userId));
+    return url || DEFAULT_PROFILE_URL[0];
+  });
 }
 
 const Matching = () => {
@@ -37,9 +92,12 @@ const Matching = () => {
     setIsFetching(true);
 
     try {
-      await ensureSendbirdConnected(me.id, me.name);
+      await ensureSendbirdConnected(me.id, me.name, me.profile_image_url);
 
       const sb = getSendbirdInstance();
+
+      const pending = await fetchPendingMatches();
+      const pendingMap = new Map(pending.map((s: any) => [s.group_id, s]));
 
       const query = sb.groupChannel.createMyGroupChannelListQuery({
         includeEmpty: true,
@@ -50,21 +108,25 @@ const Matching = () => {
       const channels = await query.next();
 
       const mapped: RoomData[] = channels.map((channel: any) => {
+        const slot = pendingMap.get(channel.url);
+
+        const title = slot
+          ? formatRoomTitle({
+              date: slot.matched_slot.date,
+              hour: slot.matched_slot.hour,
+              restaurantName: slot.restaurant_name,
+              memberCount: channel.memberCount ?? channel.members?.length,
+            })
+          : channel.name || '채팅방';
+
         const last = channel.lastMessage;
         const lastText = last?.message ?? (last?.url ? '[파일]' : '');
 
         const createdAtMs = last?.createdAt ?? channel.createdAt ?? Date.now();
-        const lastChatAt = new Date(createdAtMs).toLocaleString('ko-KR', {
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        });
 
-        const profileImageUrls = (channel.members ?? [])
-          .slice(0, 4)
-          .map((m: any) => m.profileUrl || '/images/chat/profile-image-1.jpeg');
+        const profileImageUrls = mapMemberProfileUrls(
+          channel.members ?? [],
+        ).slice(0, 4);
 
         return {
           id: channel.url,

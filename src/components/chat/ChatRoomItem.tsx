@@ -55,7 +55,7 @@ function formatRelativeTime(input: number | Date) {
   const hour = Math.floor(min / 60);
   if (hour < 24) return `${hour}시간 전`;
 
-  // 어제/그제 느낌(카톡 느낌에 가까움)
+  // 어제/그제 느낌
   const days = Math.floor(hour / 24);
   if (days === 1) return '어제';
   if (days < 7) return `${days}일 전`;

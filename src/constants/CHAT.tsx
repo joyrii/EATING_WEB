@@ -23,13 +23,6 @@ const CHAT_DATA: ChatMessageData[] = [
     },
   },
   {
-    id: '3',
-    senderType: 'system',
-    messageType: 'couponCode',
-    createdAt: new Date().toISOString(),
-    payload: { code: '3425' },
-  },
-  {
     id: '4',
     senderType: 'system',
     messageType: 'noShowReport',
@@ -50,7 +43,7 @@ const CHAT_DATA: ChatMessageData[] = [
   {
     id: '7',
     senderType: 'other',
-    senderId: 101,
+    senderId: '123',
     senderName: '홍길동',
     messageType: 'text',
     content: '안녕하세요! 반가워요 😊',

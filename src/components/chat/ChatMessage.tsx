@@ -7,19 +7,18 @@ export type SenderType = 'user' | 'other' | 'system';
 export type MessageType =
   | 'text'
   | 'restaurant'
-  | 'couponCode'
   | 'noShowReport'
   | 'cafeList'
   | 'feedback';
 
 export type ProfilePayload = {
-  senderId?: number;
+  senderId?: string;
   senderName?: string;
   profileImageUrl?: string;
 };
 
 export type RestaurantPayload = {
-  id: number;
+  id: string;
   name: string;
   category: string;
   benefit: string;
@@ -27,8 +26,12 @@ export type RestaurantPayload = {
   imageUrl: string;
 };
 
-export type CouponCodePayload = {
-  code: string;
+export type CafeListPayload = {
+  cafes: {
+    id: string;
+    name: string;
+  }[];
+  redirectUrl: string;
 };
 
 export type ChatMessageData = {
@@ -36,20 +39,20 @@ export type ChatMessageData = {
   senderType: SenderType;
   messageType: MessageType;
 
-  senderId?: number; // user/other일 때만
+  senderId?: string; // user/other일 때만
   senderName?: string; // other일 때만
   profileImageUrl?: string; // other일 때만
 
   content?: string;
   createdAt: string; // ISO 원본
 
-  payload?: RestaurantPayload | CouponCodePayload | ProfilePayload;
+  payload?: RestaurantPayload | CafeListPayload | ProfilePayload;
 };
 
 export type ChatAction =
   | { type: 'OPEN_RESTAURANT'; payload: RestaurantPayload }
   | { type: 'OPEN_NO_SHOW' }
-  | { type: 'OPEN_CAFE_LIST' }
+  | { type: 'OPEN_CAFE_LIST'; payload: CafeListPayload }
   | { type: 'OPEN_FEEDBACK' }
   | { type: 'OPEN_PROFILE'; payload: ProfilePayload };
 
@@ -139,7 +142,7 @@ function OtherMessage({
 }: {
   content: string;
   createdAt: string;
-  senderId?: number;
+  senderId?: string;
   senderName: string;
   profileImageUrl?: string;
   showSenderName?: boolean;
@@ -244,17 +247,6 @@ function renderSystemBlock(props: ChatMessageProps) {
       );
     }
 
-    case 'couponCode': {
-      const code = (props.payload as CouponCodePayload).code;
-      return (
-        <CouponRow>
-          {code.split('').map((d, i) => (
-            <Digit key={`${d}-${i}`}>{d}</Digit>
-          ))}
-        </CouponRow>
-      );
-    }
-
     case 'noShowReport':
       return (
         <ActionCard
@@ -273,19 +265,29 @@ function renderSystemBlock(props: ChatMessageProps) {
       );
 
     case 'cafeList':
+      const payload = props.payload as CafeListPayload | undefined;
+      const names = payload?.cafes?.map((c) => c.name).join(', ') ?? '';
+      const count = payload?.cafes?.length ?? 0;
+
       return (
         <ActionCard
           $width={160}
-          onClick={() => props.onAction?.({ type: 'OPEN_CAFE_LIST' })}
+          onClick={() => {
+            if (!payload) return;
+            props.onAction?.({
+              type: 'OPEN_CAFE_LIST',
+              payload: payload,
+            });
+          }}
         >
           <ActionTitle>제휴 카페 리스트</ActionTitle>
           <ActionDescItem>
             <img src="/svgs/chat/cafe-count.svg" alt="cafe count" />
-            <ActionDescShort>3곳</ActionDescShort>
+            <ActionDescShort>{count}곳</ActionDescShort>
           </ActionDescItem>
           <ActionDescItem>
             <img src="/svgs/chat/cafe-list.svg" alt="cafe list" />
-            <ActionDescShort>다방방, 주디, 마마마마마마마</ActionDescShort>
+            <ActionDescShort>{names}</ActionDescShort>
           </ActionDescItem>
           <ActionButton>
             <ActionButtonText>카페 보기</ActionButtonText>
@@ -391,25 +393,6 @@ const CreatedAtText = styled.p`
   font-weight: 400;
   color: #8a8a8a;
   align-self: flex-end;
-`;
-
-const CouponRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 5px;
-`;
-
-const Digit = styled.div`
-  width: 50px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 600;
-  border: 1.2px solid #f0f0f0;
-  border-radius: 12px;
-  background-color: #ffffff;
 `;
 
 const ActionCard = styled.div<{ $width: number }>`

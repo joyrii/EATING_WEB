@@ -10,6 +10,7 @@ type Me = {
   onboarding_step?: string;
   is_pre_registered?: boolean;
   is_admin?: boolean;
+  profile_image_url?: string;
 };
 
 const UserContext = createContext<{
