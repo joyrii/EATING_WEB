@@ -6,19 +6,59 @@ import { SkipButton, SkipButtonWrapper } from '../style';
 import { ButtonWrapper, TextWrapper } from '../style';
 import Button from '@/components/BaseButton';
 import ClassChip from '@/components/application/ClassChip';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MbtiOption from '@/components/onboarding/MbtiOption';
+import { useMatchingDraftByWeek } from '@/context/matchingDraft';
+import { applyMatching } from '@/api/application';
 
 export default function Additional() {
   const router = useRouter();
 
-  const CLASS = ['26학번', '25학번', '24학번', '23학번', '22학번 이상'];
+  const CLASS = ['26', '25', '24', '23', '22'];
   const [selectedClass, setSelectedClass] = useState<string[]>([]);
   const [selectedMbti1, setSelectedMbti1] = useState<string>('');
   const [selectedMbti2, setSelectedMbti2] = useState<string>('');
   const [selectedMbti3, setSelectedMbti3] = useState<string>('');
   const [selectedMbti4, setSelectedMbti4] = useState<string>('');
+  const [selectedMbti, setSelectedMbti] = useState<string>('');
+
+  const getDraft = useMatchingDraftByWeek((s) => s.getDraft);
+
+  const setPreferredClassYears = useMatchingDraftByWeek(
+    (s) => s.setPreferredYears,
+  );
+  const setExcludedMbti = useMatchingDraftByWeek((s) => s.setExcludedMbti);
+
+  const submit = async (selectedClass: string[], selectedMbti: string) => {
+    setSelectedMbti(
+      `${selectedMbti1}${selectedMbti2}${selectedMbti3}${selectedMbti4}`,
+    );
+    try {
+      setPreferredClassYears(selectedClass);
+      setExcludedMbti(selectedMbti);
+
+      const draft = getDraft();
+      const payload = {
+        available_slots: draft.available_slots,
+        excluded_restaurant_ids: draft.excluded_restaurant_ids,
+        preferred_years: draft.preferred_years ?? [],
+        excluded_mbti: draft.excluded_mbti ?? '',
+      };
+
+      console.log('매칭 신청 payload:', payload);
+
+      await applyMatching(payload);
+    } catch (e) {
+      const status = e?.response?.status;
+
+      if (status === 400) alert('현재 매칭 신청 기간이 아닙니다.');
+      else if (status === 403) alert('사전신청자 전용 기간입니다.');
+      else if (status === 409) alert('이미 모든 라운드에 신청하셨습니다.');
+      else alert('매칭 신청에 실패했습니다.');
+    }
+    router.push('/home');
+  };
 
   return (
     <div>
@@ -51,6 +91,7 @@ export default function Additional() {
                   } else {
                     setSelectedClass([...selectedClass, classYear]);
                   }
+                  console.log('선택된 학번:', selectedClass);
                 }}
               />
             ))}
@@ -111,7 +152,12 @@ export default function Additional() {
         </InputWrapper>
       </ContentWrapper>
       <ButtonWrapper style={{ paddingTop: '5px' }}>
-        <Button label="신청 완료" />
+        <Button
+          label="신청 완료"
+          onClick={() => {
+            submit(selectedClass, selectedMbti);
+          }}
+        />
       </ButtonWrapper>
     </div>
   );

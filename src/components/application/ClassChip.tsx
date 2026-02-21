@@ -11,7 +11,7 @@ export default function ClassChip({
 }) {
   return (
     <ClassChipStyle $checked={checked} onClick={onClick}>
-      {label}
+      {label === '22' ? `${label}학번 이상` : `${label}학번`}
     </ClassChipStyle>
   );
 }

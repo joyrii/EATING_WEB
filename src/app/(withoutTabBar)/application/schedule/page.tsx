@@ -21,6 +21,7 @@ import Image from 'next/image';
 import { ModalButtonWrapper } from '@/app/(withoutTabBar)/application/style';
 import { getMatchingStatus } from '@/api/application';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useMatchingDraftByWeek } from '@/context/matchingDraft';
 
 type Week = { id: string; week_start: string; week_end: string };
 type ApiSlot = { date: string; hour: number };
@@ -30,6 +31,7 @@ export default function Schedule() {
 
   const [week, setWeek] = useState<Week | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]); // 선택된 시간 슬롯(day/hour)
+
   const [isModalVisible, setIsModalVisible] = useState(false); // 확인 모달
   const [loading, setLoading] = useState(true); // 로딩 상태
 
@@ -92,6 +94,10 @@ export default function Schedule() {
     };
   }, [slots, week]);
 
+  const setAvailableSlots = useMatchingDraftByWeek(
+    (state) => state.setAvailableSlots,
+  );
+
   if (loading) return <LoadingSpinner />;
   if (!week) return <div>현재 매칭 가능한 주차가 없어요.</div>;
 
@@ -150,7 +156,8 @@ export default function Schedule() {
               label="확인"
               onClick={() => {
                 // 필요하면 여기서 payload로 API 호출 or store 저장
-                router.push('/pre/dining');
+                setAvailableSlots(payload.available_slots);
+                router.push('/application/dining');
               }}
             />
           </ModalButtonWrapper>
