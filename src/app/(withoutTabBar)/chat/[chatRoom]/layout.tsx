@@ -1,7 +1,12 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useUser } from '@/context/userContext';
+import {
+  ensureSendbirdConnected,
+  getSendbirdInstance,
+} from '@/lib/sendbird/client';
+import { useParams, usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 export default function ChatRoomLayout({
@@ -10,31 +15,85 @@ export default function ChatRoomLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [message, setMessage] = useState('');
+  const params = useParams<{ chatRoom: string }>();
+  const roomId = params?.chatRoom ? decodeURIComponent(params.chatRoom) : '';
 
-  const sendMessage = () => {
-    if (message.trim() === '') return;
-    // 메시지 전송 로직 추가
-    setMessage('');
-  };
+  const { me, isLoaded } = useUser();
+
+  const [message, setMessage] = useState('');
+  const roomRef = useRef<any>(null);
 
   const hideChatBar = pathname.endsWith('/cafe');
 
+  useEffect(() => {
+    if (!isLoaded || !me?.id || !roomId) return;
+
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        await ensureSendbirdConnected(me.id, me.name);
+        const sb = getSendbirdInstance();
+        const channel = await sb.groupChannel.getChannel(roomId);
+
+        if (cancelled) return;
+        roomRef.current = channel;
+
+        try {
+          channel.markAsRead?.();
+        } catch {}
+      } catch (e) {
+        console.error('Failed to prepare chat room:', e);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, me?.id, me?.name, roomId]);
+
+  const sendMessage = async () => {
+    const text = message.trim();
+    if (!text) return;
+
+    const room = roomRef.current;
+    if (!room) return;
+
+    try {
+      const result = room.sendUserMessage({ message: text });
+
+      if (result && typeof (result as any).onSucceeded === 'function') {
+        (result as any)
+          .onSucceeded(() => {
+            setMessage('');
+            window.dispatchEvent(new Event('chat:refresh'));
+          })
+          .onFailed((e: any) => console.error(e));
+      } else {
+        await Promise.resolve(result);
+        setMessage('');
+        window.dispatchEvent(new Event('chat:refresh'));
+      }
+    } catch (e) {
+      console.error('메시지 전송 실패:', e);
+    }
+  };
+
   return (
     <>
-      {/* 헤더 */}
       <Header>
         <BackButton onClick={() => window.history.back()}>
           <img src="/svgs/chat/chevron-back.svg" alt="back" />
         </BackButton>
         <RoomName>
-          3/2 오후 4시 진미당 <Participant>(4)</Participant>
+          채팅방 <Participant />
         </RoomName>
         <RightSlot />
       </Header>
-      {/* 채팅 내용 */}
+
       <Content style={{ marginBottom: '15px' }}>{children}</Content>
-      {/* 채팅 입력창 */}
+
       {!hideChatBar && (
         <ChatInputContainer>
           <ChatInput
@@ -43,9 +102,7 @@ export default function ChatRoomLayout({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                sendMessage();
-              }
+              if (e.key === 'Enter') sendMessage();
             }}
           />
           <SendButton onClick={sendMessage}>

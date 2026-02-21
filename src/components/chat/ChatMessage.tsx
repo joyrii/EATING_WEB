@@ -54,7 +54,7 @@ export type ChatAction =
   | { type: 'OPEN_PROFILE'; payload: ProfilePayload };
 
 export type ChatMessageProps = ChatMessageData & {
-  roomId: number; // 페이지에서 주입
+  roomId: string; // 페이지에서 주입
   createdAtText: string; // "12:00 PM" 표시용
   showCreatedAt: boolean; // 마지막만 true
   showSenderName?: boolean; // other/system일 때만

@@ -14,7 +14,6 @@ export function getSendbirdInstance(): SBWithGroupChannel {
     throw new Error(
       'Sendbird instance is not initialized. Please call initializeSendbird first.',
     );
-
   return sb;
 }
 

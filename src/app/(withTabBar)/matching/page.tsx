@@ -7,17 +7,20 @@ import { ensureSendbirdConnected } from '@/lib/sendbird/client';
 import ChatRoomItem from '@/components/chat/ChatRoomItem';
 import { useUser } from '@/context/userContext';
 import { getSendbirdInstance } from '@/lib/sendbird/client';
+import { useRouter } from 'next/navigation';
 
 interface RoomData {
   id: string;
   title: string;
   lastChat: string;
-  lastChatAt: string;
+  lastChatAtMs: number;
   unreadCount: number;
   profileImageUrls: string[];
 }
 
 const Matching = () => {
+  const router = useRouter();
+
   const [rooms, setRooms] = useState<RoomData[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const fetchingRef = useRef(false);
@@ -67,7 +70,7 @@ const Matching = () => {
           id: channel.url,
           title: channel.name || '채팅방',
           lastChat: lastText || '',
-          lastChatAt,
+          lastChatAtMs: createdAtMs,
           unreadCount: channel.unreadMessageCount || 0,
           profileImageUrls,
         };
@@ -135,10 +138,13 @@ const Matching = () => {
                 key={room.id}
                 roomId={room.id}
                 roomName={room.title}
-                timeStamp={room.lastChatAt}
+                lastChatAsMs={room.lastChatAtMs}
                 content={room.lastChat}
                 unreadCount={room.unreadCount}
                 profileImageUrls={room.profileImageUrls}
+                onClick={() => {
+                  router.push(`/chat/${encodeURIComponent(room.id)}`);
+                }}
               />
             ))}
           </>
