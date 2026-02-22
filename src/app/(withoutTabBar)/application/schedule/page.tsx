@@ -221,6 +221,7 @@ export default function Schedule() {
               onClick={() => {
                 setActiveWeekKey(week.week_start);
                 setAvailableSlots(payload.available_slots);
+                // 필요하면 여기서 payload로 API 호출 or store 저장
                 router.push('/application/dining');
               }}
             />
