@@ -133,7 +133,7 @@ export default function OnboardingInterests() {
                 ),
               );
               await updateInterests(interestIds);
-              router.push('/home');
+              router.push('/application/schedule');
             } catch (error) {
               console.error('Failed to update interests:', error);
             }
