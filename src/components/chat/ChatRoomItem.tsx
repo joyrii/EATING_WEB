@@ -2,24 +2,28 @@ import ProfileImage from './ProfileImage';
 import styled from 'styled-components';
 
 type ChatRoomItemProps = {
-  roomId: number;
+  roomId: string;
   roomName: string;
-  timeStamp: string;
+  lastChatAsMs: number;
   content: string;
   unreadCount: number;
   profileImageUrls?: string[];
+  onClick?: () => void;
 };
 
 export default function ChatRoomItem({
   roomId,
   roomName,
-  timeStamp,
+  lastChatAsMs,
   content,
   unreadCount,
   profileImageUrls,
+  onClick,
 }: ChatRoomItemProps) {
+  const timeStamp = formatRelativeTime(lastChatAsMs);
+
   return (
-    <ChatRoomItemWrapper key={roomId}>
+    <ChatRoomItemWrapper key={roomId} onClick={onClick}>
       <ProfileImage imageUrls={profileImageUrls || []} />
       <RoomNameWrapper>
         <RoomName>{roomName}</RoomName>
@@ -31,6 +35,59 @@ export default function ChatRoomItem({
       </TimeStampWrapper>
     </ChatRoomItemWrapper>
   );
+}
+
+function formatRelativeTime(input: number | Date) {
+  if (input == null) return '';
+  const now = Date.now();
+  const t = typeof input === 'number' ? input : input.getTime();
+  const diff = now - t;
+
+  // 미래 시간이 들어오면 그냥 시간 표시
+  if (diff < 0) return formatClock(t);
+
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return '방금 전';
+
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}분 전`;
+
+  const hour = Math.floor(min / 60);
+  if (hour < 24) return `${hour}시간 전`;
+
+  // 어제/그제 느낌
+  const days = Math.floor(hour / 24);
+  if (days === 1) return '어제';
+  if (days < 7) return `${days}일 전`;
+
+  // 일주일 넘으면 날짜로
+  return formatDate(t);
+}
+
+function formatClock(ms: number) {
+  const d = new Date(ms);
+  // 카톡처럼 "오전 8:43" 느낌
+  return d.toLocaleTimeString('ko-KR', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
+function formatDate(ms: number) {
+  const d = new Date(ms);
+
+  // 올해면 "2월 3일", 아니면 "2026. 2. 3."
+  const now = new Date();
+  const sameYear = d.getFullYear() === now.getFullYear();
+
+  return sameYear
+    ? d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+    : d.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      });
 }
 
 const ChatRoomItemWrapper = styled.div`
