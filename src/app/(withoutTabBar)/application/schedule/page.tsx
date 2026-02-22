@@ -150,7 +150,7 @@ export default function Schedule() {
               label="확인"
               onClick={() => {
                 // 필요하면 여기서 payload로 API 호출 or store 저장
-                router.push('/pre/dining');
+                router.push('/application/dining');
               }}
             />
           </ModalButtonWrapper>
