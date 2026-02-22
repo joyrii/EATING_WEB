@@ -7,7 +7,7 @@ import BaseChip from '../BaseChip';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/userContext';
 import { fetchPendingMatches, joinChat } from '@/api/matching';
-import LoadingSpinner from '../LoadingSpinner';
+import { listMyGroupChannels } from '@/lib/sendbird/client';
 
 export type PendingSlot = {
   group_id: string; // code
@@ -68,14 +68,16 @@ export default function MatchingListSection() {
   const [loading, setLoading] = useState(false);
   const [pendingLoading, setPendingLoading] = useState(true);
 
-  // 1분마다 매칭 여부 확인
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTick((prev) => prev + 1);
-    }, 60_000);
-
-    return () => clearInterval(interval);
-  }, []);
+  const [sbMetaByGroupId, setSbMetaByGroupId] = useState<
+    Record<
+      string,
+      {
+        memberCount: number;
+        unreadCount: number;
+        lastMessageText: string | null;
+      }
+    >
+  >({});
 
   // 입장 가능한 방 조회
   useEffect(() => {
@@ -83,24 +85,62 @@ export default function MatchingListSection() {
 
     let cancelled = false;
 
-    const run = async () => {
+    (async () => {
       setPendingLoading(true);
       try {
         const list = await fetchPendingMatches();
         if (!cancelled) setPending(list ?? []);
       } catch (e) {
-        console.error('Failed to load pending reviews:', e);
+        console.error('Failed to load pending:', e);
         if (!cancelled) setPending([]);
       } finally {
         if (!cancelled) setPendingLoading(false);
       }
-    };
+    })();
 
-    run();
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, me?.id]);
+  }, [isLoaded, me?.id, tick]);
+
+  // ✅ Sendbird 메타 로드 (pending이 있거나 tick 갱신 때마다)
+  useEffect(() => {
+    if (!isLoaded || !me?.id) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const channels = await listMyGroupChannels({
+          userId: me.id,
+          nickname: me.name,
+        });
+
+        const map: Record<string, any> = {};
+        for (const ch of channels) {
+          if (!ch.url?.startsWith('match_')) continue;
+          const groupId = ch.url.replace('match_', '');
+
+          map[groupId] = {
+            memberCount: ch.memberCount ?? 0,
+            unreadCount: ch.unreadMessageCount ?? 0,
+            lastMessageText:
+              (typeof ch.lastMessage?.message === 'string'
+                ? ch.lastMessage.message
+                : null) ?? null,
+          };
+        }
+
+        if (!cancelled) setSbMetaByGroupId(map);
+      } catch (e) {
+        console.error('Failed to load sendbird meta:', e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, me?.id, tick]);
 
   const openDetail = (slot: PendingSlot) => {
     setSelected(slot);
@@ -161,19 +201,25 @@ export default function MatchingListSection() {
               이번주에 매칭된 방 <span>{pending.length}개</span>
             </SectionTitle>
             <MatchingList>
-              {pending.map((slot) => (
-                <MatchingListItem
-                  key={slot.group_id}
-                  status={getStatusBySlot(slot, me?.id)}
-                  date={slot.matched_slot.date}
-                  hour={slot.matched_slot.hour}
-                  currentCount={0} // ✅ 실제 입장 인원 데이터 필요
-                  totalCount={slot.member_count}
-                  onDetailClick={() => openDetail(slot)}
-                  onChatClick={() => enterChat(slot)}
-                  clickable
-                />
-              ))}
+              {pending.map((slot) => {
+                const meta = sbMetaByGroupId[slot.group_id];
+                const current = meta?.memberCount ?? slot.member_count;
+                const total = slot.member_count; //
+
+                return (
+                  <MatchingListItem
+                    key={slot.group_id}
+                    status={getStatusBySlot(slot, me?.id)}
+                    date={slot.matched_slot.date}
+                    hour={slot.matched_slot.hour}
+                    currentCount={current}
+                    totalCount={total}
+                    onDetailClick={() => openDetail(slot)}
+                    onChatClick={() => enterChat(slot)}
+                    clickable
+                  />
+                );
+              })}
             </MatchingList>
           </>
         )}
@@ -201,7 +247,10 @@ export default function MatchingListSection() {
           <ParticipantsInfoText>
             총 정원 {selected?.member_count}명
           </ParticipantsInfoText>
-          <ParticipantsInfoText>입장 인원 0명</ParticipantsInfoText>
+          <ParticipantsInfoText>
+            입장 인원{' '}
+            {sbMetaByGroupId[selected?.group_id ?? '']?.memberCount ?? 0}명
+          </ParticipantsInfoText>
         </ParticipantsInfoContainer>
         <ModalButtonContainer>
           <Button

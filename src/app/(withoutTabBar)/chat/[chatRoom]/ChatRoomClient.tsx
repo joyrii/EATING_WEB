@@ -309,7 +309,9 @@ export default function ChatRoomClient() {
           );
         })
       ) : (
-        <EmptyStateText>아직 채팅이 없어요!</EmptyStateText>
+        <EmptyStateText>
+          아직 채팅이 없어요! 먼저 채팅을 시작해보세요
+        </EmptyStateText>
       )}
 
       <IceBreaking onClick={() => setIceBreakingModalOpen(true)}>
