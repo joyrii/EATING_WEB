@@ -9,7 +9,7 @@ export type MatchingDraft = {
   excluded_restaurant_ids: string[];
 
   // 일반 매칭에서만 사용(사전 단계에서는 비워둠)
-  preferred_years: string[];
+  preferred_years: number[];
   excluded_mbti: string[];
 };
 
@@ -29,7 +29,7 @@ type State = {
   // setters (현재 activeWeekKey에 적용)
   setAvailableSlots: (available_slots: ApiSlot[]) => void;
   setExcludedRestaurantIds: (excluded_restaurant_ids: string[]) => void;
-  setPreferredYears: (years: string[]) => void;
+  setPreferredYears: (years: number[]) => void;
   setExcludedMbti: (excluded_mbti: string[]) => void;
 
   // getters/util

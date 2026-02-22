@@ -51,37 +51,42 @@ const slotsToKeySet = (slots: Slot[]) => {
   return set;
 };
 
+const signatureOf = (set: Set<string>) => Array.from(set).sort().join('|');
+
 export default function TimeGrid({
   value = [],
   onChange,
   disabledCell,
 }: Props) {
+  // 외부 value -> Set
   const externalKeySet = useMemo(() => slotsToKeySet(value), [value]);
-  const [selected, setSelected] = useState<Set<string>>(externalKeySet);
-  const lastEmittedRef = useRef<string>('');
+  const externalSig = useMemo(
+    () => signatureOf(externalKeySet),
+    [externalKeySet],
+  );
 
+  // 내부 선택 상태
+  const [selected, setSelected] = useState<Set<string>>(() => externalKeySet);
+
+  // emit 중복 방지
+  const lastEmittedRef = useRef<string>(externalSig);
+
+  // ✅ 언마운트 직전 최종 커밋용
+  const latestSelectedRef = useRef<Set<string>>(selected);
   useEffect(() => {
-    setSelected(externalKeySet);
-  }, [externalKeySet]);
+    latestSelectedRef.current = selected;
+  }, [selected]);
 
-  // 주 이동
+  // ✅ 외부 value 동기화: "내용이 달라질 때만" 반영 (루프 방지)
   useEffect(() => {
     setSelected((prev) => {
-      if (prev.size === externalKeySet.size) {
-        let same = true;
-        for (const k of prev) {
-          if (!externalKeySet.has(k)) {
-            same = false;
-            break;
-          }
-        }
-        if (same) return prev;
-      }
-
-      lastEmittedRef.current = Array.from(externalKeySet).sort().join('|');
+      const prevSig = signatureOf(prev);
+      if (prevSig === externalSig) return prev;
+      // 외부값으로 동기화되는 경우엔 다시 emit 안 하게 기록
+      lastEmittedRef.current = externalSig;
       return externalKeySet;
     });
-  }, [externalKeySet]);
+  }, [externalKeySet, externalSig]);
 
   const isPressing = useRef(false);
   const lastHit = useRef<string | null>(null);
@@ -128,8 +133,6 @@ export default function TimeGrid({
 
     const cell = hitTestCell(e.clientX, e.clientY);
     if (!cell) return;
-
-    // 비활성
     if (isDisabled(cell)) return;
 
     paintMode.current = isSelected(cell) ? 'ERASE' : 'PAINT';
@@ -145,7 +148,6 @@ export default function TimeGrid({
 
     const k = keyOf(cell);
     if (k === lastHit.current) return;
-
     if (isDisabled(cell)) return;
 
     setCell(cell, paintMode.current);
@@ -157,18 +159,35 @@ export default function TimeGrid({
     lastHit.current = null;
   };
 
+  // ✅ 내부 선택 변경 -> onChange (원래 동작)
   useEffect(() => {
     if (!onChange) return;
 
     const keys = Array.from(selected).sort();
-    const signature = keys.join('|');
+    const sig = keys.join('|');
 
-    if (signature === lastEmittedRef.current) return;
-    lastEmittedRef.current = signature;
+    if (sig === lastEmittedRef.current) return;
+    lastEmittedRef.current = sig;
 
     const nextSlots: Slot[] = keys.map((k) => cellToSlot(parseKey(k)));
     onChange(nextSlots);
   }, [selected, onChange]);
+
+  // ✅ 언마운트 직전 최종 커밋(뒤로가기 보험)
+  useEffect(() => {
+    return () => {
+      if (!onChange) return;
+
+      const keys = Array.from(latestSelectedRef.current).sort();
+      const sig = keys.join('|');
+
+      if (sig === lastEmittedRef.current) return;
+      lastEmittedRef.current = sig;
+
+      const nextSlots: Slot[] = keys.map((k) => cellToSlot(parseKey(k)));
+      onChange(nextSlots);
+    };
+  }, [onChange]);
 
   // 비활성 셀 제거
   useEffect(() => {
@@ -225,10 +244,8 @@ export default function TimeGrid({
 
           return (
             <React.Fragment key={r}>
-              {/* 시간 라벨 */}
               <TimeLabel>{label}</TimeLabel>
 
-              {/* 요일 셀들 */}
               {Array.from({ length: COLS }).map((__, c) => {
                 const cell = { r, c };
                 const active = isSelected(cell);

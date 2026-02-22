@@ -27,7 +27,7 @@ type ApiSlot = { date: string; hour: number };
 type ApplyMatchingPayload = {
   available_slots: ApiSlot[];
   excluded_restaurant_ids: string[];
-  preferred_years: string[];
+  preferred_years: number[];
   excluded_mbti: string[];
 };
 

@@ -11,31 +11,71 @@ import {
   DateBox,
   ModalContent,
   TextWrapper,
+  ModalButtonWrapper,
 } from '@/app/(withoutTabBar)/application/style';
 import TimeGrid, { Slot } from '@/components/application/TimeGrid';
 import Button from '@/components/BaseButton';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BaseModal } from '@/components/BaseModal';
 import Image from 'next/image';
-import { ModalButtonWrapper } from '@/app/(withoutTabBar)/application/style';
 import { getMatchingStatus } from '@/api/application';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { useMatchingDraftByWeek } from '@/context/matchingDraft';
+import { useMatchingDraftByWeek, ApiSlot } from '@/context/matchingDraft';
 
 type Week = { id: string; week_start: string; week_end: string };
-type ApiSlot = { date: string; hour: number };
 
 export default function Schedule() {
   const router = useRouter();
 
   const [week, setWeek] = useState<Week | null>(null);
-  const [slots, setSlots] = useState<Slot[]>([]); // 선택된 시간 슬롯(day/hour)
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const sigSlots = (arr: Slot[]) =>
+    arr
+      .map((s) => `${s.day}-${s.hour}`)
+      .sort()
+      .join('|');
 
-  const [isModalVisible, setIsModalVisible] = useState(false); // 확인 모달
-  const [loading, setLoading] = useState(true); // 로딩 상태
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // 주차 조회 (여기 페이지는 1주차만 사용)
+  // zustand
+  const setActiveWeekKey = useMatchingDraftByWeek((s) => s.setActiveWeekKey);
+  const setAvailableSlots = useMatchingDraftByWeek((s) => s.setAvailableSlots);
+  const getDraft = useMatchingDraftByWeek((s) => s.getDraft);
+
+  // yyyy-mm-dd -> n월 m일
+  const formatKoreanMD = (iso: string) => {
+    const [, mm, dd] = iso.split('-');
+    return `${Number(mm)}월 ${Number(dd)}일`;
+  };
+
+  // yyyy-mm-dd + day(0~6) -> yyyy-mm-dd
+  const addDaysISO = (isoDate: string, add: number) => {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    const utc = new Date(Date.UTC(y, m - 1, d));
+    utc.setUTCDate(utc.getUTCDate() + add);
+
+    const yy = utc.getUTCFullYear();
+    const mm = String(utc.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(utc.getUTCDate()).padStart(2, '0');
+    return `${yy}-${mm}-${dd}`;
+  };
+
+  // yyyy-mm-dd -> Date(UTC)
+  const toUTCDate = (iso: string) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d));
+  };
+
+  // 두 날짜 차이(day)
+  const diffDaysISO = (fromISO: string, toISO: string) => {
+    const from = toUTCDate(fromISO).getTime();
+    const to = toUTCDate(toISO).getTime();
+    return Math.round((to - from) / (1000 * 60 * 60 * 24));
+  };
+
+  // 1) 주차 조회 (여기 페이지는 1주차만 사용)
   useEffect(() => {
     const run = async () => {
       try {
@@ -47,11 +87,31 @@ export default function Schedule() {
           return;
         }
 
-        setWeek({
+        const w: Week = {
           id: first.round_id,
           week_start: first.week_start,
           week_end: first.week_end,
-        });
+        };
+
+        setWeek(w);
+
+        // ✅ store activeWeekKey 설정
+        setActiveWeekKey(w.week_start);
+
+        // ✅ store에 저장된 값 있으면 복원
+        const draft = getDraft(w.week_start);
+        if (draft.available_slots?.length) {
+          const restored: Slot[] = draft.available_slots
+            .map((s: ApiSlot) => ({
+              day: diffDaysISO(w.week_start, s.date),
+              hour: s.hour,
+            }))
+            .filter((s) => s.day >= 0 && s.day <= 6);
+
+          setSlots(restored);
+        } else {
+          setSlots([]);
+        }
       } catch (e) {
         console.error('주차 조회 실패:', e);
       } finally {
@@ -60,27 +120,16 @@ export default function Schedule() {
     };
 
     run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const lastSlotsSigRef = useRef<string>(''); // Schedule 컴포넌트 안
+
+  useEffect(() => {
+    lastSlotsSigRef.current = sigSlots(slots);
+  }, [slots]);
+
   const hasSelection = slots.length > 0;
-
-  // yyyy-mm-dd -> n월 m일
-  const formatKoreanMD = (iso: string) => {
-    const [, mm, dd] = iso.split('-');
-    return `${Number(mm)}월 ${Number(dd)}일`;
-  };
-
-  // yyyy-mm-dd + day(0~6) -> 실제 날짜(yyyy-mm-dd)
-  const addDaysISO = (isoDate: string, add: number) => {
-    const [y, m, d] = isoDate.split('-').map(Number);
-    const utc = new Date(Date.UTC(y, m - 1, d));
-    utc.setUTCDate(utc.getUTCDate() + add);
-
-    const yy = utc.getUTCFullYear();
-    const mm = String(utc.getUTCMonth() + 1).padStart(2, '0');
-    const dd = String(utc.getUTCDate()).padStart(2, '0');
-    return `${yy}-${mm}-${dd}`;
-  };
 
   // 서버 전송용 payload (date/hour)
   const payload = useMemo(() => {
@@ -93,10 +142,6 @@ export default function Schedule() {
       })),
     };
   }, [slots, week]);
-
-  const setAvailableSlots = useMatchingDraftByWeek(
-    (state) => state.setAvailableSlots,
-  );
 
   if (loading) return <LoadingSpinner />;
   if (!week) return <div>현재 매칭 가능한 주차가 없어요.</div>;
@@ -117,15 +162,33 @@ export default function Schedule() {
         <DateBox>
           {formatKoreanMD(week.week_start)} ~ {formatKoreanMD(week.week_end)}
         </DateBox>
+        <TimeGrid
+          value={slots}
+          onChange={(next) => {
+            const nextSig = sigSlots(next);
 
-        <TimeGrid value={slots} onChange={setSlots} />
+            // ✅ 동일 값이면 state/store 업데이트 스킵 (무한루프 차단)
+            if (nextSig === lastSlotsSigRef.current) return;
+
+            lastSlotsSigRef.current = nextSig;
+            setSlots(next);
+
+            // store 저장
+            setActiveWeekKey(week.week_start);
+            const nextApiSlots: ApiSlot[] = next.map((s) => ({
+              date: addDaysISO(week.week_start, s.day),
+              hour: s.hour,
+            }));
+            setAvailableSlots(nextApiSlots);
+          }}
+        />
 
         <ButtonWrapper>
           <Button
             label="다음"
             disabled={!hasSelection}
             onClick={() => {
-              console.log('최종 payload:', payload); // ✅ date/hour 형태로 확인
+              console.log('최종 payload:', payload);
               setIsModalVisible(true);
             }}
           />
@@ -146,7 +209,8 @@ export default function Schedule() {
               height={36}
             />
             <p>
-              방이 생성된 후 약속 불참 시<br />
+              방이 생성된 후 약속 불참 시
+              <br />
               노쇼 페널티가 부과됩니다
             </p>
           </CautionWrapper>
@@ -155,7 +219,7 @@ export default function Schedule() {
             <Button
               label="확인"
               onClick={() => {
-                // 필요하면 여기서 payload로 API 호출 or store 저장
+                setActiveWeekKey(week.week_start);
                 setAvailableSlots(payload.available_slots);
                 router.push('/application/dining');
               }}
