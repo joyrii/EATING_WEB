@@ -33,7 +33,6 @@ export default function MatchingListItem({
   hour,
   currentCount,
   totalCount,
-  onClick,
   onChatClick,
   onDetailClick,
   clickable = false,
@@ -44,7 +43,7 @@ export default function MatchingListItem({
     default: [
       {
         variant: 'detail' as const,
-        label: '매칭 상세',
+        label: '상세 보기',
         onClick: () => {
           onDetailClick?.();
         },
@@ -61,10 +60,7 @@ export default function MatchingListItem({
   };
 
   return (
-    <MatchingListItemContainer
-      $clickable={clickable}
-      onClick={clickable ? onClick : undefined}
-    >
+    <MatchingListItemContainer $clickable={clickable}>
       <ParticipantsWrapper>
         <Participants>
           {currentCount}명/{totalCount}명

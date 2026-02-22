@@ -78,6 +78,7 @@ export default function HomeLayoutClient({
   const [currentStatus, setCurrentStatus] = useState<MatchingStatus>(
     isPreRegistered ? 'pre_registered' : 'before',
   );
+  const FORCE_STATUS: MatchingStatus | null = 'completed';
 
   const isFirstPreInProgress =
     currentStatus === 'inProgress' &&
@@ -116,12 +117,14 @@ export default function HomeLayoutClient({
         const effectiveCanApply = !hasAppliedAnyRound;
 
         const now = new Date();
-        const uiStatus = calcUiStatus({
-          canApply: effectiveCanApply, // 매칭 신청 가능 여부
-          isPreRegistered: !!me.is_pre_registered, // 사전 등록 여부
-          weekStart, // 이번 라운드 시작
-          now, // 현재 시각
-        });
+        const uiStatus = FORCE_STATUS
+          ? FORCE_STATUS
+          : calcUiStatus({
+              canApply: effectiveCanApply, // 매칭 신청 가능 여부
+              isPreRegistered: !!me.is_pre_registered, // 사전 등록 여부
+              weekStart, // 이번 라운드 시작
+              now, // 현재 시각
+            });
 
         setCurrentStatus(uiStatus);
         setReady(true);

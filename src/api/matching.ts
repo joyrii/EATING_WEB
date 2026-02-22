@@ -8,6 +8,11 @@ export type PendingMatch = {
   restaurant_name: string;
   members: { user_id: string; name: string }[];
   has_reviewed: boolean;
+  total_capacity: number;
+  member_count: number;
+  common_interests: string[];
+  student_years_text: string;
+  personality_text: string;
 };
 
 export async function fetchPendingMatches(): Promise<PendingMatch[]> {
