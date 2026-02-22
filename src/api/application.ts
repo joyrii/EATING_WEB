@@ -28,7 +28,7 @@ type ApplyMatchingPayload = {
   available_slots: ApiSlot[];
   excluded_restaurant_ids: string[];
   preferred_years: string[];
-  excluded_mbti: string;
+  excluded_mbti: string[];
 };
 
 export async function applyMatching(payload: ApplyMatchingPayload) {

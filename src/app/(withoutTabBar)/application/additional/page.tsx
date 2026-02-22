@@ -21,7 +21,6 @@ export default function Additional() {
   const [selectedMbti2, setSelectedMbti2] = useState<string>('');
   const [selectedMbti3, setSelectedMbti3] = useState<string>('');
   const [selectedMbti4, setSelectedMbti4] = useState<string>('');
-  const [selectedMbti, setSelectedMbti] = useState<string>('');
 
   const getDraft = useMatchingDraftByWeek((s) => s.getDraft);
 
@@ -30,10 +29,7 @@ export default function Additional() {
   );
   const setExcludedMbti = useMatchingDraftByWeek((s) => s.setExcludedMbti);
 
-  const submit = async (selectedClass: string[], selectedMbti: string) => {
-    setSelectedMbti(
-      `${selectedMbti1}${selectedMbti2}${selectedMbti3}${selectedMbti4}`,
-    );
+  const submit = async (selectedClass: string[], selectedMbti: string[]) => {
     try {
       setPreferredClassYears(selectedClass);
       setExcludedMbti(selectedMbti);
@@ -43,7 +39,7 @@ export default function Additional() {
         available_slots: draft.available_slots,
         excluded_restaurant_ids: draft.excluded_restaurant_ids,
         preferred_years: draft.preferred_years ?? [],
-        excluded_mbti: draft.excluded_mbti ?? '',
+        excluded_mbti: selectedMbti,
       };
 
       console.log('매칭 신청 payload:', payload);
@@ -155,6 +151,12 @@ export default function Additional() {
         <Button
           label="신청 완료"
           onClick={() => {
+            const selectedMbti = [
+              selectedMbti1,
+              selectedMbti2,
+              selectedMbti3,
+              selectedMbti4,
+            ].filter((mbti) => mbti !== ''); // 빈 문자열 제거
             submit(selectedClass, selectedMbti);
           }}
         />

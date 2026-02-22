@@ -10,14 +10,14 @@ export type MatchingDraft = {
 
   // 일반 매칭에서만 사용(사전 단계에서는 비워둠)
   preferred_years: string[];
-  excluded_mbti: string;
+  excluded_mbti: string[];
 };
 
 const emptyDraft = (): MatchingDraft => ({
   available_slots: [],
   excluded_restaurant_ids: [],
   preferred_years: [],
-  excluded_mbti: '',
+  excluded_mbti: [],
 });
 
 type State = {
@@ -30,7 +30,7 @@ type State = {
   setAvailableSlots: (available_slots: ApiSlot[]) => void;
   setExcludedRestaurantIds: (excluded_restaurant_ids: string[]) => void;
   setPreferredYears: (years: string[]) => void;
-  setExcludedMbti: (excluded_mbti: string) => void;
+  setExcludedMbti: (excluded_mbti: string[]) => void;
 
   // getters/util
   getDraft: (weekKey?: string) => MatchingDraft;

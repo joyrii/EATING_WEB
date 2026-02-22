@@ -77,7 +77,7 @@ export default function PreDining() {
         available_slots: draft.available_slots,
         excluded_restaurant_ids: excludedIds,
         preferred_years: draft.preferred_years ?? [],
-        excluded_mbti: draft.excluded_mbti ?? '',
+        excluded_mbti: draft.excluded_mbti ?? [],
       };
 
       console.log('매칭 신청 payload:', payload);
@@ -136,7 +136,7 @@ export default function PreDining() {
       <ButtonWrapper>
         <Button
           label={isSubmitting ? '제출 중...' : '다음'}
-          disabled={isSubmitting || checkedIds.size === 0}
+          disabled={isSubmitting}
           onClick={() => {
             submit(Array.from(checkedIds));
           }}
