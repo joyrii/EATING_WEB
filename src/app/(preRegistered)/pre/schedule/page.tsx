@@ -166,6 +166,26 @@ export default function Schedule() {
     setSelectedByWeek(restored);
   }, [weeks, getDraft]);
 
+  useEffect(() => {
+    if (weeks.length === 0) return;
+
+    const roundIdToWeekStart = new Map<string, string>();
+    weeks.forEach((w) => roundIdToWeekStart.set(w.id, w.week_start));
+
+    const allApiSlots: ApiSlot[] = Object.entries(selectedByWeek).flatMap(
+      ([roundId, slots]) => {
+        const weekStart = roundIdToWeekStart.get(roundId);
+        if (!weekStart) return [];
+        return slots.map((s) => ({
+          date: addDaysISO(weekStart, s.day),
+          hour: s.hour,
+        }));
+      },
+    );
+
+    setAvailableSlots(allApiSlots);
+  }, [selectedByWeek, weeks, setAvailableSlots]);
+
   return (
     <>
       {weeks.length === 0 ? (
@@ -186,28 +206,10 @@ export default function Schedule() {
             week={activeWeek}
             value={selectedByWeek[activeWeek.id] ?? []}
             onChange={(next) => {
-              setSelectedByWeek((prev) => {
-                const merged = { ...prev, [activeWeek.id]: next };
-
-                const roundIdToWeekStart = new Map<string, string>();
-                weeks.forEach((w) =>
-                  roundIdToWeekStart.set(w.id, w.week_start),
-                );
-
-                const allApiSlots: ApiSlot[] = Object.entries(merged).flatMap(
-                  ([roundId, slots]) => {
-                    const weekStart = roundIdToWeekStart.get(roundId);
-                    if (!weekStart) return [];
-                    return slots.map((s) => ({
-                      date: addDaysISO(weekStart, s.day),
-                      hour: s.hour,
-                    }));
-                  },
-                );
-
-                setAvailableSlots(allApiSlots);
-                return merged;
-              });
+              setSelectedByWeek((prev) => ({
+                ...prev,
+                [activeWeek.id]: next,
+              }));
             }}
             onPrev={() => setActiveWeekIndex((i) => Math.max(0, i - 1))}
             onNext={() =>

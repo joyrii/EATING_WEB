@@ -6,20 +6,22 @@ export async function GET(request: Request) {
   const stepToPath = (step?: string | null) => {
     switch (step) {
       case 'terms':
-        return '/terms';
-      case 'verification':
-        return '/student-verification';
+        return '/terms'; // 약관 동의 안 했으면 약관부터
+      case 'student_type':
+        return '/student-verification'; // 학교 인증 안 했으면 학교 인증부터
       case 'mbti':
+      case 'interests':
       case 'completed':
-        return '/home';
+        return '/home'; // 온보딩 진행 중이거나 완료했으면 홈으로
       default:
         return '/terms';
     }
   };
 
   const isSafeInternalPath = (path: string) => {
+    const p = path.trim();
     // 내부 경로만 허용
-    return path.startsWith('/') && !path.startsWith('//');
+    return p.startsWith('/') && !p.startsWith('//');
   };
 
   const { searchParams, origin } = new URL(request.url);
@@ -29,10 +31,10 @@ export async function GET(request: Request) {
   const nextParam = searchParams.get('next');
   const requestedRedirect =
     (redirectParam && isSafeInternalPath(redirectParam)
-      ? redirectParam
+      ? redirectParam.trim()
       : null) ??
     (nextParam && isSafeInternalPath(nextParam) ? nextParam : null) ??
-    '/terms';
+    null;
 
   console.log('--- Auth Callback Start ---');
   console.log('Code:', code);
@@ -84,28 +86,44 @@ export async function GET(request: Request) {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
         },
-        timeout: 10000,
+        timeout: 30000,
       },
     );
     console.log('Backend API Response:', res.data);
 
-    // redirect 우선
-    if (requestedRedirect) {
-      return NextResponse.redirect(`${origin}${requestedRedirect}`);
-    }
-
-    // 3) 다음 페이지로 리다이렉트
+    // 3) 학교 인증이 된 유저는 다음 페이지로 리다이렉트
     const myInfo = await axios.get(`${apiUrl}/users/me`, {
       headers: {
         Authorization: `Bearer ${jwtToken}`,
       },
-      timeout: 10000,
+      timeout: 30000,
     });
+
+    const { student_id, student_type, department } = myInfo.data || {};
+
+    // 학교 인증 여부 판단: 유형, 학과, 학번 모두 존재해야 인증된 것으로 간주
+    const isStudentVerified =
+      department != null && student_type != null && student_id != null;
 
     const onboardingStep = myInfo.data?.onboarding_step;
     console.log('User Onboarding Step:', onboardingStep);
 
     const redirectPath = stepToPath(onboardingStep);
+
+    // 학교 인증 최우선 (인증된 유저)
+    if (isStudentVerified) {
+      // 리다이렉트 요청이 있으면 해당 주소로
+      if (requestedRedirect) {
+        return NextResponse.redirect(`${origin}${requestedRedirect}`);
+      }
+      // redirect 요청이 없으면 홈으로
+      return NextResponse.redirect(`${origin}/home`);
+    }
+
+    console.log('requestedRedirect:', requestedRedirect);
+    console.log('myInfo.data:', myInfo.data);
+    console.log('onboardingStep(raw):', myInfo.data?.onboarding_step);
+    console.log('redirectPath(from stepToPath):', redirectPath);
 
     return NextResponse.redirect(`${origin}${redirectPath}`);
   } catch (e: any) {

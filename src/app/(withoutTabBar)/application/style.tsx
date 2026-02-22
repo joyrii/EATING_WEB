@@ -72,7 +72,6 @@ export const RestaurantListContainer = styled.div`
   justify-items: center;
   align-items: center;
   width: 100%;
-  max-width: 400px;
   margin: 30px auto 100px auto;
 `;
 

@@ -12,8 +12,6 @@ import { getMatchingStatus } from '@/api/application';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { supabase } from '@/lib/supabase/client';
 
-type WeekInfo = { week_start: string; week_end: string };
-
 const PRE_REGISTERED_END_AT_KST = '2026-02-23'; // 이 시각(KST 00:00) 이후 pre_registered 폐기
 
 function kstMidnightToUtcDate(ymd: string) {
@@ -76,8 +74,11 @@ export default function HomeLayoutClient({
   const { me } = useUser();
   const name = me?.name ?? '회원';
   const onboardingStep = me?.onboarding_step ?? null;
+  const isPreRegistered = me?.is_pre_registered;
 
-  const [currentStatus, setCurrentStatus] = useState<MatchingStatus>('before');
+  const [currentStatus, setCurrentStatus] = useState<MatchingStatus>(
+    isPreRegistered ? 'pre_registered' : 'before',
+  );
 
   const isFirstPreInProgress =
     currentStatus === 'inProgress' &&
@@ -85,6 +86,11 @@ export default function HomeLayoutClient({
     isPreFeatureEnabled();
 
   const text = getMatchingSectionText(currentStatus, name, {
+    isFirstPreInProgress,
+  });
+
+  console.log('canApply', currentStatus, {
+    isPreRegistered,
     isFirstPreInProgress,
   });
 
@@ -104,12 +110,18 @@ export default function HomeLayoutClient({
           return;
         }
 
+        const hasAppliedAnyRound = (res.rounds ?? []).some(
+          (r: any) => r.has_applied === true,
+        );
+
+        const effectiveCanApply = !hasAppliedAnyRound;
+
         const now = new Date();
         const uiStatus = calcUiStatus({
-          canApply: res.can_apply,
-          isPreRegistered: !!me.is_pre_registered,
-          weekStart,
-          now,
+          canApply: effectiveCanApply, // 매칭 신청 가능 여부
+          isPreRegistered: !!me.is_pre_registered, // 사전 등록 여부
+          weekStart, // 이번 라운드 시작
+          now, // 현재 시각
         });
 
         setCurrentStatus(uiStatus);

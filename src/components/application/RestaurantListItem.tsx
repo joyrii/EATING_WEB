@@ -64,6 +64,7 @@ const RestaurantListItemWrapper = styled.button<{ $checked?: boolean }>`
   border-radius: 10px;
   margin-bottom: 16px;
   width: 170px;
+  height: 210px;
   background-color: #ffffff;
 `;
 
