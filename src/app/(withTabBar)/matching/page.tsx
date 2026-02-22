@@ -1,14 +1,15 @@
 'use client';
 
 import localFont from 'next/font/local';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { ensureSendbirdConnected } from '@/lib/sendbird/client';
 import ChatRoomItem from '@/components/chat/ChatRoomItem';
 import { useUser } from '@/context/userContext';
 import { getSendbirdInstance } from '@/lib/sendbird/client';
 import { useRouter } from 'next/navigation';
-import { fetchPendingMatches } from '@/api/matching';
+import { fetchPendingMatches, getChatRooms } from '@/api/matching';
+import { ChatRoomFromApi } from '@/type/chat';
 
 interface RoomData {
   id: string;
@@ -26,6 +27,7 @@ const DEFAULT_PROFILE_URL = [
   '/images/chat/profile-default-3.png',
 ] as const;
 
+// 채팅방 제목 포맷 (eg. 2/1 오후 4시 진미당(4)
 export function formatRoomTitle(params: {
   date: string; // 'YYYY-MM-DD'
   hour: number; // 0~23
@@ -51,10 +53,10 @@ export function formatRoomTitle(params: {
 
 // 프로필이 없는 멤버 리스트
 function mapMemberProfileUrls(members: any[]) {
-  const noProfile = members
+  const noProfile = (members ?? [])
     .filter((m) => !m.profileUrl || String(m.profileUrl).trim() === '')
     .slice()
-    .sort((a, b) => a.userId.localeCompare(b.userId));
+    .sort((a, b) => String(a.userId).localeCompare(String(b.userId)));
 
   const assigned = new Map<string, string>();
   noProfile.forEach((member, index) => {
@@ -64,117 +66,146 @@ function mapMemberProfileUrls(members: any[]) {
     );
   });
 
-  return members.map((m) => {
+  return (members ?? []).map((m) => {
     const url =
       m.profileUrl && String(m.profileUrl).trim() !== ''
         ? m.profileUrl
         : assigned.get(String(m.userId));
+
     return url || DEFAULT_PROFILE_URL[0];
   });
 }
 
-const Matching = () => {
+// UI용 ROOM
+type UiRoom = {
+  channelUrl: string;
+  title: string;
+  lastChat: string;
+  lastChatAtMs: number;
+  unreadCount: number;
+  profileImageUrls: string[];
+};
+
+export default function Matching() {
   const router = useRouter();
-
-  const [rooms, setRooms] = useState<RoomData[]>([]);
-  const [isFetching, setIsFetching] = useState(false);
-  const fetchingRef = useRef(false);
-
   const { me, isLoaded } = useUser();
 
-  const hasRooms = rooms.length > 0;
+  const [notice, setNotice] = useState('');
+  const [apiRooms, setApiRooms] = useState<ChatRoomFromApi[]>([]);
+  const [channels, setChannels] = useState<any[]>([]);
+  const fetchingRef = useRef(false);
 
-  const fetchRooms = async () => {
+  const fetchAll = async () => {
     if (!me?.id) return;
-    if (fetchingRef.current) return; // 중복 요청 방지
-
+    if (fetchingRef.current) return;
     fetchingRef.current = true;
-    setIsFetching(true);
 
     try {
+      // 1) 방 목록 (정답 데이터)
+      const res = await getChatRooms();
+      setNotice(res.notice ?? '');
+      setApiRooms(res.rooms ?? []);
+
+      // 2) sendbird: 내 채널 목록(최근메시지/안읽음/프로필URL 등 실시간 메타)
       await ensureSendbirdConnected(me.id, me.name, me.profile_image_url);
 
       const sb = getSendbirdInstance();
-
-      const pending = await fetchPendingMatches();
-      const pendingMap = new Map(pending.map((s: any) => [s.group_id, s]));
-
-      const query = sb.groupChannel.createMyGroupChannelListQuery({
+      const q = sb.groupChannel.createMyGroupChannelListQuery({
         includeEmpty: true,
         limit: 50,
         order: 'latest_last_message',
       });
 
-      const channels = await query.next();
-
-      const mapped: RoomData[] = channels.map((channel: any) => {
-        const slot = pendingMap.get(channel.url);
-
-        const title = slot
-          ? formatRoomTitle({
-              date: slot.matched_slot.date,
-              hour: slot.matched_slot.hour,
-              restaurantName: slot.restaurant_name,
-              memberCount: channel.memberCount ?? channel.members?.length,
-            })
-          : channel.name || '채팅방';
-
-        const last = channel.lastMessage;
-        const lastText = last?.message ?? (last?.url ? '[파일]' : '');
-
-        const createdAtMs = last?.createdAt ?? channel.createdAt ?? Date.now();
-
-        const profileImageUrls = mapMemberProfileUrls(
-          channel.members ?? [],
-        ).slice(0, 4);
-
-        return {
-          id: channel.url,
-          title: channel.name || '채팅방',
-          lastChat: lastText || '',
-          lastChatAtMs: createdAtMs,
-          unreadCount: channel.unreadMessageCount || 0,
-          profileImageUrls,
-        };
-      });
-
-      setRooms(mapped);
-    } catch (error) {
-      console.error('Failed to fetch chat rooms:', error);
-      setRooms([]);
+      const list = await q.next();
+      setChannels(list ?? []);
+    } catch (e) {
+      console.error('Failed to load chat rooms:', e);
+      setNotice('');
+      setApiRooms([]);
+      setChannels([]);
     } finally {
       fetchingRef.current = false;
-      setIsFetching(false);
     }
   };
 
+  // 첫 로드
   useEffect(() => {
     if (!isLoaded || !me?.id) return;
-    fetchRooms();
+    fetchAll();
   }, [isLoaded, me?.id]);
 
-  // 자동 업데이트
+  // 포커스/복귀 시 갱신
   useEffect(() => {
     if (!isLoaded || !me?.id) return;
 
-    const onFocus = () => {
-      fetchRooms();
-    };
-
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchRooms();
-      }
-    };
+    const onFocus = () => fetchAll();
+    const onVis = () => document.visibilityState === 'visible' && fetchAll();
 
     window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onVisibilityChange);
+    document.addEventListener('visibilitychange', onVis);
 
     return () => {
       window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener('visibilitychange', onVis);
     };
   }, [isLoaded, me?.id]);
+
+  // 백 rooms + sendbird channels 조인
+  const uiRooms: UiRoom[] = useMemo(() => {
+    const channelMap = new Map<string, any>();
+    (channels ?? []).forEach((ch) => channelMap.set(String(ch.url), ch));
+
+    const merged = (apiRooms ?? []).map((r) => {
+      const ch = channelMap.get(String(r.channel_url));
+
+      const last = ch?.lastMessage;
+      const lastText = last?.message ?? (last?.url ? '[파일]' : '');
+      const lastAt =
+        last?.createdAt ??
+        ch?.createdAt ??
+        (r.created_at ? new Date(r.created_at).getTime() : Date.now());
+
+      const memberCount =
+        typeof r.member_count === 'number'
+          ? r.member_count
+          : (ch?.memberCount ??
+            ch?.members?.length ??
+            r.members?.length ??
+            null);
+
+      const title = formatRoomTitle({
+        date: r.matched_slot?.date,
+        hour: r.matched_slot?.hour,
+        restaurantName: r.restaurant?.name,
+        memberCount,
+      });
+
+      const profileImageUrls = ch?.members
+        ? mapMemberProfileUrls(ch.members).slice(0, 4)
+        : (r.members ?? [])
+            .slice(0, 4)
+            .map((m) =>
+              m.profile_image && m.profile_image.trim()
+                ? m.profile_image
+                : DEFAULT_PROFILE_URL[0],
+            );
+
+      return {
+        channelUrl: r.channel_url,
+        title,
+        lastChat: String(lastText ?? ''),
+        lastChatAtMs: Number(lastAt ?? Date.now()),
+        unreadCount: Number(ch?.unreadMessageCount ?? 0),
+        profileImageUrls,
+      };
+    });
+
+    // 최신 메시지 기준 정렬
+    merged.sort((a, b) => b.lastChatAtMs - a.lastChatAtMs);
+    return merged;
+  }, [apiRooms, channels]);
+
+  const hasRooms = uiRooms.length > 0;
 
   if (!isLoaded)
     return (
@@ -193,19 +224,19 @@ const Matching = () => {
         {hasRooms ? (
           <>
             <NoticeBox>
-              <NoticeText>채팅방은 약속 다음날 사라집니다</NoticeText>
+              <NoticeText>{notice}</NoticeText>
             </NoticeBox>
-            {rooms.map((room) => (
+            {uiRooms.map((room) => (
               <ChatRoomItem
-                key={room.id}
-                roomId={room.id}
+                key={room.channelUrl}
+                roomId={room.channelUrl}
                 roomName={room.title}
                 lastChatAsMs={room.lastChatAtMs}
                 content={room.lastChat}
                 unreadCount={room.unreadCount}
                 profileImageUrls={room.profileImageUrls}
                 onClick={() => {
-                  router.push(`/chat/${encodeURIComponent(room.id)}`);
+                  router.push(`/chat/${encodeURIComponent(room.channelUrl)}`);
                 }}
               />
             ))}
@@ -216,9 +247,7 @@ const Matching = () => {
       </div>
     </>
   );
-};
-
-export default Matching;
+}
 
 function EmptyState() {
   return (

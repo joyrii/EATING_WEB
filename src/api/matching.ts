@@ -1,4 +1,5 @@
 import { api } from '@/api/axios-client';
+import { ChatRoomsResponse } from '@/type/chat';
 
 export type PendingMatch = {
   group_id: string; // 채팅방 입장 code
@@ -36,6 +37,17 @@ export async function joinChat(body: JoinChatReq): Promise<JoinChatRes> {
     return res.data as JoinChatRes;
   } catch (error) {
     console.error('Failed to join chat', error);
+    throw error;
+  }
+}
+
+// 채팅방 조회
+export async function getChatRooms(): Promise<ChatRoomsResponse> {
+  try {
+    const res = await api.get(`/chat/rooms`);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to fetch chat rooms', error);
     throw error;
   }
 }

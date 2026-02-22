@@ -1,5 +1,6 @@
 'use client';
 
+import { getChatRooms } from '@/api/matching';
 import { formatRoomTitle } from '@/app/(withTabBar)/matching/page';
 import { useUser } from '@/context/userContext';
 import {
@@ -18,6 +19,7 @@ export default function ChatRoomLayout({
   const pathname = usePathname();
   const params = useParams<{ chatRoom: string }>();
   const roomId = params?.chatRoom ? decodeURIComponent(params.chatRoom) : '';
+  const [roomTitle, setRoomTitle] = useState('채팅방');
 
   const { me, isLoaded } = useUser();
 
@@ -36,6 +38,21 @@ export default function ChatRoomLayout({
 
     const run = async () => {
       try {
+        // 채팅방 제목
+        const res = await getChatRooms();
+        const r = (res.rooms ?? []).find((x) => x.channel_url === roomId);
+
+        if (!cancelled && r) {
+          setRoomTitle(
+            formatRoomTitle({
+              date: r.matched_slot.date,
+              hour: r.matched_slot.hour,
+              restaurantName: r.restaurant.name,
+              memberCount: r.member_count,
+            }),
+          );
+        }
+
         await ensureSendbirdConnected(me.id, me.name);
         const sb = getSendbirdInstance();
         const channel = await sb.groupChannel.getChannel(roomId);
@@ -109,7 +126,7 @@ export default function ChatRoomLayout({
         <BackButton onClick={() => window.history.back()}>
           <img src="/svgs/chat/chevron-back.svg" alt="back" />
         </BackButton>
-        <RoomName>{slotTitle}</RoomName>
+        <RoomName>{roomTitle}</RoomName>
         <RightSlot />
       </Header>
 
