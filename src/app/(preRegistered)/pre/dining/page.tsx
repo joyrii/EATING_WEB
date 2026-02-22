@@ -136,7 +136,7 @@ export default function PreDining() {
       <ButtonWrapper>
         <Button
           label={isSubmitting ? '제출 중...' : '다음'}
-          disabled={isSubmitting || checkedIds.size === 0}
+          disabled={isSubmitting}
           onClick={() => {
             submit(Array.from(checkedIds));
           }}

@@ -50,7 +50,7 @@ function VerificationOption() {
       <div style={{ position: 'fixed', bottom: 45, left: 23, right: 23 }}>
         <Button
           disabled={!value}
-          label="동의하기"
+          label="시작하기"
           onClick={() => {
             if (value === 'FRESHMAN') {
               router.push('/student-verification/freshman');
