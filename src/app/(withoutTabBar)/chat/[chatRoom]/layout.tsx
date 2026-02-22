@@ -1,7 +1,14 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { getChatRooms } from '@/api/matching';
+import { formatRoomTitle } from '@/app/(withTabBar)/matching/page';
+import { useUser } from '@/context/userContext';
+import {
+  ensureSendbirdConnected,
+  getSendbirdInstance,
+} from '@/lib/sendbird/client';
+import { useParams, usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 export default function ChatRoomLayout({
@@ -10,31 +17,121 @@ export default function ChatRoomLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [message, setMessage] = useState('');
+  const params = useParams<{ chatRoom: string }>();
+  const roomId = params?.chatRoom ? decodeURIComponent(params.chatRoom) : '';
+  const [roomTitle, setRoomTitle] = useState('채팅방');
 
-  const sendMessage = () => {
-    if (message.trim() === '') return;
-    // 메시지 전송 로직 추가
-    setMessage('');
-  };
+  const { me, isLoaded } = useUser();
+
+  const [message, setMessage] = useState('');
+  const roomRef = useRef<any>(null);
 
   const hideChatBar = pathname.endsWith('/cafe');
 
+  const [memberCount, setMemberCount] = useState<number | null>(null);
+  const [slotTitle, setSlotTitle] = useState<string>('채팅방');
+
+  useEffect(() => {
+    if (!isLoaded || !me?.id || !roomId) return;
+
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        // 채팅방 제목
+        const res = await getChatRooms();
+        const r = (res.rooms ?? []).find((x) => x.channel_url === roomId);
+
+        if (!cancelled && r) {
+          setRoomTitle(
+            formatRoomTitle({
+              date: r.matched_slot.date,
+              hour: r.matched_slot.hour,
+              restaurantName: r.restaurant.name,
+              memberCount: r.member_count,
+            }),
+          );
+        }
+
+        await ensureSendbirdConnected(me.id, me.name);
+        const sb = getSendbirdInstance();
+        const channel = await sb.groupChannel.getChannel(roomId);
+
+        // slot 정보
+        const sp = new URLSearchParams(window.location.search);
+        const date = sp.get('date') ?? undefined;
+        const hourRaw = sp.get('hour');
+        const hour = hourRaw ? Number(hourRaw) : undefined;
+        const restaurantName = sp.get('restaurant') ?? undefined;
+
+        const count =
+          typeof channel.memberCount === 'number'
+            ? channel.memberCount
+            : Array.isArray(channel.members)
+              ? channel.members.length
+              : null;
+
+        setMemberCount(count);
+        setSlotTitle(
+          formatRoomTitle({ date, hour, restaurantName, memberCount: count }),
+        );
+
+        if (cancelled) return;
+        roomRef.current = channel;
+
+        try {
+          channel.markAsRead?.();
+        } catch {}
+      } catch (e) {
+        console.error('Failed to prepare chat room:', e);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoaded, me?.id, me?.name, roomId]);
+
+  const sendMessage = async () => {
+    const text = message.trim();
+    if (!text) return;
+
+    const room = roomRef.current;
+    if (!room) return;
+
+    try {
+      const result = room.sendUserMessage({ message: text });
+
+      if (result && typeof (result as any).onSucceeded === 'function') {
+        (result as any)
+          .onSucceeded(() => {
+            setMessage('');
+            window.dispatchEvent(new Event('chat:refresh'));
+          })
+          .onFailed((e: any) => console.error(e));
+      } else {
+        await Promise.resolve(result);
+        setMessage('');
+        window.dispatchEvent(new Event('chat:refresh'));
+      }
+    } catch (e) {
+      console.error('메시지 전송 실패:', e);
+    }
+  };
+
   return (
     <>
-      {/* 헤더 */}
       <Header>
         <BackButton onClick={() => window.history.back()}>
           <img src="/svgs/chat/chevron-back.svg" alt="back" />
         </BackButton>
-        <RoomName>
-          3/2 오후 4시 진미당 <Participant>(4)</Participant>
-        </RoomName>
+        <RoomName>{roomTitle}</RoomName>
         <RightSlot />
       </Header>
-      {/* 채팅 내용 */}
+
       <Content style={{ marginBottom: '15px' }}>{children}</Content>
-      {/* 채팅 입력창 */}
+
       {!hideChatBar && (
         <ChatInputContainer>
           <ChatInput
@@ -43,9 +140,7 @@ export default function ChatRoomLayout({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                sendMessage();
-              }
+              if (e.key === 'Enter') sendMessage();
             }}
           />
           <SendButton onClick={sendMessage}>

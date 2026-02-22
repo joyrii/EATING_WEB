@@ -8,6 +8,8 @@ import { Container, TextWrapper } from '../style';
 import { useRef, useState } from 'react';
 import { tesseractModule } from '@/lib/tesseract/tesseractModule';
 import parseStudentIdText from '@/lib/tesseract/parseStudentId';
+import { uploadVerificationImage } from '../uploadVerificationImage';
+import { supabase } from '@/lib/supabase/client';
 
 export default function EnrolledStudentVerification() {
   const router = useRouter();
@@ -44,6 +46,7 @@ export default function EnrolledStudentVerification() {
       setErrorMsg('');
 
       try {
+        // OCR 처리
         const text = await tesseractModule(result, setProgress);
         const parsed = parseStudentIdText(text);
 
@@ -56,10 +59,24 @@ export default function EnrolledStudentVerification() {
           return;
         }
 
+        // supabase 업로드
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+        const userId = user.id;
+        const { path, imageUrl } = await uploadVerificationImage({
+          file,
+          userId,
+        });
+
         sessionStorage.setItem('studentIdImg', result);
         sessionStorage.setItem('studentIdText', text);
         sessionStorage.setItem('studentId', studentId);
         sessionStorage.setItem('department', department);
+        sessionStorage.setItem('studentIdImgPath', path);
+        sessionStorage.setItem('studentIdImgUrl', imageUrl);
+        console.log('Image uploaded to Supabase at path:', imageUrl);
 
         router.push('/student-verification/confirm?from=enrolled');
       } catch (error) {

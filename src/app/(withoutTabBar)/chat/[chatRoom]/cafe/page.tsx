@@ -3,46 +3,72 @@
 import styled from 'styled-components';
 import type { RestaurantPayload } from '@/components/chat/ChatMessage';
 import RestaurantCard from '@/components/chat/RestaurantCard';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import RestaurantModal from '@/components/chat/RestaurantModal';
+import { getRestaurants } from '@/api/application';
 
-const RESTAURANTS: RestaurantPayload[] = [
-  {
-    id: 1,
-    name: '진미당',
-    category: '한식',
-    benefit: '10% 할인',
-    menu: '치즈불짜파게티',
-    imageUrl: '/images/chat/placeholder.png',
-  },
-  {
-    id: 2,
-    name: '주디식당',
-    category: '양식',
-    benefit: '음료 1잔 무료',
-    menu: '크림파스타',
-    imageUrl: '/images/chat/placeholder.png',
-  },
-  {
-    id: 3,
-    name: '다방방',
-    category: '카페',
-    benefit: '아메리카노 1,000원 할인',
-    menu: '아메리카노',
-    imageUrl: '/images/chat/placeholder.png',
-  },
-  {
-    id: 4,
-    name: '다방방',
-    category: '카페',
-    benefit: '아메리카노 1,000원 할인',
-    menu: '아메리카노',
-    imageUrl: '/images/chat/placeholder.png',
-  },
-];
+type ApiRestaurant = {
+  id: string;
+  name: string;
+  category: string;
+  menu_items?: string[];
+  image_url?: string;
+};
+
+function pickMenuText(menuItems: any): string {
+  if (!menuItems) return '';
+  const first = Array.isArray(menuItems) ? menuItems[0] : menuItems;
+
+  return String(first.name ?? '');
+}
+
+function toRestaurantPayload(r: ApiRestaurant): RestaurantPayload {
+  return {
+    id: r.id,
+    name: r.name,
+    category: r.category,
+    benefit: '20% 할인', // 추후 API에서 받아와야 함
+    menu: pickMenuText((r as any).menu_items),
+    imageUrl: r.image_url?.trim() ? r.image_url : 'images/chat/placeholder.png',
+  };
+}
 
 export default function CafeList() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [cafes, setCafes] = useState<RestaurantPayload[]>([]);
+
+  const [selectedCafe, setSelectedCafe] = useState<RestaurantPayload | null>(
+    null,
+  );
   const [isCafeModalVisible, setIsCafeModalVisible] = useState(false);
+
+  // 카페 목록 가져오기
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        const list = (await getRestaurants()) as ApiRestaurant[];
+
+        const cafeOnly = (list ?? [])
+          .filter((r) => String(r.category).toLowerCase() === '카페')
+          .map(toRestaurantPayload);
+
+        if (!cancelled) setCafes(cafeOnly);
+      } catch (error) {
+        console.error('카페 목록을 가져오는 중 오류 발생:', error);
+        setError('카페 목록을 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div>
@@ -61,19 +87,27 @@ export default function CafeList() {
         </TimeBox>
       </Header>
       <CafeListContainer>
-        {RESTAURANTS.map((restaurant) => (
-          <RestaurantCard
-            key={restaurant.id}
-            payload={restaurant}
-            width="75%"
-            onClick={() => setIsCafeModalVisible(true)}
-          />
-        ))}
+        {loading && <div>불러오는 중...</div>}
+        {error && <div>{error}</div>}
+
+        {!loading &&
+          !error &&
+          cafes.map((cafe) => (
+            <RestaurantCard
+              key={cafe.id}
+              payload={cafe}
+              width="75%"
+              onClick={() => {
+                setSelectedCafe(cafe);
+                setIsCafeModalVisible(true);
+              }}
+            />
+          ))}
       </CafeListContainer>
       <RestaurantModal
         isOpen={isCafeModalVisible}
         onClose={() => setIsCafeModalVisible(false)}
-        restaurant={null} // 정보 추가 필요
+        restaurant={selectedCafe}
       />
     </div>
   );

@@ -3,25 +3,57 @@
 import styled from 'styled-components';
 import { Button } from './style';
 
+export type MatchingListItemProps = {
+  status?: 'default' | 'match';
+  date: string; // YYYY-MM-DD
+  hour: number; // 14
+  currentCount: number; // 현재 인원
+  totalCount: number; // 총 정원
+  onClick?: () => void;
+  onChatClick?: () => void;
+  onDetailClick?: () => void;
+  clickable?: boolean;
+};
+
+function formatDateTime(date: string, hour: number) {
+  const [y, m, d] = date.split('-').map(Number);
+  const dt = new Date(y, m - 1, d, hour, 0, 0);
+
+  const month = dt.getMonth() + 1;
+  const day = dt.getDate();
+  const weekday = dt.toLocaleDateString('ko-KR', { weekday: 'short' });
+  const hh = String(dt.getHours()).padStart(2, '0');
+
+  return `${month}/${day} ${weekday} ${hh}:00`;
+}
+
 export default function MatchingListItem({
   status = 'default',
+  date,
+  hour,
+  currentCount,
+  totalCount,
   onClick,
+  onChatClick,
+  onDetailClick,
   clickable = false,
-}: {
-  status?: 'default' | 'match';
-  onClick?: () => void;
-  clickable?: boolean;
-}) {
+}: MatchingListItemProps) {
+  const formattedDateTime = formatDateTime(date, hour);
+
   const buttonsByStatus = {
     default: [
       {
         variant: 'detail' as const,
         label: '매칭 상세',
         onClick: () => {
-          onClick?.();
+          onDetailClick?.();
         },
       },
-      { variant: 'chat' as const, label: '채팅방 이동', onClick: () => {} },
+      {
+        variant: 'chat' as const,
+        label: '채팅방 이동',
+        onClick: () => onChatClick?.(),
+      },
     ],
     match: [
       { variant: 'review' as const, label: '평가하러 가기', onClick: () => {} },
@@ -34,10 +66,12 @@ export default function MatchingListItem({
       onClick={clickable ? onClick : undefined}
     >
       <ParticipantsWrapper>
-        <Participants>2명/4명</Participants>
+        <Participants>
+          {currentCount}명/{totalCount}명
+        </Participants>
       </ParticipantsWrapper>
       <DateTimeWrapper>
-        <DateTime>10.30일 월 14:00</DateTime>
+        <DateTime>{formattedDateTime}</DateTime>
       </DateTimeWrapper>
       <ButtonContainer>
         {buttonsByStatus[status].map((b) => (

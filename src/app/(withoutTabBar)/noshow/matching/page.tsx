@@ -21,13 +21,13 @@ export default function NoshowStore() {
         <Description>처단하자! 노쇼!</Description>
       </TitleContainer>
       <MatchingList>
-        {matchings.map((matching) => (
+        {/* {matchings.map((matching) => (
           <MatchingListItem
             key={matching.id}
             clickable
             onClick={() => router.push(`/noshow/matching/${matching.id}/user`)}
           />
-        ))}
+        ))} */}
       </MatchingList>
     </>
   );
