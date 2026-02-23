@@ -93,7 +93,7 @@ const Wrapper = styled.div`
 const Background = styled.img`
   width: 100%;
   position: absolute;
-  top: -150px;
+  top: -130px;
   z-index: -1;
 `;
 
@@ -102,7 +102,7 @@ const TextWrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 150px;
+  margin-top: 120px;
 `;
 
 const MainText = styled.h1`
