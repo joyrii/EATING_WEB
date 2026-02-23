@@ -23,50 +23,44 @@ import {
 import { GroupChannelHandler } from '@sendbird/chat/groupChannel';
 import type { BaseMessage } from '@sendbird/chat/message';
 
-import { fetchPendingMatches, type PendingMatch } from '@/api/matching';
-import { ensureChannelMeta, toKstIso } from '@/lib/sendbird/channelMeta';
-import { getRestaurants } from '@/api/application';
+import { toKstIso } from '@/lib/sendbird/channelMeta';
+import { getRestaurants, getRestaurantById } from '@/api/application';
+import { getChatRooms, joinChat } from '@/api/matching';
 
 const DEFAULT_PROFILE_URL = '/images/chat/profile-default-.png';
 
 function pickDefaultProfileUrlByUserId(userId: string) {
+  // ⚠️ 원본 로직 유지 (DEFAULT_PROFILE_URL이 배열이라면 그대로 동작)
   let hash = 0;
   for (let i = 0; i < userId.length; i++)
     hash = (hash * 31 + userId.charCodeAt(i)) >>> 0;
-  return DEFAULT_PROFILE_URL[hash % DEFAULT_PROFILE_URL.length];
+  return (DEFAULT_PROFILE_URL as any)[
+    hash % (DEFAULT_PROFILE_URL as any).length
+  ];
 }
 
-/**
- * ===========================
- * ✅ 요구사항(정리)
- * ===========================
- *
- * 1) 백이 SendBird로 SYSTEM 텍스트를 "특정 시간"에 자동 전송 (custom_type="SYSTEM")
- * 2) 프론트는 백 텍스트는 그대로 '잇팅'의 텍스트 말풍선로 보여준다.
- * 3) 그리고 같은 타이밍에 "카드 UI"를 바로 이어서 보여주고 싶다 (렌더링 전용).
- *
- * 매핑:
- * - R5(장소 확정): SYSTEM 텍스트 + RestaurantCard
- * - R6(인사 권유): SYSTEM 텍스트만
- * - R7(노쇼 안내): SYSTEM 텍스트 + NoShow 카드
- * - R8(2차/평가): SYSTEM 텍스트 + Cafe 카드 → Feedback 카드 (이 순서)
- *
- * 4) 카페 3개 이름은 하드코딩 금지.
- *    getRestaurants()로 서버에서 받아온 데이터를 cafesPayload에 넣어서 사용.
- *
- * 5) 디버그 모드:
- *    URL 끝에 ?debug=system 붙이면 하단 패널 노출.
- *    버튼 클릭으로 R5~R8 케이스를 "실제로 전송 없이" 화면에 주입해서 UI 확인.
- *
- * 6) R5 카드가 안 뜨는 이슈 해결:
- *    R5 카드는 restaurantName이 비어있으면 생성되지 않는 게 정상.
- *    디버그에서는 UI 확인이 목적이므로,
- *    debug=system일 때 restaurantName이 비어있으면 debugRestaurantName을 fallback으로 사용.
- */
+type ApiRoom = {
+  group_id: string;
+  channel_url: string; // 예: match_4JM1S2
+  chat_code: string; // 예: 4JM1S2
+  matched_slot: { date: string; hour: number };
+  restaurant: { id: string; name: string };
+  member_count: number;
+  members: { user_id: string; name: string; profile_image?: string }[];
+  status: string;
+  created_at: string;
+};
+
+function extractLastMessageText(last: any): string {
+  if (!last) return '';
+  if (typeof last.message === 'string') return last.message;
+  if (last.url) return '[파일]';
+  return '';
+}
 
 export default function ChatRoomClient() {
   const params = useParams<{ chatRoom: string }>();
-  const roomId = params?.chatRoom ? decodeURIComponent(params.chatRoom) : ''; // channelUrl
+  const roomId = params?.chatRoom ? decodeURIComponent(params.chatRoom) : ''; // ✅ channel_url or sendbird url
   const searchParams = useSearchParams();
   const isSystemDebug = searchParams?.get('debug') === 'system';
 
@@ -82,14 +76,20 @@ export default function ChatRoomClient() {
   const handlerIdRef = useRef('');
   const handledSystemMessageIdsRef = useRef<Set<string>>(new Set());
 
-  const [pending, setPending] = useState<PendingMatch[]>([]);
+  const [roomMeta, setRoomMeta] = useState<ApiRoom | null>(null);
+
   const [appointmentAtISO, setAppointmentAtISO] = useState<string>('');
   const [restaurantName, setRestaurantName] = useState<string>('');
+
   const [cafesPayload, setCafesPayload] = useState<CafeListPayload | null>(
     null,
   );
 
-  // ✅ 디버그에서만: R5 식당카드 뜨게 하는 fallback 값
+  // ✅ R5에서 사용할 "풀" payload
+  const [restaurantPayload, setRestaurantPayload] =
+    useState<RestaurantPayload | null>(null);
+
+  // ✅ 디버그 fallback
   const [debugRestaurantName, setDebugRestaurantName] =
     useState<string>('학생식당');
 
@@ -108,10 +108,6 @@ export default function ChatRoomClient() {
 
   const handleAction = (action: ChatAction) => {
     switch (action.type) {
-      // case 'OPEN_RESTAURANT':
-      //   setSelectedRestaurant(action.payload);
-      //   setRestaurantModalOpen(true);
-      //   break;
       case 'OPEN_CAFE_LIST':
         router.push(
           action.payload.redirectUrl +
@@ -120,15 +116,6 @@ export default function ChatRoomClient() {
               : ''),
         );
         break;
-      // case 'OPEN_PROFILE':
-      //   setProfileModalOpen(true);
-      //   break;
-      // case 'OPEN_NO_SHOW':
-      //   router.push('/noshow');
-      //   break;
-      // case 'OPEN_FEEDBACK':
-      //   router.push('/feedback');
-      //   break;
       default:
         break;
     }
@@ -149,7 +136,7 @@ export default function ChatRoomClient() {
             id: String(r.id),
             name: String(r.name),
           }))
-          .slice(0, 3); // 최대 3개
+          .slice(0, 3);
 
         const payload: CafeListPayload = {
           cafes,
@@ -174,43 +161,123 @@ export default function ChatRoomClient() {
   }, [roomId]);
 
   // -------------------------
-  // ✅ pending 로드
+  // ✅ /chat/rooms 로드 → 현재 방 메타 세팅 (channel_url === roomId)
   // -------------------------
   useEffect(() => {
+    if (!isLoaded || !me?.id || !roomId) return;
+
     let cancelled = false;
+
     (async () => {
       try {
-        const list = await fetchPendingMatches();
-        if (!cancelled) setPending(list);
+        const res = await getChatRooms();
+        const rooms = (res?.rooms ?? []) as ApiRoom[];
+        const found =
+          rooms.find((r) => String(r.channel_url) === String(roomId)) ?? null;
+
+        if (cancelled) return;
+
+        setRoomMeta(found);
+
+        if (found) {
+          setAppointmentAtISO(
+            toKstIso(found.matched_slot.date, found.matched_slot.hour),
+          );
+          setRestaurantName(found.restaurant?.name ?? '');
+        } else {
+          setAppointmentAtISO('');
+          setRestaurantName('');
+        }
       } catch (e) {
-        console.error(e);
+        console.error('Failed to load /chat/rooms meta:', e);
+        if (!cancelled) {
+          setRoomMeta(null);
+          setAppointmentAtISO('');
+          setRestaurantName('');
+        }
       }
     })();
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isLoaded, me?.id, roomId]);
 
   // -------------------------
-  // ✅ 공통: "메시지 1개 들어왔을 때" 처리 로직
-  // - 실수신(실제 SendBird) / 디버그 주입(가짜) 둘 다 여기 타게 함
+  // ✅ restaurant.id로 상세 조회 → RestaurantPayload 풀로 채움
+  // 응답 스키마:
+  // { id, name, category, promotion, image_url }
+  // -------------------------
+  useEffect(() => {
+    if (!roomMeta?.restaurant?.id) {
+      setRestaurantPayload(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = await getRestaurantById(roomMeta.restaurant.id);
+
+        const payload: RestaurantPayload = {
+          id: String(data.id),
+          name: String(data.name),
+          category: String(data.category ?? ''),
+          benefit: String(data.promotion ?? ''), // ✅ promotion → benefit
+          menu: '', // 응답에 없으므로 빈값
+          imageUrl: String(data.image_url ?? ''), // ✅ image_url → imageUrl
+        };
+
+        if (!cancelled) setRestaurantPayload(payload);
+      } catch (e) {
+        console.error('Failed to load restaurant detail:', e);
+
+        // 실패해도 최소 정보는 유지 (카드는 뜨게)
+        if (!cancelled) {
+          setRestaurantPayload({
+            id: String(roomMeta.restaurant.id),
+            name: String(roomMeta.restaurant?.name ?? ''),
+            category: '',
+            benefit: '',
+            menu: '',
+            imageUrl: '',
+          });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [roomMeta?.restaurant?.id]);
+
+  // -------------------------
+  // ✅ 공통: "메시지 1개 들어왔을 때" 처리
   // -------------------------
   const processIncomingMessage = (message: BaseMessage) => {
-    // 1) 원본 메시지는 그대로 쌓기
     setSbMessages((prev) => [...prev, message]);
 
-    // 2) SYSTEM이면 카드 세트도 붙이기
     if (isBackendSystemMessage(message)) {
-      // ✅ R5 카드 안 뜨는 문제 해결:
-      // 디버그 모드에서는 restaurantName이 비어있으면 debugRestaurantName을 사용
-      const effectiveRestaurantName = isSystemDebug
-        ? restaurantName || debugRestaurantName
-        : restaurantName;
+      // 디버그에서는 payload 없으면 fallback name으로라도 구성
+      const effectiveRestaurantPayload: RestaurantPayload | null = isSystemDebug
+        ? (restaurantPayload ??
+          ({
+            id: roomMeta?.restaurant?.id
+              ? String(roomMeta.restaurant.id)
+              : 'debug',
+            name: restaurantName || debugRestaurantName,
+            category: '',
+            benefit: '',
+            menu: '',
+            imageUrl: '',
+          } as RestaurantPayload))
+        : restaurantPayload;
 
       const cards = buildCardsForSystemMessage({
         m: message,
         roomId,
-        restaurantName: effectiveRestaurantName,
+        restaurantPayload: effectiveRestaurantPayload,
         cafesPayload,
         handled: handledSystemMessageIdsRef.current,
       });
@@ -234,14 +301,24 @@ export default function ChatRoomClient() {
     const list = (await prevQuery.load()) as BaseMessage[];
     setSbMessages(list);
 
-    const effectiveRestaurantName = isSystemDebug
-      ? restaurantName || debugRestaurantName
-      : restaurantName;
+    const effectiveRestaurantPayload: RestaurantPayload | null = isSystemDebug
+      ? (restaurantPayload ??
+        ({
+          id: roomMeta?.restaurant?.id
+            ? String(roomMeta.restaurant.id)
+            : 'debug',
+          name: restaurantName || debugRestaurantName,
+          category: '',
+          benefit: '',
+          menu: '',
+          imageUrl: '',
+        } as RestaurantPayload))
+      : restaurantPayload;
 
     const cards = buildCardsFromSystemMessages({
       sbMessages: list,
       roomId,
-      restaurantName: effectiveRestaurantName,
+      restaurantPayload: effectiveRestaurantPayload,
       cafesPayload,
       handled: handledSystemMessageIdsRef.current,
     });
@@ -250,7 +327,8 @@ export default function ChatRoomClient() {
   };
 
   // -------------------------
-  // ✅ sendbird init + channel + messages + handler + meta/appointment 계산
+  // ✅ sendbird init + channel + messages + handler
+  // - "Channel not found"면 joinChat(code=chat_code)로 복구
   // -------------------------
   useEffect(() => {
     if (!isLoaded || !me?.id || !roomId) return;
@@ -262,29 +340,58 @@ export default function ChatRoomClient() {
         await ensureSendbirdConnected(me.id, me.name);
         const sb = getSendbirdInstance();
 
-        const channel = await sb.groupChannel.getChannel(roomId);
-        channelRef.current = channel;
+        let channelUrlToOpen = roomId;
+        let channel: any = null;
 
-        // appointment/restaurantName 계산 (channel.data 우선, 없으면 pending으로 보정)
-        if (pending.length > 0) {
-          const meta = await ensureChannelMeta(channel, pending);
-          if (meta && !cancelled) {
-            setAppointmentAtISO(
-              toKstIso(meta.matched_slot.date, meta.matched_slot.hour),
-            );
-            setRestaurantName(meta.restaurant_name ?? '');
+        try {
+          channel = await sb.groupChannel.getChannel(channelUrlToOpen);
+        } catch (err: any) {
+          const msg = String(err?.message ?? err).toLowerCase();
+
+          // ✅ Channel not found → joinChat으로 복구
+          if (msg.includes('channel') && msg.includes('not found')) {
+            const code = roomMeta?.chat_code;
+
+            if (!code) throw err;
+
+            const joinRes = await joinChat({
+              code,
+              user_id: me.id,
+              nickname: me.name,
+            });
+
+            const realChannelUrl = String(joinRes?.channel_url ?? '');
+
+            if (!realChannelUrl) throw err;
+
+            // URL 교정 (roomId가 진짜 sendbird url이 아닐 수 있음)
+            if (realChannelUrl !== roomId) {
+              router.replace(`/chat/${encodeURIComponent(realChannelUrl)}`);
+              return;
+            }
+
+            channelUrlToOpen = realChannelUrl;
+            channel = await sb.groupChannel.getChannel(channelUrlToOpen);
+          } else {
+            throw err;
           }
         }
 
+        if (cancelled) return;
+
+        channelRef.current = channel;
+
         await fetchMessages();
 
-        const safeId = btoa(unescape(encodeURIComponent(roomId))).slice(0, 40);
+        const safeId = btoa(
+          unescape(encodeURIComponent(channelUrlToOpen)),
+        ).slice(0, 40);
         const handlerId = `room-${safeId}`;
         handlerIdRef.current = handlerId;
 
         const handler = new GroupChannelHandler({
           onMessageReceived: (ch, message) => {
-            if (ch.url !== roomId) return;
+            if (ch.url !== channelUrlToOpen) return;
             processIncomingMessage(message as BaseMessage);
           },
         });
@@ -314,8 +421,9 @@ export default function ChatRoomClient() {
       } catch {}
       handlerIdRef.current = '';
     };
+    // roomMeta.chat_code 준비되면 복구 로직이 가능하니 의존성에 포함
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, me?.id, me?.name, roomId, pending]);
+  }, [isLoaded, me?.id, me?.name, roomId, roomMeta?.chat_code]);
 
   // send 이후 강제 새로고침
   useEffect(() => {
@@ -326,17 +434,18 @@ export default function ChatRoomClient() {
   }, []);
 
   // -------------------------
-  // ✅ DEBUG: 버튼 누르면 "SYSTEM 텍스트 도착"을 가짜로 주입 (전송 X)
+  // ✅ DEBUG: 버튼 누르면 SYSTEM 텍스트 도착을 "가짜 주입"
   // -------------------------
   const injectSystem = (kind: 'R5' | 'R6' | 'R7' | 'R8') => {
     const now = Date.now();
     const msgId = `debug-${kind}-${now}-${Math.random().toString(16).slice(2)}`;
 
-    // detectSystemKindByText()가 잡을 수 있는 문구로 구성
     const effectiveRestaurantName = restaurantName || debugRestaurantName;
 
     const textMap: Record<typeof kind, string> = {
-      R5: `🎉 매칭이 확정되었어요!\n\n📍 장소: ${effectiveRestaurantName}\n📅 일시: ${appointmentAtISO ? formatKstDebug(appointmentAtISO) : '2026-02-25 12시'}\n\n채팅방에서 먼저 인사를 나눠보세요! 👋`,
+      R5: `🎉 매칭이 확정되었어요!\n\n📍 장소: ${effectiveRestaurantName}\n📅 일시: ${
+        appointmentAtISO ? formatKstDebug(appointmentAtISO) : '2026-03-06 12시'
+      }\n\n채팅방에서 먼저 인사를 나눠보세요! 👋`,
       R6: `👋 오늘 약속이 있어요!\n\n아직 인사를 안 했다면, 먼저 인사해보는 건 어떨까요?\n어색함을 줄이는 데 도움이 될 거예요 😊`,
       R7: `⏰ 약속 시간이 20분 지났어요.\n\n아직 도착하지 않은 멤버가 있나요?\n노쇼 신고는 마이페이지 > 신고하기에서 할 수 있어요.`,
       R8: `🍽️ 맛있게 드셨나요?\n\n☕ 2차로 카페는 어떨까요?\n\n📝 오늘 만남은 어땠나요?\n👉 평가하러 가기`,
@@ -368,7 +477,6 @@ export default function ChatRoomClient() {
       .filter(Boolean) as ChatMessageData[];
   }, [sbMessages, me?.id]);
 
-  // merge + sort
   const merged: ChatMessageData[] = useMemo(() => {
     const all = [...uiMessages, ...localSystemCards];
     all.sort((a, b) => {
@@ -458,7 +566,19 @@ export default function ChatRoomClient() {
 
           <DebugInfo>
             <div>
+              <strong>roomId:</strong> {roomId}
+            </div>
+            <div>
+              <strong>chat_code:</strong> {roomMeta?.chat_code ?? '(없음)'}
+            </div>
+            <div>
               <strong>식당명(실제):</strong> {restaurantName || '(없음)'}
+            </div>
+            <div>
+              <strong>식당 payload:</strong>{' '}
+              {restaurantPayload
+                ? `${restaurantPayload.name} / ${restaurantPayload.category} / ${restaurantPayload.benefit}`
+                : '(로딩 전/없음)'}
             </div>
             <div>
               <strong>식당명(디버그 fallback):</strong>{' '}
@@ -489,7 +609,7 @@ export default function ChatRoomClient() {
               R7 주입 (텍스트+노쇼카드)
             </DebugButton>
             <DebugButton onClick={() => injectSystem('R8')}>
-              R8 주입 (텍스트+카페카드+피드백카드)
+              R8 주입 (텍스트+카페+피드백)
             </DebugButton>
           </DebugButtonRow>
 
@@ -502,6 +622,9 @@ export default function ChatRoomClient() {
   );
 }
 
+// -------------------------
+// ✅ message → ui message
+// -------------------------
 function toChatMessageData(
   m: BaseMessage,
   myUserId: string,
@@ -568,14 +691,15 @@ function addMs(iso: string, ms: number) {
 }
 
 /**
- * ✅ "백 텍스트" 다음에 붙을 카드(들)을 만든다.
- * - createdAt은 base + 1ms, +2ms ... 로 설정해서 정렬 시 항상 텍스트 뒤에 오게 함
- * - R8은 cafeList 먼저, feedback 다음
+ * ✅ SYSTEM 텍스트 다음에 붙을 카드 생성
+ * - R5: restaurantPayload(풀)
+ * - R7: noShowReport
+ * - R8: cafeList → feedback
  */
 function buildCardsForSystemMessage(args: {
   m: BaseMessage;
   roomId: string;
-  restaurantName: string;
+  restaurantPayload: RestaurantPayload | null;
   cafesPayload: CafeListPayload | null;
   handled: Set<string>;
 }): ChatMessageData[] {
@@ -585,7 +709,6 @@ function buildCardsForSystemMessage(args: {
   const kind = detectSystemKindByText(text);
   if (!kind) return [];
 
-  // ✅ 중복 방지: 같은 SYSTEM 메시지에 대해 카드 세트 1회만 생성
   const key = getMessageKey(args.m);
   if (args.handled.has(key)) return [];
   args.handled.add(key);
@@ -595,17 +718,7 @@ function buildCardsForSystemMessage(args: {
   ).toISOString();
 
   if (kind === 'R5') {
-    // restaurantName이 없으면 카드 생성 안 함 (프로덕션 동작)
-    if (!args.restaurantName) return [];
-
-    const payload: RestaurantPayload = {
-      id: '0',
-      name: args.restaurantName,
-      category: '',
-      benefit: '',
-      menu: '',
-      imageUrl: '',
-    };
+    if (!args.restaurantPayload?.name) return [];
 
     return [
       {
@@ -613,7 +726,7 @@ function buildCardsForSystemMessage(args: {
         senderType: 'system',
         messageType: 'restaurant',
         createdAt: addMs(baseISO, 1),
-        payload,
+        payload: args.restaurantPayload,
       },
     ];
   }
@@ -629,7 +742,6 @@ function buildCardsForSystemMessage(args: {
     ];
   }
 
-  // R8: cafeList → feedback
   const cafePayload: CafeListPayload = args.cafesPayload ?? {
     cafes: [],
     redirectUrl: `/chat/${encodeURIComponent(args.roomId)}/cafe`,
@@ -652,13 +764,10 @@ function buildCardsForSystemMessage(args: {
   ];
 }
 
-/**
- * ✅ 히스토리 로드 시: SYSTEM 텍스트들을 스캔해서 카드들을 "재구성"한다.
- */
 function buildCardsFromSystemMessages(args: {
   sbMessages: BaseMessage[];
   roomId: string;
-  restaurantName: string;
+  restaurantPayload: RestaurantPayload | null;
   cafesPayload: CafeListPayload | null;
   handled: Set<string>;
 }) {
@@ -671,7 +780,7 @@ function buildCardsFromSystemMessages(args: {
     const next = buildCardsForSystemMessage({
       m,
       roomId: args.roomId,
-      restaurantName: args.restaurantName,
+      restaurantPayload: args.restaurantPayload,
       cafesPayload: args.cafesPayload,
       handled: args.handled,
     });

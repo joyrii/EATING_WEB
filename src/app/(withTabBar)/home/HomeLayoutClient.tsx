@@ -72,6 +72,7 @@ export default function HomeLayoutClient({
 
   const { me } = useUser();
   const name = me?.name ?? '회원';
+  const isAdmin = me?.is_admin ?? false;
   const onboardingStep = me?.onboarding_step ?? null;
   const isPreRegistered = me?.is_pre_registered;
 
@@ -237,30 +238,34 @@ export default function HomeLayoutClient({
               </MatchingButton>
             </MatchingButtonArea>
           </MatchingSection>
-          <button
-            style={{
-              marginTop: 20,
-              padding: '8px 12px',
-              marginRight: 10,
-              background: '#000',
-              color: '#fff',
-              borderRadius: 6,
-            }}
-            onClick={() => setForcedStatus('completed')}
-          >
-            🔥 completed로 강제 전환
-          </button>
-          <button
-            style={{
-              marginTop: 10,
-              padding: '8px 12px',
-              background: '#ccc',
-              borderRadius: 6,
-            }}
-            onClick={() => setForcedStatus(null)}
-          >
-            원래 로직으로 복구
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                style={{
+                  marginTop: 20,
+                  padding: '8px 12px',
+                  marginRight: 10,
+                  background: '#000',
+                  color: '#fff',
+                  borderRadius: 6,
+                }}
+                onClick={() => setForcedStatus('completed')}
+              >
+                🔥 completed로 강제 전환
+              </button>
+              <button
+                style={{
+                  marginTop: 10,
+                  padding: '8px 12px',
+                  background: '#ccc',
+                  borderRadius: 6,
+                }}
+                onClick={() => setForcedStatus(null)}
+              >
+                원래 로직으로 복구
+              </button>
+            </>
+          )}
           {children}
         </Body>
       </div>

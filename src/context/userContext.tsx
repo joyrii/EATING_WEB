@@ -26,13 +26,11 @@ function normalizeMe(data: Me | null): Me | null {
 
   return {
     ...data,
-    // ✅ 프로필은 무조건 박아버림(너가 원한 정책)
     profile_image_url:
       data.profile_image_url && data.profile_image_url.trim() !== ''
         ? data.profile_image_url
         : DEFAULT_PROFILE_IMAGE_URL,
 
-    // ✅ boolean들도 undefined 방지(선택이지만 안정성 ↑)
     is_admin: data.is_admin ?? false,
     is_pre_registered: data.is_pre_registered ?? false,
     onboarding_step: data.onboarding_step ?? undefined,

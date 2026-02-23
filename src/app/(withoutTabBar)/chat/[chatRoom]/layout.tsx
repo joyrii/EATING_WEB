@@ -11,6 +11,8 @@ import { useParams, usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
+type RoomTitleState = { main: string; count: string };
+
 export default function ChatRoomLayout({
   children,
 }: {
@@ -27,8 +29,11 @@ export default function ChatRoomLayout({
 
   const hideChatBar = pathname.endsWith('/cafe');
 
-  // ✅ formatRoomTitle과 동일한 방식으로 출력될 "문자열" 제목
-  const [roomTitleText, setRoomTitleText] = useState('채팅방');
+  // ✅ main / count 분리 상태
+  const [roomTitle, setRoomTitle] = useState<RoomTitleState>({
+    main: '채팅방',
+    count: '',
+  });
 
   useEffect(() => {
     if (!isLoaded || !me?.id || !roomId) return;
@@ -37,8 +42,7 @@ export default function ChatRoomLayout({
 
     const run = async () => {
       try {
-        // ✅ 1) /chat/rooms로 "실제 약속 정보" 기반 제목 세팅
-        // (스펙: rooms[].matched_slot.date/hour, rooms[].restaurant.name, rooms[].member_count)
+        // ✅ 1) /chat/rooms로 제목 세팅
         const res = await getChatRooms();
         const r = (res.rooms ?? []).find((x: any) => x.channel_url === roomId);
 
@@ -49,9 +53,10 @@ export default function ChatRoomLayout({
             restaurantName: r?.restaurant?.name,
             memberCount: r?.member_count,
           });
-          setRoomTitleText(`${main} ${count}`.trim());
+
+          setRoomTitle({ main, count });
         } else if (!cancelled) {
-          setRoomTitleText('채팅방');
+          setRoomTitle({ main: '채팅방', count: '' });
         }
 
         // ✅ 2) Sendbird connect + channel attach
@@ -67,7 +72,7 @@ export default function ChatRoomLayout({
         } catch {}
       } catch (e) {
         console.error('Failed to prepare chat room:', e);
-        if (!cancelled) setRoomTitleText('채팅방');
+        if (!cancelled) setRoomTitle({ main: '채팅방', count: '' });
       }
     };
 
@@ -111,7 +116,10 @@ export default function ChatRoomLayout({
           <img src="/svgs/chat/chevron-back.svg" alt="back" />
         </BackButton>
 
-        <RoomName>{roomTitleText}</RoomName>
+        <RoomName>
+          <RoomTitleText>{roomTitle.main}</RoomTitleText>
+          {roomTitle.count ? <CountText>{roomTitle.count}</CountText> : null}
+        </RoomName>
 
         <RightSlot />
       </Header>
@@ -162,6 +170,13 @@ const RoomName = styled.p`
   font-weight: 500;
   justify-self: center;
   text-align: center;
+  margin: 0;
+`;
+
+const RoomTitleText = styled.span`
+  font-size: 16px;
+  font-weight: 500;
+  color: #000000; /* ✅ main 색 */
 `;
 
 const RightSlot = styled.div`
@@ -207,4 +222,10 @@ const SendButton = styled.button`
   margin-left: 12px;
   border: none;
   background-color: transparent;
+`;
+
+const CountText = styled.span`
+  color: #ff5900; /* ✅ count 색 */
+  margin-left: 4px;
+  font-weight: 600;
 `;
