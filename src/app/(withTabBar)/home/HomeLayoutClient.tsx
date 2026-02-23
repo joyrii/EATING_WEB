@@ -78,7 +78,8 @@ export default function HomeLayoutClient({
   const [currentStatus, setCurrentStatus] = useState<MatchingStatus>(
     isPreRegistered ? 'pre_registered' : 'before',
   );
-  const FORCE_STATUS: MatchingStatus | null = 'completed';
+  // 디버그용 강제 상태 (optional)
+  const [forcedStatus, setForcedStatus] = useState<MatchingStatus | null>(null);
 
   const isFirstPreInProgress =
     currentStatus === 'inProgress' &&
@@ -117,14 +118,14 @@ export default function HomeLayoutClient({
         const effectiveCanApply = !hasAppliedAnyRound;
 
         const now = new Date();
-        const uiStatus = FORCE_STATUS
-          ? FORCE_STATUS
-          : calcUiStatus({
-              canApply: effectiveCanApply, // 매칭 신청 가능 여부
-              isPreRegistered: !!me.is_pre_registered, // 사전 등록 여부
-              weekStart, // 이번 라운드 시작
-              now, // 현재 시각
-            });
+        const calculatedStatus = calcUiStatus({
+          canApply: effectiveCanApply,
+          isPreRegistered: !!me.is_pre_registered,
+          weekStart,
+          now,
+        });
+
+        const uiStatus = forcedStatus ?? calculatedStatus;
 
         setCurrentStatus(uiStatus);
         setReady(true);
@@ -150,7 +151,7 @@ export default function HomeLayoutClient({
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [me]);
+  }, [me, forcedStatus]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -236,6 +237,30 @@ export default function HomeLayoutClient({
               </MatchingButton>
             </MatchingButtonArea>
           </MatchingSection>
+          <button
+            style={{
+              marginTop: 20,
+              padding: '8px 12px',
+              marginRight: 10,
+              background: '#000',
+              color: '#fff',
+              borderRadius: 6,
+            }}
+            onClick={() => setForcedStatus('completed')}
+          >
+            🔥 completed로 강제 전환
+          </button>
+          <button
+            style={{
+              marginTop: 10,
+              padding: '8px 12px',
+              background: '#ccc',
+              borderRadius: 6,
+            }}
+            onClick={() => setForcedStatus(null)}
+          >
+            원래 로직으로 복구
+          </button>
           {children}
         </Body>
       </div>
