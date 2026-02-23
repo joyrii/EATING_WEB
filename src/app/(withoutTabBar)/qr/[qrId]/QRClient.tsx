@@ -93,7 +93,7 @@ const Wrapper = styled.div`
 const Background = styled.img`
   width: 100%;
   position: absolute;
-  top: -200px;
+  top: -150px;
   z-index: -1;
 `;
 

@@ -362,7 +362,7 @@ export default function MatchingListSection() {
               : ''}
           </ModalMainText>
 
-          {/* ✅ 모달 상세는 /reviews/pending 기반 */}
+          {/* 모달 상세는 /reviews/pending 기반 */}
           {selectedPending ? (
             <ModalSubText>
               {selectedPending.student_years_text},{' '}
@@ -375,13 +375,6 @@ export default function MatchingListSection() {
                 ? '상세 정보를 불러오는 중...'
                 : '상세 정보를 찾지 못했어요.'}
             </ModalSubText>
-          )}
-
-          {/* ✅ 식당명도 같이 */}
-          {selectedRoom?.restaurant?.name && (
-            <ModalRestaurantText>
-              📍 {selectedRoom.restaurant.name}
-            </ModalRestaurantText>
           )}
         </div>
 

@@ -11,7 +11,7 @@ export default function OnboardingLayout({
   const step: Record<string, number> = {
     '/onboarding/mbti': 1,
     '/onboarding/interests': 2,
-    '/onboarding/test': 3,
+    // '/onboarding/test': 3,
   };
 
   const pathname = usePathname();
@@ -26,7 +26,7 @@ export default function OnboardingLayout({
           </BackButton>
           <Segment $active={step[pathname] === 1} />
           <Segment $active={step[pathname] === 2} />
-          <Segment $active={step[pathname] === 3} />
+          {/* <Segment $active={step[pathname] === 3} /> */}
         </StepIndicator>
       </IndicatorWrapper>
       {children}
@@ -70,7 +70,7 @@ const StepIndicator = styled.div`
 `;
 
 const Segment = styled.div<{ $active?: boolean }>`
-  width: 30%;
+  width: 45%;
   height: 5px;
   background-color: ${(props) => (props.$active ? '#707070' : '#f0f0f0')};
   border-radius: 5px;
