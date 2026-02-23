@@ -19,41 +19,77 @@ const UserContext = createContext<{
   refresh: () => Promise<void>;
 } | null>(null);
 
+const DEFAULT_PROFILE_IMAGE_URL = '/images/chat/profile-default-3.png';
+
+function normalizeMe(data: Me | null): Me | null {
+  if (!data) return null;
+
+  return {
+    ...data,
+    // ✅ 프로필은 무조건 박아버림(너가 원한 정책)
+    profile_image_url:
+      data.profile_image_url && data.profile_image_url.trim() !== ''
+        ? data.profile_image_url
+        : DEFAULT_PROFILE_IMAGE_URL,
+
+    // ✅ boolean들도 undefined 방지(선택이지만 안정성 ↑)
+    is_admin: data.is_admin ?? false,
+    is_pre_registered: data.is_pre_registered ?? false,
+    onboarding_step: data.onboarding_step ?? undefined,
+  };
+}
+
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  // ✅ SSR/CSR 첫 렌더 동일: 항상 null로 시작
   const [me, setMe] = useState<Me | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   const refresh = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    if (!session?.access_token) {
-      setMe(null);
-      localStorage.removeItem('me');
-      return;
+      if (!session?.access_token) {
+        setMe(null);
+        localStorage.removeItem('me');
+        return;
+      }
+
+      const { data } = await api.get('/users/me');
+
+      const normalized = normalizeMe(data as Me);
+      setMe(normalized);
+      localStorage.setItem('me', JSON.stringify(normalized));
+    } catch (e) {
+      console.error('[UserProvider.refresh] failed:', e);
+      // refresh 실패해도 앱 멈추지 않게 둠
     }
-
-    const { data } = await api.get('/users/me');
-    setMe(data);
-    localStorage.setItem('me', JSON.stringify(data));
   };
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
       try {
-        // 캐시는 effect에서 읽기(하이드레이션 이후)
+        // 1) 캐시 먼저 반영(빠른 페인트)
         const cached = localStorage.getItem('me');
-        if (cached) setMe(JSON.parse(cached));
+        if (cached && !cancelled) {
+          const parsed = JSON.parse(cached);
+          setMe(normalizeMe(parsed));
+        }
 
+        // 2) 그리고 서버에서 최신 me로 반드시 갱신
         await refresh();
       } catch (e) {
         console.error(e);
       } finally {
-        setIsLoaded(true);
+        if (!cancelled) setIsLoaded(true);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

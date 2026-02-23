@@ -45,9 +45,9 @@ export default function ChatRoomLayout({
         if (!cancelled && r) {
           setRoomTitle(
             formatRoomTitle({
-              date: r.matched_slot.date,
-              hour: r.matched_slot.hour,
-              restaurantName: r.restaurant.name,
+              date: r.appointment_date,
+              hour: r.appointment_hour,
+              restaurantName: r.restaurant_name,
               memberCount: r.member_count,
             }),
           );

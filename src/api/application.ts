@@ -22,6 +22,17 @@ export async function getRestaurants() {
   }
 }
 
+// 특정 식당 정보 불러오기
+export async function getRestaurantById(id: string) {
+  try {
+    const res = await api.get(`/restaurants/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to fetch restaurant by ID:', error);
+    throw error;
+  }
+}
+
 // 신청서 제출
 type ApiSlot = { date: string; hour: number };
 type ApplyMatchingPayload = {

@@ -154,11 +154,20 @@ export default function MatchingListSection() {
 
     setLoading(true);
     try {
+      console.log('[enterChat] slot.group_id:', slot.group_id);
+      console.log('[enterChat] join body:', {
+        code: slot.group_id,
+        user_id: me.id,
+        nickname: me.name,
+      });
+
       const res = await joinChat({
         code: slot.group_id,
         user_id: me.id,
         nickname: me.name,
       });
+
+      console.log('[enterChat] join response:', res); // channel_url 확인
 
       const channelUrl = res.channel_url;
       const date = slot.matched_slot.date;
@@ -203,8 +212,8 @@ export default function MatchingListSection() {
             <MatchingList>
               {pending.map((slot) => {
                 const meta = sbMetaByGroupId[slot.group_id];
-                const current = meta?.memberCount ?? slot.member_count;
-                const total = slot.member_count; //
+                const current = meta?.memberCount ?? slot.members?.length ?? 0;
+                const total = slot.member_count;
 
                 return (
                   <MatchingListItem

@@ -5,7 +5,8 @@ import type { RestaurantPayload } from '@/components/chat/ChatMessage';
 import RestaurantCard from '@/components/chat/RestaurantCard';
 import { useEffect, useState } from 'react';
 import RestaurantModal from '@/components/chat/RestaurantModal';
-import { getRestaurants } from '@/api/application';
+import { getRestaurantById, getRestaurants } from '@/api/application';
+import { useSearchParams } from 'next/navigation';
 
 type ApiRestaurant = {
   id: string;
@@ -22,21 +23,47 @@ function pickMenuText(menuItems: any): string {
   return String(first.name ?? '');
 }
 
-function toRestaurantPayload(r: ApiRestaurant): RestaurantPayload {
+async function toRestaurantPayload(
+  r: ApiRestaurant,
+): Promise<RestaurantPayload> {
+  const restaurant = await getRestaurantById(r.id);
   return {
     id: r.id,
     name: r.name,
     category: r.category,
-    benefit: '20% 할인', // 추후 API에서 받아와야 함
+    benefit: restaurant.promotion ?? '',
     menu: pickMenuText((r as any).menu_items),
     imageUrl: r.image_url?.trim() ? r.image_url : 'images/chat/placeholder.png',
   };
+}
+
+function formatTimeKST(date: Date) {
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
+function addHours(d: Date, hours: number) {
+  return new Date(d.getTime() + hours * 60 * 60 * 1000);
 }
 
 export default function CafeList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cafes, setCafes] = useState<RestaurantPayload[]>([]);
+
+  const searchParams = useSearchParams();
+  const appointmentAt = searchParams.get('appointmentAt'); // ISO string
+  const appointmentDate = appointmentAt ? new Date(appointmentAt) : null;
+
+  const discountStart = appointmentDate
+    ? formatTimeKST(appointmentDate)
+    : '--:--';
+  const discountEnd = appointmentDate
+    ? formatTimeKST(addHours(appointmentDate, 2))
+    : '--:--';
 
   const [selectedCafe, setSelectedCafe] = useState<RestaurantPayload | null>(
     null,
@@ -51,11 +78,15 @@ export default function CafeList() {
       try {
         const list = (await getRestaurants()) as ApiRestaurant[];
 
-        const cafeOnly = (list ?? [])
-          .filter((r) => String(r.category).toLowerCase() === '카페')
-          .map(toRestaurantPayload);
+        const cafeOnly = (list ?? []).filter(
+          (r) => String(r.category).toLowerCase() === '카페',
+        );
 
-        if (!cancelled) setCafes(cafeOnly);
+        const payloads = await Promise.all(
+          cafeOnly.map((r) => toRestaurantPayload(r)),
+        );
+
+        if (!cancelled) setCafes(payloads);
       } catch (error) {
         console.error('카페 목록을 가져오는 중 오류 발생:', error);
         setError('카페 목록을 불러오는 중 오류가 발생했습니다.');
@@ -78,11 +109,11 @@ export default function CafeList() {
         <TimeBox>
           <TimeBoxItem>
             <TimeBoxLabel>할인 시작</TimeBoxLabel>
-            <TimeBoxTime>4:00 PM</TimeBoxTime>
+            <TimeBoxTime>{discountStart}</TimeBoxTime>
           </TimeBoxItem>
           <TimeBoxItem>
             <TimeBoxLabel>할인 마감</TimeBoxLabel>
-            <TimeBoxTime>6:00 PM</TimeBoxTime>
+            <TimeBoxTime>{discountEnd}</TimeBoxTime>
           </TimeBoxItem>
         </TimeBox>
       </Header>
@@ -99,7 +130,7 @@ export default function CafeList() {
               width="75%"
               onClick={() => {
                 setSelectedCafe(cafe);
-                setIsCafeModalVisible(true);
+                // setIsCafeModalVisible(true);
               }}
             />
           ))}
