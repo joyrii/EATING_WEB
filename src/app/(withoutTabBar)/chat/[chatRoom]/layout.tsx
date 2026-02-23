@@ -19,7 +19,6 @@ export default function ChatRoomLayout({
   const pathname = usePathname();
   const params = useParams<{ chatRoom: string }>();
   const roomId = params?.chatRoom ? decodeURIComponent(params.chatRoom) : '';
-  const [roomTitle, setRoomTitle] = useState('채팅방');
 
   const { me, isLoaded } = useUser();
 
@@ -28,8 +27,8 @@ export default function ChatRoomLayout({
 
   const hideChatBar = pathname.endsWith('/cafe');
 
-  const [memberCount, setMemberCount] = useState<number | null>(null);
-  const [slotTitle, setSlotTitle] = useState<string>('채팅방');
+  // ✅ formatRoomTitle과 동일한 방식으로 출력될 "문자열" 제목
+  const [roomTitleText, setRoomTitleText] = useState('채팅방');
 
   useEffect(() => {
     if (!isLoaded || !me?.id || !roomId) return;
@@ -38,43 +37,27 @@ export default function ChatRoomLayout({
 
     const run = async () => {
       try {
-        // 채팅방 제목
+        // ✅ 1) /chat/rooms로 "실제 약속 정보" 기반 제목 세팅
+        // (스펙: rooms[].matched_slot.date/hour, rooms[].restaurant.name, rooms[].member_count)
         const res = await getChatRooms();
-        const r = (res.rooms ?? []).find((x) => x.channel_url === roomId);
+        const r = (res.rooms ?? []).find((x: any) => x.channel_url === roomId);
 
         if (!cancelled && r) {
-          setRoomTitle(
-            formatRoomTitle({
-              date: r.appointment_date,
-              hour: r.appointment_hour,
-              restaurantName: r.restaurant_name,
-              memberCount: r.member_count,
-            }),
-          );
+          const { main, count } = formatRoomTitle({
+            date: r?.matched_slot?.date,
+            hour: r?.matched_slot?.hour,
+            restaurantName: r?.restaurant?.name,
+            memberCount: r?.member_count,
+          });
+          setRoomTitleText(`${main} ${count}`.trim());
+        } else if (!cancelled) {
+          setRoomTitleText('채팅방');
         }
 
+        // ✅ 2) Sendbird connect + channel attach
         await ensureSendbirdConnected(me.id, me.name);
         const sb = getSendbirdInstance();
         const channel = await sb.groupChannel.getChannel(roomId);
-
-        // slot 정보
-        const sp = new URLSearchParams(window.location.search);
-        const date = sp.get('date') ?? undefined;
-        const hourRaw = sp.get('hour');
-        const hour = hourRaw ? Number(hourRaw) : undefined;
-        const restaurantName = sp.get('restaurant') ?? undefined;
-
-        const count =
-          typeof channel.memberCount === 'number'
-            ? channel.memberCount
-            : Array.isArray(channel.members)
-              ? channel.members.length
-              : null;
-
-        setMemberCount(count);
-        setSlotTitle(
-          formatRoomTitle({ date, hour, restaurantName, memberCount: count }),
-        );
 
         if (cancelled) return;
         roomRef.current = channel;
@@ -84,6 +67,7 @@ export default function ChatRoomLayout({
         } catch {}
       } catch (e) {
         console.error('Failed to prepare chat room:', e);
+        if (!cancelled) setRoomTitleText('채팅방');
       }
     };
 
@@ -126,7 +110,9 @@ export default function ChatRoomLayout({
         <BackButton onClick={() => window.history.back()}>
           <img src="/svgs/chat/chevron-back.svg" alt="back" />
         </BackButton>
-        <RoomName>{roomTitle}</RoomName>
+
+        <RoomName>{roomTitleText}</RoomName>
+
         <RightSlot />
       </Header>
 
@@ -180,10 +166,6 @@ const RoomName = styled.p`
 
 const RightSlot = styled.div`
   width: 40px;
-`;
-
-const Participant = styled.span`
-  color: #ff5900;
 `;
 
 const Content = styled.div`
