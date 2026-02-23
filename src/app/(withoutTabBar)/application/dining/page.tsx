@@ -117,7 +117,14 @@ export default function Dining() {
             imageUrl={restaurant.image_url}
             name={restaurant.name}
             category={restaurant.category}
-            menu={restaurant.menu_items.slice(0, 2).join(', ')}
+            menu={
+              restaurant.menu_items.length > 0
+                ? restaurant.menu_items
+                    .slice(0, 2)
+                    .map((m: any) => m.name)
+                    .join(', ')
+                : undefined
+            }
             checked={checkedIds.has(restaurant.id)}
             onCheckedChange={() => toggle(restaurant.id)}
           />
