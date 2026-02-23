@@ -13,7 +13,10 @@ export default function RestaurantCard({
 }: Props & { width?: string }) {
   return (
     <Container onClick={() => onClick?.(payload)} $width={width}>
-      <Thumbnail src={payload.imageUrl} alt={payload.name} />
+      <Thumbnail
+        src={payload.imageUrl || '/images/chat/placeholder.png'}
+        alt={payload.name}
+      />
 
       <Content>
         <CategoryChip>{payload.category}</CategoryChip>

@@ -193,7 +193,7 @@ function SystemMessage({
   return (
     <MessageContainer>
       {showProfileImage ? (
-        <ProfileImage src="/images/chat/profile-image-1.jpeg" alt="profile" />
+        <ProfileImage src="/images/chat/profile-eating-ai.png" alt="profile" />
       ) : (
         <ProfileImagePlaceholder />
       )}
@@ -214,7 +214,7 @@ function SystemBlockMessage(props: ChatMessageProps) {
   return (
     <MessageContainer>
       {props.showProfileImage ? (
-        <ProfileImage src="/images/chat/profile-image-1.jpeg" alt="profile" />
+        <ProfileImage src="/images/chat/profile-default-3.png" alt="profile" />
       ) : (
         <ProfileImagePlaceholder />
       )}
@@ -250,7 +250,7 @@ function renderSystemBlock(props: ChatMessageProps) {
     case 'noShowReport':
       return (
         <ActionCard
-          $width={184}
+          $width={190}
           onClick={() => props.onAction?.({ type: 'OPEN_NO_SHOW' })}
         >
           <ActionTitleWrapper>

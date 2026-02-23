@@ -1,9 +1,10 @@
 import ProfileImage from './ProfileImage';
 import styled from 'styled-components';
+import React from 'react';
 
 type ChatRoomItemProps = {
   roomId: string;
-  roomName: string;
+  roomName: React.ReactNode; // ✅ string → ReactNode
   lastChatAsMs: number;
   content: string;
   unreadCount: number;
@@ -38,13 +39,12 @@ export default function ChatRoomItem({
 }
 
 function formatRelativeTime(input: number | Date) {
-  if (input == null) return '';
+  if (!input) return '';
   const now = Date.now();
   const t = typeof input === 'number' ? input : input.getTime();
   const diff = now - t;
 
-  // 미래 시간이 들어오면 그냥 시간 표시
-  if (diff < 0) return formatClock(t);
+  if (diff < 0) return '';
 
   const sec = Math.floor(diff / 1000);
   if (sec < 60) return '방금 전';
@@ -55,39 +55,7 @@ function formatRelativeTime(input: number | Date) {
   const hour = Math.floor(min / 60);
   if (hour < 24) return `${hour}시간 전`;
 
-  // 어제/그제 느낌
-  const days = Math.floor(hour / 24);
-  if (days === 1) return '어제';
-  if (days < 7) return `${days}일 전`;
-
-  // 일주일 넘으면 날짜로
-  return formatDate(t);
-}
-
-function formatClock(ms: number) {
-  const d = new Date(ms);
-  // 카톡처럼 "오전 8:43" 느낌
-  return d.toLocaleTimeString('ko-KR', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-}
-
-function formatDate(ms: number) {
-  const d = new Date(ms);
-
-  // 올해면 "2월 3일", 아니면 "2026. 2. 3."
-  const now = new Date();
-  const sameYear = d.getFullYear() === now.getFullYear();
-
-  return sameYear
-    ? d.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
-    : d.toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-      });
+  return `${Math.floor(hour / 24)}일 전`;
 }
 
 const ChatRoomItemWrapper = styled.div`
@@ -109,14 +77,11 @@ const RoomName = styled.p`
   font-weight: 400;
   color: #000;
   margin-bottom: 4px;
-  line-height: 145%;
 `;
 
 const LastMessage = styled.p`
   font-size: 14px;
-  font-weight: 400;
   color: #707070;
-  line-height: 145%;
 `;
 
 const TimeStampWrapper = styled.div`
@@ -128,9 +93,7 @@ const TimeStampWrapper = styled.div`
 
 const TimeStamp = styled.p`
   font-size: 10px;
-  font-weight: 500;
   color: #707070;
-  text-align: right;
 `;
 
 const UnreadBadge = styled.div`
@@ -140,7 +103,6 @@ const UnreadBadge = styled.div`
   border-radius: 45px;
   color: #fff;
   font-size: 12px;
-  font-weight: 400;
   display: flex;
   justify-content: center;
   align-items: center;

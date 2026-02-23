@@ -160,7 +160,12 @@ export default function Additional() {
   return (
     <div>
       <SkipButtonWrapper>
-        <SkipButton onClick={() => router.push('/home')}>
+        <SkipButton
+          onClick={() => {
+            submit(); // 일단 신청은 하고 나가도록(선택 정보 없이도 신청 가능)
+            router.push('/home');
+          }}
+        >
           <span>건너뛰기</span>
         </SkipButton>
       </SkipButtonWrapper>
