@@ -9,9 +9,13 @@ export const api = axios.create({
 
 // 요청 인터셉터: 모든 요청에 대해 토큰 자동 첨부
 api.interceptors.request.use(async (config) => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  let session = (await supabase.auth.getSession()).data.session;
+
+  // session이 없으면 refresh 시도
+  if (!session) {
+    const { data } = await supabase.auth.refreshSession();
+    session = data.session;
+  }
 
   const token = session?.access_token;
 
