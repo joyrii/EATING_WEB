@@ -9,16 +9,36 @@ import { useRef, useState } from 'react';
 import { tesseractModule } from '@/lib/tesseract/tesseractModule';
 import parseAdmissionCertificate from '@/lib/tesseract/parseAdmissionCertificate';
 
-function readFileAsDataURL(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') resolve(reader.result);
-      else reject(new Error('Failed to read file as data URL'));
-    };
-    reader.onerror = () => reject(new Error('Error reading file'));
-    reader.readAsDataURL(file);
+async function downscaleImage(
+  file: File,
+  maxWidth = 1400,
+  quality = 0.82,
+): Promise<File> {
+  const img = document.createElement('img');
+  const objectUrl = URL.createObjectURL(file);
+  img.src = objectUrl;
+
+  await new Promise<void>((res, rej) => {
+    img.onload = () => res();
+    img.onerror = rej;
   });
+
+  URL.revokeObjectURL(objectUrl);
+
+  const scale = Math.min(1, maxWidth / img.width);
+  const w = Math.round(img.width * scale);
+  const h = Math.round(img.height * scale);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+
+  const blob = await new Promise<Blob>((resolve) =>
+    canvas.toBlob((b) => resolve(b!), 'image/jpeg', quality),
+  );
+
+  return new File([blob], 'verification.jpg', { type: 'image/jpeg' });
 }
 
 export default function FreshStudentVerification() {
@@ -26,7 +46,6 @@ export default function FreshStudentVerification() {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
@@ -49,15 +68,11 @@ export default function FreshStudentVerification() {
     setErrorMsg('');
 
     try {
-      const result = await readFileAsDataURL(file);
-      setImgSrc(result);
-
-      const text = await tesseractModule(result, setProgress);
+      const optimizedFile = await downscaleImage(file);
+      const text = await tesseractModule(optimizedFile as any, setProgress);
       const parsed = parseAdmissionCertificate(text);
+      const department = parsed?.department ?? '';
 
-      const department = parsed.department ?? '';
-
-      sessionStorage.setItem('studentIdImg', result);
       sessionStorage.setItem('studentIdText', text);
       sessionStorage.setItem('department', department);
 
