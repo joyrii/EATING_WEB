@@ -116,7 +116,7 @@ function ConfirmInner({ name }: Props) {
         name,
         student_id: isEnrolled ? studentId.trim() : null, // 신입생은 null
         department: department.trim(),
-        image_url: sessionStorage.getItem('studentIdImgUrl') || null,
+        image_url: null,
       });
 
       if (isEnrolled) sessionStorage.setItem('studentId', studentId.trim());
