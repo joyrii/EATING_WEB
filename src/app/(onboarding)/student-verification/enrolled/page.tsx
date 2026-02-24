@@ -9,7 +9,7 @@ import { useRef, useState } from 'react';
 import { tesseractModule } from '@/lib/tesseract/tesseractModule';
 import parseStudentIdText from '@/lib/tesseract/parseStudentId';
 import { uploadVerificationImage } from '../uploadVerificationImage';
-import { supabase } from '@/lib/supabase/client';
+import { useUser } from '@/context/userContext';
 
 async function downscaleImage(
   file: File,
@@ -45,6 +45,7 @@ async function downscaleImage(
 
 export default function EnrolledStudentVerification() {
   const router = useRouter();
+  const { me } = useUser();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -78,27 +79,19 @@ export default function EnrolledStudentVerification() {
       const studentId = parsed?.studentId ?? '';
       const department = parsed?.department ?? '';
 
-      // supabase 업로드
-
-      // const {
-      //   data: { user },
-      // } = await supabase.auth.getUser();
-      // if (!user) return;
-
-      // const { path, imageUrl } = await uploadVerificationImage({
-      //   file: optimizedFile,
-      //   userId: user.id,
-      // });
-
-      try {
-        sessionStorage.setItem('studentId', studentId);
-        sessionStorage.setItem('department', department);
-        // sessionStorage.setItem('studentIdImgPath', path);
-        // sessionStorage.setItem('studentIdImgUrl', imageUrl);
-        sessionStorage.setItem('studentIdText', text.slice(0, 2000));
-      } catch (e) {
-        console.warn('sessionStorage failed', e);
+      // supabase.auth.getUser() 대신 me.id 사용
+      if (me?.id) {
+        const { path, imageUrl } = await uploadVerificationImage({
+          file: optimizedFile,
+          userId: me.id,
+        });
+        sessionStorage.setItem('studentIdImgPath', path);
+        sessionStorage.setItem('studentIdImgUrl', imageUrl);
       }
+
+      sessionStorage.setItem('studentId', studentId);
+      sessionStorage.setItem('department', department);
+      sessionStorage.setItem('studentIdText', text.slice(0, 2000));
 
       router.push('/student-verification/confirm?from=enrolled');
     } catch (error) {
