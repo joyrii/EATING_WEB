@@ -79,19 +79,18 @@ export default function EnrolledStudentVerification() {
       const studentId = parsed?.studentId ?? '';
       const department = parsed?.department ?? '';
 
-      // supabase.auth.getUser() 대신 me.id 사용
-      if (me?.id) {
-        const { path, imageUrl } = await uploadVerificationImage({
-          file: optimizedFile,
-          userId: me.id,
-        });
-        sessionStorage.setItem('studentIdImgPath', path);
-        sessionStorage.setItem('studentIdImgUrl', imageUrl);
-      }
-
       sessionStorage.setItem('studentId', studentId);
       sessionStorage.setItem('department', department);
       sessionStorage.setItem('studentIdText', text.slice(0, 2000));
+
+      if (me?.id) {
+        uploadVerificationImage({ file: optimizedFile, userId: me.id })
+          .then(({ path, imageUrl }) => {
+            sessionStorage.setItem('studentIdImgPath', path);
+            sessionStorage.setItem('studentIdImgUrl', imageUrl);
+          })
+          .catch((e) => console.error('upload failed:', e));
+      }
 
       router.push('/student-verification/confirm?from=enrolled');
     } catch (error) {
