@@ -11,7 +11,7 @@ import parseAdmissionCertificate from '@/lib/tesseract/parseAdmissionCertificate
 
 async function downscaleImage(
   file: File,
-  maxWidth = 1400,
+  maxWidth = 1000,
   quality = 0.82,
 ): Promise<File> {
   const img = document.createElement('img');
@@ -69,15 +69,21 @@ export default function FreshStudentVerification() {
 
     try {
       const optimizedFile = await downscaleImage(file);
-      const text = await tesseractModule(optimizedFile as any, setProgress);
+
+      const text = await tesseractModule(optimizedFile, setProgress);
       const parsed = parseAdmissionCertificate(text);
       const department = parsed?.department ?? '';
 
-      sessionStorage.setItem('studentIdText', text);
-      sessionStorage.setItem('department', department);
+      try {
+        sessionStorage.setItem('department', department);
+        sessionStorage.setItem('studentIdText', text.slice(0, 2000));
+      } catch (e) {
+        console.warn('sessionStorage failed', e);
+      }
 
       router.push('/student-verification/confirm?from=freshman');
     } catch (error) {
+      console.error(error);
       setErrorMsg('인증에 실패하였습니다!');
     } finally {
       setLoading(false);

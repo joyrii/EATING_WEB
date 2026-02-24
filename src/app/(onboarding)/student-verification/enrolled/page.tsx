@@ -13,7 +13,7 @@ import { supabase } from '@/lib/supabase/client';
 
 async function downscaleImage(
   file: File,
-  maxWidth = 1400,
+  maxWidth = 1000,
   quality = 0.82,
 ): Promise<File> {
   const img = document.createElement('img');
@@ -72,13 +72,14 @@ export default function EnrolledStudentVerification() {
 
     try {
       const optimizedFile = await downscaleImage(file);
-      const text = await tesseractModule(optimizedFile as any, setProgress);
+      const text = await tesseractModule(optimizedFile, setProgress);
       const parsed = parseStudentIdText(text);
 
       const studentId = parsed?.studentId ?? '';
       const department = parsed?.department ?? '';
 
       // supabase 업로드
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -89,15 +90,19 @@ export default function EnrolledStudentVerification() {
         userId: user.id,
       });
 
-      sessionStorage.setItem('studentIdText', text);
-      sessionStorage.setItem('studentId', studentId);
-      sessionStorage.setItem('department', department);
-      sessionStorage.setItem('studentIdImgPath', path);
-      sessionStorage.setItem('studentIdImgUrl', imageUrl);
-      console.log('Image uploaded to Supabase at path:', imageUrl);
+      try {
+        sessionStorage.setItem('studentId', studentId);
+        sessionStorage.setItem('department', department);
+        sessionStorage.setItem('studentIdImgPath', path);
+        sessionStorage.setItem('studentIdImgUrl', imageUrl);
+        sessionStorage.setItem('studentIdText', text.slice(0, 2000));
+      } catch (e) {
+        console.warn('sessionStorage failed', e);
+      }
 
       router.push('/student-verification/confirm?from=enrolled');
     } catch (error) {
+      console.error(error);
       setErrorMsg('인증에 실패하였습니다!');
     } finally {
       setLoading(false);

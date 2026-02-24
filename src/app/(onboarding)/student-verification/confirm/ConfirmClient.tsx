@@ -68,13 +68,26 @@ function ConfirmInner({ name }: Props) {
 
   // 학과, 학번 불러오기
   useEffect(() => {
-    setDepartment(sessionStorage.getItem('department') ?? '');
-    if (isEnrolled) {
-      setStudentId(sessionStorage.getItem('studentId') ?? '');
-    } else {
-      setStudentId('');
+    const dept = sessionStorage.getItem('department') ?? '';
+    const sid = sessionStorage.getItem('studentId') ?? '';
+
+    setDepartment(dept);
+
+    if (isEnrolled) setStudentId(sid);
+    else setStudentId('');
+
+    if (!dept.trim()) {
+      toast.error('정보를 불러오지 못했어요. 다시 캡처해주세요.');
+      router.replace('/student-verification');
+      return;
     }
-  }, [isEnrolled]);
+
+    if (isEnrolled && !sid.trim()) {
+      toast.error('학번을 불러오지 못했어요. 다시 캡처해주세요.');
+      router.replace('/student-verification');
+      return;
+    }
+  }, [isEnrolled, router]);
 
   // 제출 핸들러
   const canSubmit = useMemo(() => {
