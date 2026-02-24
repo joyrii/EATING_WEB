@@ -9,6 +9,18 @@ import { useRef, useState } from 'react';
 import { tesseractModule } from '@/lib/tesseract/tesseractModule';
 import parseAdmissionCertificate from '@/lib/tesseract/parseAdmissionCertificate';
 
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') resolve(reader.result);
+      else reject(new Error('Failed to read file as data URL'));
+    };
+    reader.onerror = () => reject(new Error('Error reading file'));
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function FreshStudentVerification() {
   const router = useRouter();
 
@@ -31,43 +43,30 @@ export default function FreshStudentVerification() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = async (e) => {
-      const result = reader.result;
-      if (typeof result !== 'string') return;
+    e.target.value = '';
+    setLoading(true);
+    setProgress(0);
+    setErrorMsg('');
 
+    try {
+      const result = await readFileAsDataURL(file);
       setImgSrc(result);
 
-      setLoading(true);
-      setProgress(0);
-      setErrorMsg('');
+      const text = await tesseractModule(result, setProgress);
+      const parsed = parseAdmissionCertificate(text);
 
-      try {
-        const text = await tesseractModule(result, setProgress);
-        const parsed = parseAdmissionCertificate(text);
+      const department = parsed.department ?? '';
 
-        const department = parsed.department ?? '';
+      sessionStorage.setItem('studentIdImg', result);
+      sessionStorage.setItem('studentIdText', text);
+      sessionStorage.setItem('department', department);
 
-        if (!department) {
-          setErrorMsg('인증에 실패하였습니다!');
-          setLoading(false);
-          return;
-        }
-
-        sessionStorage.setItem('studentIdImg', result);
-        sessionStorage.setItem('studentIdText', text);
-        sessionStorage.setItem('department', department);
-
-        router.push('/student-verification/confirm?from=freshman');
-      } catch (error) {
-        setErrorMsg('인증에 실패하였습니다!');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    e.target.value = '';
+      router.push('/student-verification/confirm?from=freshman');
+    } catch (error) {
+      setErrorMsg('인증에 실패하였습니다!');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

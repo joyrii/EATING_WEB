@@ -11,6 +11,18 @@ import parseStudentIdText from '@/lib/tesseract/parseStudentId';
 import { uploadVerificationImage } from '../uploadVerificationImage';
 import { supabase } from '@/lib/supabase/client';
 
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') resolve(reader.result);
+      else reject(new Error('Failed to read file as data URL'));
+    };
+    reader.onerror = () => reject(new Error('Error reading file'));
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function EnrolledStudentVerification() {
   const router = useRouter();
 
@@ -33,60 +45,48 @@ export default function EnrolledStudentVerification() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = async (e) => {
-      const result = reader.result;
-      if (typeof result !== 'string') return;
+    e.target.value = '';
 
+    setLoading(true);
+    setProgress(0);
+    setErrorMsg('');
+
+    try {
+      const result = await readFileAsDataURL(file);
       setImgSrc(result);
 
-      setLoading(true);
-      setProgress(0);
-      setErrorMsg('');
+      // OCR 처리
+      const text = await tesseractModule(result, setProgress);
+      const parsed = parseStudentIdText(text);
 
-      try {
-        // OCR 처리
-        const text = await tesseractModule(result, setProgress);
-        const parsed = parseStudentIdText(text);
+      const studentId = parsed.studentId ?? '';
+      const department = parsed.department ?? '';
 
-        const studentId = parsed.studentId ?? '';
-        const department = parsed.department ?? '';
+      // supabase 업로드
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const userId = user.id;
+      const { path, imageUrl } = await uploadVerificationImage({
+        file,
+        userId,
+      });
 
-        if (!studentId || !department) {
-          setErrorMsg('인증에 실패하였습니다!');
-          setLoading(false);
-          return;
-        }
+      sessionStorage.setItem('studentIdImg', result);
+      sessionStorage.setItem('studentIdText', text);
+      sessionStorage.setItem('studentId', studentId);
+      sessionStorage.setItem('department', department);
+      sessionStorage.setItem('studentIdImgPath', path);
+      sessionStorage.setItem('studentIdImgUrl', imageUrl);
+      console.log('Image uploaded to Supabase at path:', imageUrl);
 
-        // supabase 업로드
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) return;
-        const userId = user.id;
-        const { path, imageUrl } = await uploadVerificationImage({
-          file,
-          userId,
-        });
-
-        sessionStorage.setItem('studentIdImg', result);
-        sessionStorage.setItem('studentIdText', text);
-        sessionStorage.setItem('studentId', studentId);
-        sessionStorage.setItem('department', department);
-        sessionStorage.setItem('studentIdImgPath', path);
-        sessionStorage.setItem('studentIdImgUrl', imageUrl);
-        console.log('Image uploaded to Supabase at path:', imageUrl);
-
-        router.push('/student-verification/confirm?from=enrolled');
-      } catch (error) {
-        setErrorMsg('인증에 실패하였습니다!');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    e.target.value = '';
+      router.push('/student-verification/confirm?from=enrolled');
+    } catch (error) {
+      setErrorMsg('인증에 실패하였습니다!');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
