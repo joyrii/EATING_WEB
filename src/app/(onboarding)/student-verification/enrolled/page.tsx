@@ -80,21 +80,21 @@ export default function EnrolledStudentVerification() {
 
       // supabase 업로드
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
+      // const {
+      //   data: { user },
+      // } = await supabase.auth.getUser();
+      // if (!user) return;
 
-      const { path, imageUrl } = await uploadVerificationImage({
-        file: optimizedFile,
-        userId: user.id,
-      });
+      // const { path, imageUrl } = await uploadVerificationImage({
+      //   file: optimizedFile,
+      //   userId: user.id,
+      // });
 
       try {
         sessionStorage.setItem('studentId', studentId);
         sessionStorage.setItem('department', department);
-        sessionStorage.setItem('studentIdImgPath', path);
-        sessionStorage.setItem('studentIdImgUrl', imageUrl);
+        // sessionStorage.setItem('studentIdImgPath', path);
+        // sessionStorage.setItem('studentIdImgUrl', imageUrl);
         sessionStorage.setItem('studentIdText', text.slice(0, 2000));
       } catch (e) {
         console.warn('sessionStorage failed', e);
