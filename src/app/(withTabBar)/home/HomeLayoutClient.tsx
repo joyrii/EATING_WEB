@@ -68,17 +68,15 @@ export default function HomeLayoutClient({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [ready, setReady] = useState(false);
 
-  const { me } = useUser();
+  const { me, isLoaded } = useUser();
   const name = me?.name ?? '회원';
   const isAdmin = me?.is_admin ?? false;
   const onboardingStep = me?.onboarding_step ?? null;
   const isPreRegistered = me?.is_pre_registered;
 
-  const [currentStatus, setCurrentStatus] = useState<MatchingStatus>(
-    isPreRegistered ? 'pre_registered' : 'before',
-  );
+  const [currentStatus, setCurrentStatus] = useState<MatchingStatus>('before');
+  const [isStatusLoaded, setIsStatusLoaded] = useState(false);
   // 디버그용 강제 상태 (optional)
   const [forcedStatus, setForcedStatus] = useState<MatchingStatus | null>(null);
 
@@ -97,6 +95,7 @@ export default function HomeLayoutClient({
   });
 
   useEffect(() => {
+    if (!isLoaded) return;
     if (!me) return;
 
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -108,7 +107,6 @@ export default function HomeLayoutClient({
 
         if (!weekStart) {
           setCurrentStatus('before');
-          setReady(true);
           return;
         }
 
@@ -129,7 +127,6 @@ export default function HomeLayoutClient({
         const uiStatus = forcedStatus ?? calculatedStatus;
 
         setCurrentStatus(uiStatus);
-        setReady(true);
 
         // 다음 전환 시각(금 17시 or 월 0시)으로 재계산 예약
         const fri17 = atKstFromWeekStart(weekStart, 4, 17, 0);
@@ -143,7 +140,8 @@ export default function HomeLayoutClient({
       } catch (e) {
         console.error('Failed to init home', e);
         setCurrentStatus('before');
-        setReady(true);
+      } finally {
+        setIsStatusLoaded(true);
       }
     };
 
@@ -152,7 +150,7 @@ export default function HomeLayoutClient({
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [me, forcedStatus]);
+  }, [me, forcedStatus, isLoaded]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -177,7 +175,7 @@ export default function HomeLayoutClient({
 
   const banner = banners.find((b) => b.display_order === 1);
 
-  if (!ready) return <LoadingSpinner />;
+  if (!isLoaded || !isStatusLoaded) return <LoadingSpinner />;
 
   return (
     <MatchingContext.Provider value={{ currentStatus, setCurrentStatus }}>
