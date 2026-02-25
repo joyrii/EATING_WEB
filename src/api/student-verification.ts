@@ -1,5 +1,3 @@
-import { api } from './axios-client';
-
 // 학생 인증 정보 제출
 export type StudentType = 'enrolled' | 'freshman';
 
@@ -15,12 +13,19 @@ export const submitVerification = async (
   verificationData: VerificationData,
 ) => {
   try {
-    const res = await api.post('/verification/submit', verificationData, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    // 서버사이드 API route를 통해 제출 (인앱 브라우저 세션 문제 우회)
+    const res = await fetch('/api/verification/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(verificationData),
     });
-    return res.data;
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${res.status}`);
+    }
+
+    return await res.json();
   } catch (error) {
     console.error('Error submitting verification:', error);
     throw error;
