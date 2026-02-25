@@ -695,7 +695,7 @@ const DateDivider = styled.div`
 const IceBreaking = styled.button`
   width: 75%;
   position: fixed;
-  bottom: 100px;
+  bottom: 110px;
   left: 50%;
   transform: translateX(-50%);
   background-color: #f3f3f3;

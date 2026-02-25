@@ -217,9 +217,11 @@ const ChatInputContainer = styled.div`
   bottom: 0;
   width: 100%;
   display: flex;
+  gap: 12px;
   flex-direction: row;
   padding: 5px 32px 42px;
   background-color: #fafafa;
+  padding-inline: 24px;
 `;
 
 const ChatInput = styled.input`
@@ -229,7 +231,6 @@ const ChatInput = styled.input`
   color: #000000;
   border: none;
   border-radius: 30px;
-  padding-left: 23px;
   font-size: 14px;
   font-weight: 500;
 
@@ -243,7 +244,6 @@ const ChatInput = styled.input`
 `;
 
 const SendButton = styled.button`
-  margin-left: 12px;
   border: none;
   background-color: transparent;
 `;
