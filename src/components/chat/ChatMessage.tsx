@@ -392,7 +392,7 @@ const MessageText = styled.p<{ $senderType: SenderType }>`
       border-top-left-radius: 0;`
       : `color: #ffffff;
       border-top-right-radius: 0;`}
-  max-width: 250px;
+  max-width: 200px;
   white-space: pre-line;
 `;
 

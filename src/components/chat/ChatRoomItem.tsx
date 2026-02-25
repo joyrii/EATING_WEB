@@ -1,6 +1,7 @@
 import ProfileImage from './ProfileImage';
 import styled from 'styled-components';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { getSendbirdInstance } from '@/lib/sendbird/client';
 
 type ChatRoomItemProps = {
   roomId: string;
@@ -52,7 +53,7 @@ function formatRelativeTime(input: number | Date) {
   if (!input) return '';
   const now = Date.now();
   const t = typeof input === 'number' ? input : input.getTime();
-  const diff = now - t;
+  const diff = Math.max(0, now - t); // 미래 시점 방지: 음수는 0으로 처리
 
   if (diff < 0) return '';
 
@@ -70,7 +71,7 @@ function formatRelativeTime(input: number | Date) {
 
 const ChatRoomItemWrapper = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 24px 16px;
   border-bottom: 1px solid #f0f0f0;
 `;
@@ -92,11 +93,19 @@ const RoomName = styled.p`
 const LastMessage = styled.p`
   font-size: 14px;
   color: #707070;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const TimeStampWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  align-self: center;
   margin-left: 30px;
   gap: 2px;
 `;

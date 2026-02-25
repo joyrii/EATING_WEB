@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 import {
   ensureSendbirdConnected,
+  getSendbirdInstance,
   listMyGroupChannels,
 } from '@/lib/sendbird/client';
 
@@ -15,6 +16,7 @@ import { useRouter } from 'next/navigation';
 
 import { getChatRooms, joinChat } from '@/api/matching';
 import { ChatRoomInfo } from '@/type/chat';
+import { GroupChannelHandler } from '@sendbird/chat/groupChannel';
 
 // 기본 프로필 이미지
 const DEFAULT_PROFILE_URL = '/images/chat/profile-default-3.png';
@@ -155,6 +157,66 @@ export default function Matching() {
       document.removeEventListener('visibilitychange', onVis);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, me?.id]);
+
+  // 읽음 처리
+  useEffect(() => {
+    if (!isLoaded || !me?.id) return;
+
+    let disposed = false;
+
+    const run = async () => {
+      await ensureSendbirdConnected(me.id, me.name, me.profile_image_url);
+
+      const sb = getSendbirdInstance();
+      const handlerId = `matching-list-${me.id}`;
+
+      try {
+        sb.groupChannel.removeGroupChannelHandler(handlerId);
+      } catch {}
+
+      const handler = new GroupChannelHandler({
+        onMessageReceived: (ch, msg) => {
+          if (disposed) return;
+
+          setChannels((prev) => {
+            const url = String(ch?.url ?? '');
+            const next = [...(prev ?? [])];
+            const idx = next.findIndex((x) => String(x?.url) === url);
+
+            if (idx >= 0) next[idx] = ch;
+            else next.unshift(ch);
+
+            return next;
+          });
+        },
+
+        onChannelChanged: (ch) => {
+          if (disposed) return;
+          setChannels((prev) => {
+            const url = String(ch?.url ?? '');
+            const next = [...(prev ?? [])];
+            const idx = next.findIndex((x) => String(x?.url) === url);
+            if (idx >= 0) next[idx] = ch;
+            else next.unshift(ch);
+            return next;
+          });
+        },
+      });
+
+      sb.groupChannel.addGroupChannelHandler(handlerId, handler);
+    };
+
+    run();
+
+    return () => {
+      disposed = true;
+      try {
+        const sb = getSendbirdInstance();
+        const handlerId = `matching-list-${me?.id}`;
+        sb.groupChannel.removeGroupChannelHandler(handlerId);
+      } catch {}
+    };
   }, [isLoaded, me?.id]);
 
   // ✅ enterChat: 목록에서 클릭할 때도 joinChat을 타고, 응답 channel_url로 이동
