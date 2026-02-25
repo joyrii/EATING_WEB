@@ -421,6 +421,9 @@ export default function ChatRoomClient({
           onMessageReceived: (ch, msg) => {
             if (ch.url !== channelUrlToOpen) return;
             void processIncomingMessage(msg as BaseMessage);
+            try {
+              channelRef.current?.markAsRead?.();
+            } catch {}
           },
         });
 
@@ -638,6 +641,10 @@ function isFirstOfGroup(messages: ChatMessageData[], index: number) {
 
   const sameDay = getDateKey(prev.createdAt) === getDateKey(current.createdAt);
   if (!sameDay) return true;
+
+  const diffMs =
+    new Date(current.createdAt).getTime() - new Date(prev.createdAt).getTime();
+  if (diffMs > 60 * 1000) return true;
 
   return getSenderKey(prev) !== getSenderKey(current);
 }

@@ -220,7 +220,7 @@ function SystemBlockMessage(props: ChatMessageProps) {
   return (
     <MessageContainer>
       {props.showProfileImage ? (
-        <ProfileImage src="/images/chat/profile-default-3.png" alt="profile" />
+        <ProfileImage src="/images/chat/profile-eating-ai.png" alt="profile" />
       ) : (
         <ProfileImagePlaceholder />
       )}
