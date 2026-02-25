@@ -63,6 +63,7 @@ export default function ChatRoomClient({
   const selectedRestaurantCacheRef = useRef<RestaurantPayload | null>(null);
   const cafeListCacheRef = useRef<CafeListPayload | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const roomMetaRef = useRef<ChatRoomInfo | null>(null);
 
   // 모달
   const [restaurantModalOpen, setRestaurantModalOpen] = useState(false);
@@ -75,84 +76,6 @@ export default function ChatRoomClient({
     useState<RestaurantPayload | null>(null);
   // Cafe List
   const [cafes, setCafes] = useState<CafeListPayload | null>(null);
-
-  // 채팅방 메타 정보 가져오기
-  useEffect(() => {
-    if (!isLoaded || !me?.id || !roomId) return;
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const res = await getChatRooms();
-        const found =
-          (res?.rooms ?? []).find(
-            (r) => String(r.channel_url) === String(roomId),
-          ) ?? null; // 현재 채팅방
-
-        if (cancelled) return;
-
-        setRoomMeta(found); // 채팅방 메타 정보 상태 업데이트
-
-        if (found) {
-          setAppointmentAtISO(
-            toKstIso(found.matched_slot?.date, found.matched_slot?.hour),
-          );
-        } else {
-          // 채팅방 정보가 없는 경우
-          router.replace('/matching');
-        }
-      } catch (error) {
-        console.error('Failed to fetch chat rooms', error);
-        if (!cancelled) {
-          setRoomMeta(null);
-          router.replace('/matching');
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isLoaded, me?.id, roomId]);
-
-  // 매장 정보 가져오기
-  useEffect(() => {
-    const id = roomMeta?.restaurant?.id;
-    if (!id) return;
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const res = await getRestaurants();
-        const found = res.find((r) => String(r.id) === String(id)) ?? null;
-        if (!found) return null;
-
-        const data = await getRestaurantById(String(id));
-
-        const restaurantData: RestaurantPayload = {
-          id: found.id,
-          name: found.name,
-          category: found.category,
-          benefit: data.promotion,
-          menu: found.menu_items[0].name,
-          imageUrl: found.image_url,
-        };
-
-        if (!cancelled) {
-          restaurantCacheRef.current.set(String(id), restaurantData);
-          setSelectedRestaurant(restaurantData);
-          selectedRestaurantCacheRef.current = restaurantData;
-        }
-      } catch (error) {
-        console.error('Failed to build restaurant payload', error);
-        return null;
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [roomMeta?.restaurant?.id]);
 
   // 카페 정보 불러오기
   async function primeCafeList() {
@@ -217,6 +140,38 @@ export default function ChatRoomClient({
       content: (message as any).message ?? '',
       createdAt: createdAtISO,
     };
+  }
+
+  // 매장 정보 불러오기
+  async function getRestaurantPayloadById(
+    id: string,
+  ): Promise<RestaurantPayload | null> {
+    const key = String(id);
+    const cached = restaurantCacheRef.current.get(key);
+    if (cached) return cached;
+
+    try {
+      const list = await getRestaurants();
+      const found = (list ?? []).find((r) => String(r.id) === key);
+      if (!found) return null;
+
+      const detail = await getRestaurantById(key);
+
+      const payload: RestaurantPayload = {
+        id: found.id,
+        name: found.name,
+        category: found.category,
+        benefit: detail.promotion,
+        menu: found.menu_items?.[0]?.name ?? '',
+        imageUrl: found.image_url,
+      };
+
+      restaurantCacheRef.current.set(key, payload);
+      return payload;
+    } catch (e) {
+      console.error('getRestaurantPayloadById failed:', e);
+      return null;
+    }
   }
 
   // 메시지 1개 처리
@@ -307,20 +262,19 @@ export default function ChatRoomClient({
           createdAt: createdAtISO,
         };
 
-        // (B) restaurant 카드
-        let payload: RestaurantPayload | null = null;
-
-        if (data?.restaurant_id) {
-          payload = selectedRestaurantCacheRef.current;
-
-          if (payload) setSelectedRestaurant(payload);
-          selectedRestaurantCacheRef.current = payload;
-        } else {
-          payload = selectedRestaurantCacheRef.current;
-        }
-
         const next: ChatMessageData[] = [textMsg];
 
+        const rid = data?.restaurant_id
+          ? String(data.restaurant_id)
+          : roomMetaRef.current?.restaurant?.id
+            ? String(roomMetaRef.current?.restaurant?.id)
+            : null;
+
+        let payload: RestaurantPayload | null = rid
+          ? await getRestaurantPayloadById(rid)
+          : selectedRestaurantCacheRef.current;
+
+        // (B) restaurant 카드
         if (payload?.id && payload?.name) {
           next.push({
             id: `card-${String((admin as any).messageId ?? createdAtISO)}`,
@@ -356,6 +310,59 @@ export default function ChatRoomClient({
     setMessages([]);
 
     const run = async () => {
+      let currentRoomMeta: ChatRoomInfo | null = null;
+      try {
+        const res = await getChatRooms();
+        currentRoomMeta =
+          (res?.rooms ?? []).find(
+            (r) => String(r.channel_url) === String(roomId),
+          ) ?? null;
+
+        if (!currentRoomMeta) {
+          router.replace('/matching');
+          return;
+        }
+
+        setRoomMeta(currentRoomMeta);
+        roomMetaRef.current = currentRoomMeta;
+        setAppointmentAtISO(
+          toKstIso(
+            currentRoomMeta.matched_slot?.date,
+            currentRoomMeta.matched_slot?.hour,
+          ),
+        );
+      } catch (e) {
+        console.error('Failed to fetch chat rooms', e);
+        router.replace('/matching');
+        return;
+      }
+      const restaurantId = currentRoomMeta?.restaurant?.id;
+      if (restaurantId && !selectedRestaurantCacheRef.current) {
+        try {
+          const res = await getRestaurants();
+          const found = res.find((r) => String(r.id) === String(restaurantId));
+          if (found) {
+            const data = await getRestaurantById(String(restaurantId));
+            const restaurantData: RestaurantPayload = {
+              id: found.id,
+              name: found.name,
+              category: found.category,
+              benefit: data.promotion,
+              menu: found.menu_items[0].name,
+              imageUrl: found.image_url,
+            };
+            restaurantCacheRef.current.set(
+              String(restaurantId),
+              restaurantData,
+            );
+            selectedRestaurantCacheRef.current = restaurantData;
+            setSelectedRestaurant(restaurantData);
+          }
+        } catch (e) {
+          console.error('Failed to prefetch restaurant', e);
+        }
+      }
+
       try {
         await ensureSendbirdConnected(me.id, me.name);
         await primeCafeList();
@@ -372,7 +379,7 @@ export default function ChatRoomClient({
 
           // 채널을 찾을 수 없는 경우
           if (msg.includes('channel') && msg.includes('not found')) {
-            const code = roomMeta?.chat_code;
+            const code = currentRoomMeta?.chat_code;
             if (!code) throw err;
 
             const joinRes = await joinChat({
@@ -449,7 +456,7 @@ export default function ChatRoomClient({
       handlerIdRef.current = '';
       channelRef.current = null;
     };
-  }, [isLoaded, me?.id, me?.name, roomId, roomMeta?.chat_code]);
+  }, [isLoaded, me?.id, me?.name, roomId]);
 
   // 새 메시지 이벤트 리스너
   useEffect(() => {
