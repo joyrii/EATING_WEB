@@ -92,6 +92,13 @@ const RoomName = styled.p`
 const LastMessage = styled.p`
   font-size: 14px;
   color: #707070;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const TimeStampWrapper = styled.div`
