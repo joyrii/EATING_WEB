@@ -233,6 +233,7 @@ const ChatInput = styled.input`
   border-radius: 30px;
   font-size: 14px;
   font-weight: 500;
+  padding-left: 23px;
 
   &::placeholder {
     color: #8a8a8a;
