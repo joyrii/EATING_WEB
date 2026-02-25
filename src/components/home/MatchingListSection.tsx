@@ -18,8 +18,8 @@ import { listMyGroupChannels } from '@/lib/sendbird/client';
 
 type ChatRoom = {
   group_id: string;
-  channel_url: string; // 예: match_4JM1S2 (서비스 식별자일 수도)
-  chat_code: string; // ✅ joinChat에 넣는 값
+  channel_url: string;
+  chat_code: string; // 채팅방 입장 코드
   matched_slot: { date: string; hour: number };
   restaurant: { id: string; name: string };
   member_count: number;
@@ -28,9 +28,8 @@ type ChatRoom = {
   created_at: string;
 };
 
-// ✅ reviews/pending 쪽에서 모달에 필요한 필드(너 기존 타입)
 export type PendingSlot = {
-  group_id: string; // ⚠️ 여기서는 "code"였다고 했었음 (백 스펙 주의)
+  group_id: string;
   round_id: string;
   matched_slot: { date: string; hour: number };
   restaurant_name: string;
@@ -42,9 +41,6 @@ export type PendingSlot = {
   personality_text: string;
 };
 
-// --------------------
-// util
-// --------------------
 function getAppointmentDateByRoom(room: ChatRoom) {
   const { date, hour } = room.matched_slot;
   const [year, month, day] = date.split('-').map(Number);
@@ -86,11 +82,11 @@ export default function MatchingListSection() {
 
   const [tick, setTick] = useState(0);
 
-  // ✅ list는 chat/rooms
+  // list는 chat/rooms
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(true);
 
-  // ✅ modal은 reviews/pending
+  // modal은 reviews/pending
   const [pending, setPending] = useState<PendingSlot[]>([]);
   const [pendingLoading, setPendingLoading] = useState(true);
 
@@ -103,12 +99,13 @@ export default function MatchingListSection() {
   const [loading, setLoading] = useState(false);
   const enteringRef = useRef(false);
 
-  // ✅ sendbird meta: channel_url로 매칭 (match_... 형태일 때 잘 맞음)
+  // sendbird meta: channel_url로 매칭
   const [sbMetaByChannelUrl, setSbMetaByChannelUrl] = useState<
     Record<
       string,
       {
         memberCount: number;
+        joinedMemberCount: number;
         unreadCount: number;
         lastMessageText: string | null;
         lastChatAtMs: number;
@@ -198,6 +195,7 @@ export default function MatchingListSection() {
 
           map[url] = {
             memberCount: Number(ch.memberCount ?? 0),
+            joinedMemberCount: Number((ch as any).joinedMemberCount ?? 0),
             unreadCount: Number(ch.unreadMessageCount ?? 0),
             lastMessageText: lastText,
             lastChatAtMs,
@@ -216,15 +214,11 @@ export default function MatchingListSection() {
   }, [isLoaded, me?.id, tick]);
 
   // -------------------------
-  // ✅ 모달 열기: room 기준으로 pending 매칭해서 상세 보여주기
+  // 모달 열기: room 기준으로 pending 매칭해서 상세 보여주기
   // -------------------------
   const openDetail = (room: ChatRoom) => {
     setSelectedRoom(room);
 
-    // pending에서 "이 방"에 해당하는 슬롯 찾기
-    // ✅ 우선순위:
-    // 1) date/hour 동일 + restaurantName 동일
-    // 2) 멤버 구성 일부라도 겹치면 우선
     const found =
       pending.find(
         (p) =>
@@ -252,7 +246,7 @@ export default function MatchingListSection() {
   };
 
   // -------------------------
-  // ✅ enterChat: chat_code로 joinChat → 응답 channel_url로 이동
+  // enterChat: chat_code로 joinChat → 응답 channel_url로 이동
   // -------------------------
   const enterChat = async (room: ChatRoom) => {
     if (!me?.id) return;
@@ -264,7 +258,7 @@ export default function MatchingListSection() {
 
     try {
       const res = await joinChat({
-        code: room.chat_code, // ✅ 핵심
+        code: room.chat_code,
         user_id: me.id,
         nickname: me.name,
       });
@@ -282,7 +276,6 @@ export default function MatchingListSection() {
     }
   };
 
-  // ✅ 정렬: 최근 메시지 순(없으면 created_at 기반)
   const sortedRooms = useMemo(() => {
     const list = [...(rooms ?? [])];
     list.sort((a, b) => {
@@ -294,7 +287,7 @@ export default function MatchingListSection() {
     return list;
   }, [rooms, sbMetaByChannelUrl]);
 
-  const isListLoading = roomsLoading; // 리스트 스피너는 chat/rooms 기준(원하면 pendingLoading까지 OR 가능)
+  const isListLoading = roomsLoading;
 
   return (
     <>
@@ -325,7 +318,7 @@ export default function MatchingListSection() {
             <MatchingList>
               {sortedRooms.map((room) => {
                 const meta = sbMetaByChannelUrl[room.channel_url];
-                const current = meta?.memberCount ?? room.members?.length ?? 0;
+                const current = meta?.joinedMemberCount ?? 0;
                 const total = room.member_count;
 
                 return (
@@ -391,7 +384,8 @@ export default function MatchingListSection() {
           <ParticipantsInfoText>
             입장 인원{' '}
             {selectedRoom
-              ? (sbMetaByChannelUrl[selectedRoom.channel_url]?.memberCount ??
+              ? (sbMetaByChannelUrl[selectedRoom.channel_url]
+                  ?.joinedMemberCount ??
                 selectedRoom.members?.length ??
                 0)
               : 0}

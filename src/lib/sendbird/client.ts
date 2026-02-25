@@ -9,7 +9,6 @@ type SB = any;
 let sb: SB | null = null;
 let connectPromise: Promise<SB> | null = null;
 
-// GroupChannel API만 안전하게 꺼내오기
 function getGroupChannelApi(inst: SB) {
   const gc = inst?.groupChannel;
   if (!gc) throw new Error('GroupChannel module is not loaded.');
@@ -55,7 +54,7 @@ export async function connectSendbird(
     });
   }
 
-  // 2) connect (skip if already same user)
+  // 2) connect
   if (sb.currentUser?.userId !== userId) {
     await sb.connect(userId);
   }
@@ -147,10 +146,6 @@ export async function getChannelMetaByGroupId(params: {
   }
 }
 
-/**
- * 내 채팅방 목록 한 번에 조회 (최신 메시지 순)
- * - pending 리스트와 조인해서 unread/lastMessage/memberCount 표시할 때 사용
- */
 export async function listMyGroupChannels(params: {
   userId: string;
   nickname?: string;
