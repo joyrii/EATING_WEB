@@ -75,10 +75,6 @@ export default function ChatRoomLayout({
 
         if (cancelled) return;
         roomRef.current = channel;
-
-        try {
-          channel.markAsRead?.();
-        } catch {}
       } catch (e) {
         console.error('Failed to prepare chat room:', e);
         if (!cancelled) setRoomTitle({ main: '채팅방', count: '' });

@@ -77,6 +77,17 @@ export default function ChatRoomClient({
   // Cafe List
   const [cafes, setCafes] = useState<CafeListPayload | null>(null);
 
+  // 읽음 처리 정책
+  const markAsReadSafely = () => {
+    if (typeof document === 'undefined') return;
+    if (document.visibilityState !== 'visible') return;
+    if (!document.hasFocus()) return;
+
+    try {
+      channelRef.current?.markAsRead?.();
+    } catch {}
+  };
+
   // 카페 정보 불러오기
   async function primeCafeList() {
     if (cafeListCacheRef.current?.cafes?.length) return;
@@ -428,17 +439,13 @@ export default function ChatRoomClient({
           onMessageReceived: (ch, msg) => {
             if (ch.url !== channelUrlToOpen) return;
             void processIncomingMessage(msg as BaseMessage);
-            try {
-              channelRef.current?.markAsRead?.();
-            } catch {}
+            markAsReadSafely();
           },
         });
 
         sb.groupChannel.addGroupChannelHandler(handlerId, handler);
 
-        try {
-          channel.markAsRead?.();
-        } catch {}
+        markAsReadSafely();
       } catch (error) {
         console.error('Failed to initialize chat room:', error);
         if (!cancelled) setMessages([]);
@@ -520,6 +527,21 @@ export default function ChatRoomClient({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [merged.length]);
+
+  // 읽음 처리 꼬임 방지
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === 'visible') markAsReadSafely();
+    };
+    const onFocus = () => markAsReadSafely();
+
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
 
   return (
     <Wrapper>
