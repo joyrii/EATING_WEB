@@ -15,18 +15,7 @@ import {
 } from '@/api/matching';
 
 import { listMyGroupChannels } from '@/lib/sendbird/client';
-
-type ChatRoom = {
-  group_id: string;
-  channel_url: string;
-  chat_code: string; // 채팅방 입장 코드
-  matched_slot: { date: string; hour: number };
-  restaurant: { id: string; name: string };
-  member_count: number;
-  members: { user_id: string; name: string; profile_image?: string }[];
-  status: string;
-  created_at: string;
-};
+import { ChatRoomInfo } from '@/type/chat';
 
 export type PendingSlot = {
   group_id: string;
@@ -41,13 +30,16 @@ export type PendingSlot = {
   personality_text: string;
 };
 
-function getAppointmentDateByRoom(room: ChatRoom) {
+function getAppointmentDateByRoom(room: ChatRoomInfo) {
   const { date, hour } = room.matched_slot;
   const [year, month, day] = date.split('-').map(Number);
   return new Date(year, month - 1, day, hour, 0, 0);
 }
 
-function getStatusByRoom(room: ChatRoom, myId: string): 'default' | 'match' {
+function getStatusByRoom(
+  room: ChatRoomInfo,
+  myId: string,
+): 'default' | 'match' {
   const now = new Date();
   const appointment = getAppointmentDateByRoom(room);
 
@@ -83,7 +75,7 @@ export default function MatchingListSection() {
   const [tick, setTick] = useState(0);
 
   // list는 chat/rooms
-  const [rooms, setRooms] = useState<ChatRoom[]>([]);
+  const [rooms, setRooms] = useState<ChatRoomInfo[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(true);
 
   // modal은 reviews/pending
@@ -91,7 +83,7 @@ export default function MatchingListSection() {
   const [pendingLoading, setPendingLoading] = useState(true);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
+  const [selectedRoom, setSelectedRoom] = useState<ChatRoomInfo | null>(null);
   const [selectedPending, setSelectedPending] = useState<PendingSlot | null>(
     null,
   );
@@ -125,7 +117,7 @@ export default function MatchingListSection() {
       setRoomsLoading(true);
       try {
         const res = await getChatRooms();
-        if (!cancelled) setRooms((res?.rooms ?? []) as ChatRoom[]);
+        if (!cancelled) setRooms((res?.rooms ?? []) as ChatRoomInfo[]);
       } catch (e) {
         console.error('Failed to load /chat/rooms:', e);
         if (!cancelled) setRooms([]);
@@ -216,7 +208,7 @@ export default function MatchingListSection() {
   // -------------------------
   // 모달 열기: room 기준으로 pending 매칭해서 상세 보여주기
   // -------------------------
-  const openDetail = (room: ChatRoom) => {
+  const openDetail = (room: ChatRoomInfo) => {
     setSelectedRoom(room);
 
     const found =
@@ -248,7 +240,7 @@ export default function MatchingListSection() {
   // -------------------------
   // enterChat: chat_code로 joinChat → 응답 channel_url로 이동
   // -------------------------
-  const enterChat = async (room: ChatRoom) => {
+  const enterChat = async (room: ChatRoomInfo) => {
     if (!me?.id) return;
     if (loading) return;
     if (enteringRef.current) return;
