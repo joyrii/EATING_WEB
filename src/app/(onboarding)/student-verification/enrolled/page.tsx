@@ -71,18 +71,27 @@ export default function EnrolledStudentVerification() {
     setProgress(0);
     setErrorMsg('');
 
+    let studentId = '';
+    let department = '';
+
     try {
       const optimizedFile = await downscaleImage(file);
-      const text = await tesseractModule(optimizedFile, setProgress);
-      const parsed = parseStudentIdText(text);
 
-      const studentId = parsed?.studentId ?? '';
-      const department = parsed?.department ?? '';
+      // OCR 시도 (실패해도 수동 입력으로 진행 가능)
+      try {
+        const text = await tesseractModule(optimizedFile, setProgress);
+        const parsed = parseStudentIdText(text);
+        studentId = parsed?.studentId ?? '';
+        department = parsed?.department ?? '';
+        sessionStorage.setItem('studentIdText', text.slice(0, 2000));
+      } catch (ocrError) {
+        console.warn('OCR failed, proceeding with manual input:', ocrError);
+      }
 
       sessionStorage.setItem('studentId', studentId);
       sessionStorage.setItem('department', department);
-      sessionStorage.setItem('studentIdText', text.slice(0, 2000));
 
+      // 이미지 업로드 (백그라운드, 실패해도 무시)
       if (me?.id) {
         uploadVerificationImage({ file: optimizedFile, userId: me.id })
           .then(({ path, imageUrl }) => {

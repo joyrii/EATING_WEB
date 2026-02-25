@@ -67,19 +67,22 @@ export default function FreshStudentVerification() {
     setProgress(0);
     setErrorMsg('');
 
+    let department = '';
+
     try {
       const optimizedFile = await downscaleImage(file);
 
-      const text = await tesseractModule(optimizedFile, setProgress);
-      const parsed = parseAdmissionCertificate(text);
-      const department = parsed?.department ?? '';
-
+      // OCR 시도 (실패해도 수동 입력으로 진행 가능)
       try {
-        sessionStorage.setItem('department', department);
+        const text = await tesseractModule(optimizedFile, setProgress);
+        const parsed = parseAdmissionCertificate(text);
+        department = parsed?.department ?? '';
         sessionStorage.setItem('studentIdText', text.slice(0, 2000));
-      } catch (e) {
-        console.warn('sessionStorage failed', e);
+      } catch (ocrError) {
+        console.warn('OCR failed, proceeding with manual input:', ocrError);
       }
+
+      sessionStorage.setItem('department', department);
 
       router.push('/student-verification/confirm?from=freshman');
     } catch (error) {
