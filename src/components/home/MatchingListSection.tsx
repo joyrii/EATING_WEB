@@ -264,6 +264,7 @@ export default function MatchingListSection() {
       });
 
       const channelUrl = String(res?.channel_url ?? '');
+      console.log('joinChat response:', res);
       router.push(
         `/chat/${encodeURIComponent(channelUrl || room.channel_url)}`,
       );
@@ -385,9 +386,7 @@ export default function MatchingListSection() {
             입장 인원{' '}
             {selectedRoom
               ? (sbMetaByChannelUrl[selectedRoom.channel_url]
-                  ?.joinedMemberCount ??
-                selectedRoom.members?.length ??
-                0)
+                  ?.joinedMemberCount ?? 0)
               : 0}
             명
           </ParticipantsInfoText>
@@ -409,7 +408,7 @@ export default function MatchingListSection() {
 }
 
 // --------------------
-// styles (너 원래 그대로)
+// styles
 // --------------------
 const ModalMainText = styled.h2`
   margin: 0;

@@ -25,7 +25,11 @@ import type { BaseMessage } from '@sendbird/chat/message';
 
 import { toKstIso } from '@/lib/sendbird/channelMeta';
 import { getRestaurants, getRestaurantById } from '@/api/application';
-import { getChatRooms, joinChat } from '@/api/matching';
+import {
+  getChatRooms,
+  getIceBreakingQuestions,
+  joinChat,
+} from '@/api/matching';
 
 const DEFAULT_PROFILE_URL = '/images/chat/profile-default-.png';
 
@@ -95,6 +99,7 @@ export default function ChatRoomClient() {
 
   const [restaurantModalOpen, setRestaurantModalOpen] = useState(false);
   const [iceBreakingModalOpen, setIceBreakingModalOpen] = useState(false);
+  const [iceBreakingTopics, setIceBreakingTopics] = useState<string[]>([]);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   const [selectedRestaurant, setSelectedRestaurant] = useState<null | {
@@ -488,6 +493,18 @@ export default function ChatRoomClient() {
     return all;
   }, [uiMessages, localSystemCards]);
 
+  // 아이스브레이킹
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getIceBreakingQuestions();
+        setIceBreakingTopics(res.map((q) => q.question));
+      } catch (error) {
+        console.error('Failed to fetch ice-breaking questions', error);
+      }
+    })();
+  }, []);
+
   return (
     <Wrapper>
       {merged.length > 0 ? (
@@ -553,6 +570,7 @@ export default function ChatRoomClient() {
       <IceBreakingModal
         isOpen={iceBreakingModalOpen}
         onClose={() => setIceBreakingModalOpen(false)}
+        topics={iceBreakingTopics}
       />
       <ProfileModal
         isOpen={profileModalOpen}
