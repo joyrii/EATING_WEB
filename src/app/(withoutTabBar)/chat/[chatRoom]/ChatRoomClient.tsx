@@ -55,13 +55,14 @@ export default function ChatRoomClient({
   // 채팅 내용 가져오기
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
 
-  // 중복 방지
+  // refs
   const channelRef = useRef<any>(null);
   const handlerIdRef = useRef('');
   const seenMessageIdsRef = useRef<Set<string>>(new Set());
   const restaurantCacheRef = useRef<Map<string, RestaurantPayload>>(new Map());
   const selectedRestaurantCacheRef = useRef<RestaurantPayload | null>(null);
   const cafeListCacheRef = useRef<CafeListPayload | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   // 모달
   const [restaurantModalOpen, setRestaurantModalOpen] = useState(false);
@@ -447,14 +448,17 @@ export default function ChatRoomClient({
     };
   }, [isLoaded, me?.id, me?.name, roomId, roomMeta?.chat_code]);
 
-  // send 이후 새로고침
+  // 새 메시지 이벤트 리스너
   useEffect(() => {
-    const onRefresh = () => {
-      window.location.reload();
+    const onNew = (e: any) => {
+      const message = e?.detail?.message;
+      if (!message) return;
+      void processIncomingMessage(message as BaseMessage);
     };
-    window.addEventListener('refreshChat', onRefresh);
-    return () => window.removeEventListener('refreshChat', onRefresh);
-  }, []);
+
+    window.addEventListener('chat:new-message', onNew);
+    return () => window.removeEventListener('chat:new-message', onNew);
+  }, [roomId, me?.id]);
 
   // Action Handler
   const handleAction = (action: ChatAction) => {
@@ -502,6 +506,11 @@ export default function ChatRoomClient({
     })();
   }, []);
 
+  // 자동 스크롤
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [merged.length]);
+
   return (
     <Wrapper>
       {merged.length > 0 ? (
@@ -544,6 +553,8 @@ export default function ChatRoomClient({
           아직 대화가 없습니다. 첫 메시지를 보내보세요!
         </EmptyStateText>
       )}
+
+      <div ref={bottomRef} />
 
       <IceBreaking onClick={() => setIceBreakingModalOpen(true)}>
         <IceBreakingText>

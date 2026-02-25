@@ -107,15 +107,19 @@ export default function ChatRoomLayout({
 
       if (result && typeof (result as any).onSucceeded === 'function') {
         (result as any)
-          .onSucceeded(() => {
+          .onSucceeded((msg: any) => {
             setMessage('');
-            window.dispatchEvent(new Event('chat:refresh'));
+            window.dispatchEvent(
+              new CustomEvent('chat:new-message', { detail: { message: msg } }),
+            );
           })
           .onFailed((e: any) => console.error(e));
       } else {
-        await Promise.resolve(result);
+        const sent = await Promise.resolve(result);
         setMessage('');
-        window.dispatchEvent(new Event('chat:refresh'));
+        window.dispatchEvent(
+          new CustomEvent('chat:new-message', { detail: { message: sent } }),
+        );
       }
     } catch (e) {
       console.error('메시지 전송 실패:', e);
