@@ -72,9 +72,13 @@ export default function FreshStudentVerification() {
     try {
       const optimizedFile = await downscaleImage(file);
 
-      // OCR 시도 (실패해도 수동 입력으로 진행 가능)
+      // OCR 시도 (실패하거나 30초 초과 시 수동 입력으로 진행)
       try {
-        const text = await tesseractModule(optimizedFile, setProgress);
+        const ocrPromise = tesseractModule(optimizedFile, setProgress);
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('OCR timeout')), 30000),
+        );
+        const text = await Promise.race([ocrPromise, timeout]);
         const parsed = parseAdmissionCertificate(text);
         department = parsed?.department ?? '';
         sessionStorage.setItem('studentIdText', text.slice(0, 2000));
