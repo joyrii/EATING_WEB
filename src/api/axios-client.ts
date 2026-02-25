@@ -18,22 +18,38 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   ]);
 }
 
+let cachedToken: string | null = null;
+let tokenExpiresAt = 0;
+
+// Supabase 세션 변경 시 캐시 업데이트
+supabase.auth.onAuthStateChange((_event, session) => {
+  if (session?.access_token) {
+    cachedToken = session.access_token;
+    tokenExpiresAt = (session.expires_at ?? 0) * 1000;
+  } else {
+    cachedToken = null;
+    tokenExpiresAt = 0;
+  }
+});
+
 async function getAccessToken(): Promise<string | null> {
+  // 캐시된 토큰이 아직 유효하면 바로 반환 (네트워크 호출 없음)
+  if (cachedToken && Date.now() < tokenExpiresAt - 30000) {
+    return cachedToken;
+  }
+
   try {
-    const { data } = await withTimeout(supabase.auth.getSession(), 5000);
-    if (data.session?.access_token) return data.session.access_token;
+    const { data } = await withTimeout(supabase.auth.getSession(), 10000);
+    if (data.session?.access_token) {
+      cachedToken = data.session.access_token;
+      tokenExpiresAt = (data.session.expires_at ?? 0) * 1000;
+      return cachedToken;
+    }
   } catch (e) {
     console.warn('[auth] getSession failed:', e);
   }
 
-  try {
-    const { data } = await withTimeout(supabase.auth.refreshSession(), 5000);
-    if (data.session?.access_token) return data.session.access_token;
-  } catch (e) {
-    console.warn('[auth] refreshSession failed:', e);
-  }
-
-  return null;
+  return cachedToken;
 }
 
 // 요청 인터셉터: 모든 요청에 대해 토큰 자동 첨부
