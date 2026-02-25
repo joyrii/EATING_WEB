@@ -219,9 +219,8 @@ const ChatInputContainer = styled.div`
   display: flex;
   gap: 12px;
   flex-direction: row;
-  padding: 5px 32px 42px;
+  padding: 5px 24px 42px;
   background-color: #fafafa;
-  padding-inline: 24px;
 `;
 
 const ChatInput = styled.input`

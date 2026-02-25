@@ -5,7 +5,7 @@ import Button from '@/components/BaseButton';
 import { StepText, SubText, TextWrapper, TitleText } from '../style';
 import { ButtonWrapper } from '../style';
 import MbtiOption from '@/components/onboarding/MbtiOption';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/userContext';
 import { updateMbti } from '@/api/onboarding';
@@ -20,6 +20,23 @@ export default function OnboardingMbti() {
 
   const { me } = useUser();
   const name = me?.name || '';
+
+  const MBTI_KEY = 'onboarding_mbti';
+
+  useEffect(() => {
+    const saved = sessionStorage.getItem(MBTI_KEY);
+    if (!saved) return;
+    const [mbti1, mbti2, mbti3, mbti4] = saved.split('');
+    setSelectedMbti1(mbti1);
+    setSelectedMbti2(mbti2);
+    setSelectedMbti3(mbti3);
+    setSelectedMbti4(mbti4);
+  }, []);
+
+  useEffect(() => {
+    const mbti = `${selectedMbti1 ?? ''}${selectedMbti2 ?? ''}${selectedMbti3 ?? ''}${selectedMbti4 ?? ''}`;
+    sessionStorage.setItem(MBTI_KEY, mbti);
+  }, [selectedMbti1, selectedMbti2, selectedMbti3, selectedMbti4]);
 
   return (
     <div>
@@ -89,7 +106,6 @@ export default function OnboardingMbti() {
               await updateMbti(
                 `${selectedMbti1}${selectedMbti2}${selectedMbti3}${selectedMbti4}`,
               );
-              router.push('/onboarding/interests');
             } catch (error) {
               console.error('Failed to update MBTI:', error);
             }

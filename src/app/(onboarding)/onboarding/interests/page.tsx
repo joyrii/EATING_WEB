@@ -32,7 +32,20 @@ export default function OnboardingInterests() {
   );
   const [idByName, setIdByName] = useState<Record<string, string>>({});
 
-  const [selected, setSelected] = useState<Record<string, string[]>>({});
+  const INTERESTS_KEY = 'onboarding.interests.selected';
+  const [selected, setSelected] = useState<Record<string, string[]>>(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const saved = sessionStorage.getItem(INTERESTS_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem(INTERESTS_KEY, JSON.stringify(selected));
+  }, [selected]);
 
   useEffect(() => {
     (async () => {
