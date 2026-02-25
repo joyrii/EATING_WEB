@@ -117,10 +117,10 @@ export default function Additional() {
   // 3) MBTI 클릭 → UI state 갱신만
   //    실제 store 저장은 아래 useEffect에서 “한 덩어리”로만 저장함
   const updateMbti = (index: 1 | 2 | 3 | 4, value: string) => {
-    if (index === 1) setMbti1(value as any);
-    if (index === 2) setMbti2(value as any);
-    if (index === 3) setMbti3(value as any);
-    if (index === 4) setMbti4(value as any);
+    if (index === 1) setMbti1((prev) => (prev === value ? '' : value) as any);
+    if (index === 2) setMbti2((prev) => (prev === value ? '' : value) as any);
+    if (index === 3) setMbti3((prev) => (prev === value ? '' : value) as any);
+    if (index === 4) setMbti4((prev) => (prev === value ? '' : value) as any);
   };
 
   // ✅ MBTI는 무조건 한 덩어리로 store 저장(자동)

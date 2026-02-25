@@ -69,17 +69,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  // 세션 변화 감지
+  // 세션 변화 감지 (SIGNED_IN/SIGNED_OUT만 반응, TOKEN_REFRESHED는 무시)
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!session?.access_token) {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
         setMe(null);
         return;
       }
-      // 세션이 생기거나 갱신되면 me를 다시 동기화
-      await refresh();
+      if (event === 'SIGNED_IN' && session?.access_token) {
+        await refresh();
+      }
     });
 
     return () => subscription.unsubscribe();

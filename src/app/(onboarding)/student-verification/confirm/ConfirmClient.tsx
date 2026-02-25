@@ -76,18 +76,11 @@ function ConfirmInner({ name }: Props) {
     if (isEnrolled) setStudentId(sid);
     else setStudentId('');
 
-    if (!dept.trim()) {
-      toast.error('정보를 불러오지 못했어요. 다시 캡처해주세요.');
-      router.replace('/student-verification');
-      return;
+    // OCR이 실패해도 수동 입력 가능하도록 리다이렉트하지 않음
+    if (!dept.trim() || (isEnrolled && !sid.trim())) {
+      toast('자동 인식에 실패했어요. 직접 입력해주세요!', { icon: '✏️' });
     }
-
-    if (isEnrolled && !sid.trim()) {
-      toast.error('학번을 불러오지 못했어요. 다시 캡처해주세요.');
-      router.replace('/student-verification');
-      return;
-    }
-  }, [isEnrolled, router]);
+  }, [isEnrolled]);
 
   // 제출 핸들러
   const canSubmit = useMemo(() => {
@@ -116,7 +109,7 @@ function ConfirmInner({ name }: Props) {
         name,
         student_id: isEnrolled ? studentId.trim() : null, // 신입생은 null
         department: department.trim(),
-        image_url: null,
+        image_url: sessionStorage.getItem('studentIdImgUrl') || null,
       });
 
       if (isEnrolled) sessionStorage.setItem('studentId', studentId.trim());

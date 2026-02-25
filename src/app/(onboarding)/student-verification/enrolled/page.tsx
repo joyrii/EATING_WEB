@@ -6,50 +6,14 @@ import Button from '@/components/BaseButton';
 import { useRouter } from 'next/navigation';
 import { Container, TextWrapper } from '../style';
 import { useRef, useState } from 'react';
-import { tesseractModule } from '@/lib/tesseract/tesseractModule';
-import parseStudentIdText from '@/lib/tesseract/parseStudentId';
-import { uploadVerificationImage } from '../uploadVerificationImage';
-import { useUser } from '@/context/userContext';
-
-async function downscaleImage(
-  file: File,
-  maxWidth = 1000,
-  quality = 0.82,
-): Promise<File> {
-  const img = document.createElement('img');
-  const objectUrl = URL.createObjectURL(file);
-  img.src = objectUrl;
-
-  await new Promise<void>((res, rej) => {
-    img.onload = () => res();
-    img.onerror = rej;
-  });
-
-  URL.revokeObjectURL(objectUrl);
-
-  const scale = Math.min(1, maxWidth / img.width);
-  const w = Math.round(img.width * scale);
-  const h = Math.round(img.height * scale);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
-
-  const blob = await new Promise<Blob>((resolve) =>
-    canvas.toBlob((b) => resolve(b!), 'image/jpeg', quality),
-  );
-
-  return new File([blob], 'verification.jpg', { type: 'image/jpeg' });
-}
+import { serverOcr } from '@/lib/ocr/serverOcr';
+import { downscaleImage } from '@/lib/image/downscaleImage';
 
 export default function EnrolledStudentVerification() {
   const router = useRouter();
-  const { me } = useUser();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [progress, setProgress] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
@@ -66,31 +30,28 @@ export default function EnrolledStudentVerification() {
     }
 
     e.target.value = '';
-
     setLoading(true);
-    setProgress(0);
     setErrorMsg('');
+
+    let studentId = '';
+    let department = '';
 
     try {
       const optimizedFile = await downscaleImage(file);
-      const text = await tesseractModule(optimizedFile, setProgress);
-      const parsed = parseStudentIdText(text);
 
-      const studentId = parsed?.studentId ?? '';
-      const department = parsed?.department ?? '';
+      try {
+        const result = await serverOcr(optimizedFile, 'enrolled');
+        studentId = result.studentId;
+        department = result.department;
+        sessionStorage.setItem('studentIdText', result.raw);
+        if (result.imagePath) sessionStorage.setItem('studentIdImgPath', result.imagePath);
+        if (result.imageUrl) sessionStorage.setItem('studentIdImgUrl', result.imageUrl);
+      } catch (ocrError) {
+        console.warn('OCR failed, proceeding with manual input:', ocrError);
+      }
 
       sessionStorage.setItem('studentId', studentId);
       sessionStorage.setItem('department', department);
-      sessionStorage.setItem('studentIdText', text.slice(0, 2000));
-
-      if (me?.id) {
-        uploadVerificationImage({ file: optimizedFile, userId: me.id })
-          .then(({ path, imageUrl }) => {
-            sessionStorage.setItem('studentIdImgPath', path);
-            sessionStorage.setItem('studentIdImgUrl', imageUrl);
-          })
-          .catch((e) => console.error('upload failed:', e));
-      }
 
       router.push('/student-verification/confirm?from=enrolled');
     } catch (error) {
@@ -141,7 +102,7 @@ export default function EnrolledStudentVerification() {
       </ImageWrapper>
 
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        {loading && <Status>이미지 인식 중... {progress}%</Status>}
+        {loading && <Status>이미지 인식 중...</Status>}
       </div>
 
       <input

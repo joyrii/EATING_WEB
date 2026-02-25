@@ -6,47 +6,14 @@ import Button from '@/components/BaseButton';
 import { useRouter } from 'next/navigation';
 import { Container, TextWrapper } from '../style';
 import { useRef, useState } from 'react';
-import { tesseractModule } from '@/lib/tesseract/tesseractModule';
-import parseAdmissionCertificate from '@/lib/tesseract/parseAdmissionCertificate';
-
-async function downscaleImage(
-  file: File,
-  maxWidth = 1000,
-  quality = 0.82,
-): Promise<File> {
-  const img = document.createElement('img');
-  const objectUrl = URL.createObjectURL(file);
-  img.src = objectUrl;
-
-  await new Promise<void>((res, rej) => {
-    img.onload = () => res();
-    img.onerror = rej;
-  });
-
-  URL.revokeObjectURL(objectUrl);
-
-  const scale = Math.min(1, maxWidth / img.width);
-  const w = Math.round(img.width * scale);
-  const h = Math.round(img.height * scale);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
-
-  const blob = await new Promise<Blob>((resolve) =>
-    canvas.toBlob((b) => resolve(b!), 'image/jpeg', quality),
-  );
-
-  return new File([blob], 'verification.jpg', { type: 'image/jpeg' });
-}
+import { serverOcr } from '@/lib/ocr/serverOcr';
+import { downscaleImage } from '@/lib/image/downscaleImage';
 
 export default function FreshStudentVerification() {
   const router = useRouter();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [progress, setProgress] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
@@ -64,22 +31,22 @@ export default function FreshStudentVerification() {
 
     e.target.value = '';
     setLoading(true);
-    setProgress(0);
     setErrorMsg('');
+
+    let department = '';
 
     try {
       const optimizedFile = await downscaleImage(file);
 
-      const text = await tesseractModule(optimizedFile, setProgress);
-      const parsed = parseAdmissionCertificate(text);
-      const department = parsed?.department ?? '';
-
       try {
-        sessionStorage.setItem('department', department);
-        sessionStorage.setItem('studentIdText', text.slice(0, 2000));
-      } catch (e) {
-        console.warn('sessionStorage failed', e);
+        const result = await serverOcr(optimizedFile, 'freshman');
+        department = result.department;
+        sessionStorage.setItem('studentIdText', result.raw);
+      } catch (ocrError) {
+        console.warn('OCR failed, proceeding with manual input:', ocrError);
       }
+
+      sessionStorage.setItem('department', department);
 
       router.push('/student-verification/confirm?from=freshman');
     } catch (error) {
@@ -123,7 +90,7 @@ export default function FreshStudentVerification() {
         />
       </ImageWrapper>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        {loading && <Status>이미지 인식 중... {progress}%</Status>}
+        {loading && <Status>이미지 인식 중...</Status>}
       </div>
 
       <input
