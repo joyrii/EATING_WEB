@@ -1,3 +1,4 @@
+import { getIceBreakingQuestions } from '@/api/matching';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -6,9 +7,11 @@ import styled from 'styled-components';
 export default function IceBreakingModal({
   isOpen,
   onClose,
+  topics,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  topics?: string[];
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -18,17 +21,6 @@ export default function IceBreakingModal({
   }, []);
 
   if (!mounted || !isOpen) return null;
-
-  const ICE_BREAKING_TOPICS = [
-    '학과 생활 이야기',
-    '학교 주변 최애 맛집 이야기',
-    '(새내기) 너 수시로 왔어 정시로 왔어?',
-    '(새내기) 고등학교 시절 이야기',
-    '넷플 예능 (흑백 요리사 / 솔로지옥 / 환연3)',
-    '두쫀쿠 최고 존엄 맛집 이야기',
-    '(새내기) 과잠 / 학잠 / 주경바막 / 돕바 / 후리스 등 공구 물품 디자인 이야기',
-    '기대되는 수업, 궁금한 전공',
-  ];
 
   return createPortal(
     <Overlay onClick={onClose}>
@@ -48,7 +40,7 @@ export default function IceBreakingModal({
             alt="Ice Breaking"
           />
           <IceBreakingList>
-            {ICE_BREAKING_TOPICS.map((topic, index) => (
+            {topics?.map((topic, index) => (
               <IceBreakingTopic key={index}>
                 <Ice>🧊</Ice>
                 {index + 1}. {topic}

@@ -14,6 +14,7 @@ import { useUser } from '@/context/userContext';
 import { useRouter } from 'next/navigation';
 
 import { getChatRooms, joinChat } from '@/api/matching';
+import { ChatRoomInfo } from '@/type/chat';
 
 // 기본 프로필 이미지
 const DEFAULT_PROFILE_URL = '/images/chat/profile-default-3.png';
@@ -78,7 +79,8 @@ type UiRoom = {
   lastChat: string;
   lastChatAtMs: number;
   unreadCount: number;
-  profileImageUrls: string[];
+  memberCount: number;
+  profileImageUrl: string;
 };
 
 export default function Matching() {
@@ -88,7 +90,7 @@ export default function Matching() {
   const [notice, setNotice] = useState(
     '해당 채팅방은 약속 다음 날 사라집니다.',
   );
-  const [rooms, setRooms] = useState<ApiRoom[]>([]);
+  const [rooms, setRooms] = useState<ChatRoomInfo[]>([]);
   const [channels, setChannels] = useState<any[]>([]);
 
   const [isFetching, setIsFetching] = useState(true);
@@ -108,7 +110,7 @@ export default function Matching() {
       // 1) /chat/rooms
       const roomsRes = await getChatRooms();
       setNotice(roomsRes?.notice || '해당 채팅방은 약속 다음 날 사라집니다.');
-      setRooms((roomsRes?.rooms ?? []) as ApiRoom[]);
+      setRooms((roomsRes?.rooms ?? []) as ChatRoomInfo[]);
 
       // 2) Sendbird 채널 메타(최근메시지/안읽음/멤버수)
       await ensureSendbirdConnected(me.id, me.name, me.profile_image_url);
@@ -156,7 +158,7 @@ export default function Matching() {
   }, [isLoaded, me?.id]);
 
   // ✅ enterChat: 목록에서 클릭할 때도 joinChat을 타고, 응답 channel_url로 이동
-  const enterChat = async (room: ApiRoom) => {
+  const enterChat = async (room: ChatRoomInfo) => {
     if (!me?.id) return;
     if (enteringRef.current) return;
 
@@ -193,9 +195,6 @@ export default function Matching() {
     (channels ?? []).forEach((ch) => channelMap.set(String(ch.url), ch));
 
     const merged: UiRoom[] = (rooms ?? []).map((r) => {
-      // ⚠️ sendbird 채널 메타는 "실제 sendbird url"이 뭔지에 따라 달라질 수 있음.
-      // 일단 /chat/rooms.channel_url로 매칭해보고(기존 유지),
-      // 나중에 joinChat이 주는 진짜 url을 알게 되면 그 값으로 매칭하도록 개선 가능.
       const ch = channelMap.get(String(r.channel_url));
 
       const last = ch?.lastMessage;
@@ -224,11 +223,6 @@ export default function Matching() {
         memberCount,
       });
 
-      const profileImageUrls = (r.members ?? [])
-        .map((m) => m?.profile_image)
-        .filter((v): v is string => typeof v === 'string' && v.length > 0)
-        .slice(0, 4);
-
       return {
         apiChannelUrl: r.channel_url,
         chatCode: r.chat_code,
@@ -236,9 +230,8 @@ export default function Matching() {
         lastChat,
         lastChatAtMs,
         unreadCount,
-        profileImageUrls: profileImageUrls.length
-          ? profileImageUrls
-          : [DEFAULT_PROFILE_URL],
+        memberCount: memberCount ?? 1,
+        profileImageUrl: '/images/chat/profile-default-3.png',
       };
     });
 
@@ -291,8 +284,9 @@ export default function Matching() {
                   lastChatAsMs={ui.lastChatAtMs}
                   content={ui.lastChat}
                   unreadCount={ui.unreadCount}
-                  profileImageUrls={ui.profileImageUrls}
-                  onClick={() => enterChat(room)} // ✅ 여기!
+                  memberCount={ui.memberCount}
+                  profileImageUrl={ui.profileImageUrl}
+                  onClick={() => enterChat(room)}
                 />
               );
             })}

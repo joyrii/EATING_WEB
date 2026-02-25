@@ -8,7 +8,8 @@ type ChatRoomItemProps = {
   lastChatAsMs: number;
   content: string;
   unreadCount: number;
-  profileImageUrls?: string[];
+  memberCount: number;
+  profileImageUrl: string;
   onClick?: () => void;
 };
 
@@ -18,14 +19,23 @@ export default function ChatRoomItem({
   lastChatAsMs,
   content,
   unreadCount,
-  profileImageUrls,
+  memberCount,
+  profileImageUrl,
   onClick,
 }: ChatRoomItemProps) {
   const timeStamp = formatRelativeTime(lastChatAsMs);
 
+  function toRepeatedImageUrls(url: string, memberCount: number) {
+    const safe = url?.trim() ? url : '/images/chat/profile-default-3.png';
+    const n = Math.max(1, Math.min(4, Number(memberCount) || 1)); // 1~4
+    return Array.from({ length: n }, () => safe);
+  }
+
   return (
     <ChatRoomItemWrapper key={roomId} onClick={onClick}>
-      <ProfileImage imageUrls={profileImageUrls || []} />
+      <ProfileImage
+        imageUrls={toRepeatedImageUrls(profileImageUrl, memberCount)}
+      />
       <RoomNameWrapper>
         <RoomName>{roomName}</RoomName>
         <LastMessage>{content}</LastMessage>

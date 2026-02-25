@@ -56,3 +56,21 @@ export async function getChatRooms(): Promise<ChatRoomsResponse> {
     throw error;
   }
 }
+
+// 아이스브레이킹
+type IceBreakingQuestion = {
+  id: number;
+  question: string;
+};
+
+export async function getIceBreakingQuestions(): Promise<
+  IceBreakingQuestion[]
+> {
+  try {
+    const res = await api.get(`/chat/icebreakers`);
+    return res.data.questions as IceBreakingQuestion[];
+  } catch (error) {
+    console.error('Failed to fetch ice-breaking questions', error);
+    throw error;
+  }
+}
