@@ -1,26 +1,17 @@
 export type ChatRoomsResponse = {
   notice: string;
-  rooms: ChatRoomFromApi[];
+  rooms: ChatRoomInfo[];
 };
 
-export type ChatRoomFromApi = {
-  group_id: string;
+// 채팅방 정보
+export type ChatRoomInfo = {
+  groupId: string;
   channel_url: string;
   chat_code: string;
-  matched_slot: {
-    date: string; // "YYYY-MM-DD"
-    hour: number; // 0~23
-  };
-  restaurant: {
-    id: string;
-    name: string;
-  };
+  matched_slot: { date: string; hour: number };
+  restaurant: { id: string; name: string };
   member_count: number;
-  members: {
-    user_id: string;
-    name: string;
-    profile_image: string | null;
-  }[];
+  members: Array<{ user_id: string; name: string }>;
   status: string;
-  created_at: string; // ISO
+  created_at: string;
 };

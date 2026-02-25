@@ -1,15 +1,9 @@
 import styled from 'styled-components';
-import SYSTEM_CARD from '@/constants/SYSTEM_CARD';
 import RestaurantCard from './RestaurantCard';
 
 export type SenderType = 'user' | 'other' | 'system';
 
-export type MessageType =
-  | 'text'
-  | 'restaurant'
-  | 'noShowReport'
-  | 'cafeList'
-  | 'feedback';
+export type MessageType = 'text' | 'restaurant' | 'actionCard' | 'cafeList';
 
 export type ProfilePayload = {
   senderId?: string;
@@ -34,6 +28,15 @@ export type CafeListPayload = {
   redirectUrl: string;
 };
 
+export type SystemCardPayload = {
+  cardType: 'noshow' | 'cafe_recommend' | 'feedback';
+  body: string;
+  button: {
+    label: string;
+    url: string;
+  };
+};
+
 export type ChatMessageData = {
   id: string;
   senderType: SenderType;
@@ -46,15 +49,18 @@ export type ChatMessageData = {
   content?: string;
   createdAt: string; // ISO 원본
 
-  payload?: RestaurantPayload | CafeListPayload | ProfilePayload;
+  payload?:
+    | RestaurantPayload
+    | CafeListPayload
+    | ProfilePayload
+    | SystemCardPayload;
 };
 
 export type ChatAction =
   | { type: 'OPEN_RESTAURANT'; payload: RestaurantPayload }
-  | { type: 'OPEN_NO_SHOW' }
   | { type: 'OPEN_CAFE_LIST'; payload: CafeListPayload }
-  | { type: 'OPEN_FEEDBACK' }
-  | { type: 'OPEN_PROFILE'; payload: ProfilePayload };
+  | { type: 'OPEN_PROFILE'; payload: ProfilePayload }
+  | { type: 'NAVIGATE'; url: string };
 
 export type ChatMessageProps = ChatMessageData & {
   roomId: string; // 페이지에서 주입
@@ -247,23 +253,6 @@ function renderSystemBlock(props: ChatMessageProps) {
       );
     }
 
-    case 'noShowReport':
-      return (
-        <ActionCard
-          $width={190}
-          onClick={() => props.onAction?.({ type: 'OPEN_NO_SHOW' })}
-        >
-          <ActionTitleWrapper>
-            <img src="/svgs/chat/noshow-caution.svg" alt="caution" />
-            <ActionTitle>{SYSTEM_CARD.noShowTitle}</ActionTitle>
-          </ActionTitleWrapper>
-          <ActionDesc>{SYSTEM_CARD.noShowDesc}</ActionDesc>
-          <ActionButton>
-            <ActionButtonText>노쇼 신고하기</ActionButtonText>
-          </ActionButton>
-        </ActionCard>
-      );
-
     case 'cafeList':
       const payload = props.payload as CafeListPayload | undefined;
       const names = payload?.cafes?.map((c) => c.name).join(', ') ?? '';
@@ -295,19 +284,38 @@ function renderSystemBlock(props: ChatMessageProps) {
         </ActionCard>
       );
 
-    case 'feedback':
+    case 'actionCard':
+      const actionPayload = props.payload as SystemCardPayload | undefined;
+      if (!actionPayload) return null;
+
+      const width = actionPayload.cardType === 'noshow' ? 190 : 160;
+
       return (
         <ActionCard
-          $width={160}
-          onClick={() => props.onAction?.({ type: 'OPEN_FEEDBACK' })}
+          $width={width}
+          onClick={() =>
+            props.onAction?.({
+              type: 'NAVIGATE',
+              url: actionPayload.button.url,
+            })
+          }
         >
-          <ActionTitle>
-            <img src="/svgs/chat/feedback.svg" alt="feedback" />
-            오늘의 잇팅 피드백
-          </ActionTitle>
-          <ActionDesc>{SYSTEM_CARD.feedbackDesc}</ActionDesc>
+          {actionPayload.cardType === 'noshow' ? (
+            <ActionTitleWrapper>
+              <img src="/svgs/chat/noshow-caution.svg" alt="caution" />
+              <ActionTitle>노쇼 신고</ActionTitle>
+            </ActionTitleWrapper>
+          ) : actionPayload.cardType === 'cafe_recommend' ? (
+            <ActionTitle>제휴 카페 리스트</ActionTitle>
+          ) : (
+            <ActionTitle>
+              <img src="/svgs/chat/feedback.svg" alt="feedback" />
+              오늘의 잇팅 피드백
+            </ActionTitle>
+          )}
+          <ActionDesc>{actionPayload.body}</ActionDesc>
           <ActionButton>
-            <ActionButtonText>피드백하기</ActionButtonText>
+            <ActionButtonText>{actionPayload.button.label}</ActionButtonText>
           </ActionButton>
         </ActionCard>
       );

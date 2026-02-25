@@ -8,8 +8,15 @@ import {
   getSendbirdInstance,
 } from '@/lib/sendbird/client';
 import { useParams, usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import {
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import styled from 'styled-components';
+import { ChatRoomInfo } from '@/type/chat';
 
 type RoomTitleState = { main: string; count: string };
 
@@ -21,6 +28,7 @@ export default function ChatRoomLayout({
   const pathname = usePathname();
   const params = useParams<{ chatRoom: string }>();
   const roomId = params?.chatRoom ? decodeURIComponent(params.chatRoom) : '';
+  const [roomInfo, setRoomInfo] = useState<ChatRoomInfo | null>(null);
 
   const { me, isLoaded } = useUser();
 
@@ -29,7 +37,7 @@ export default function ChatRoomLayout({
 
   const hideChatBar = pathname.endsWith('/cafe');
 
-  // ✅ main / count 분리 상태
+  // main / count 분리 상태
   const [roomTitle, setRoomTitle] = useState<RoomTitleState>({
     main: '채팅방',
     count: '',
@@ -42,11 +50,12 @@ export default function ChatRoomLayout({
 
     const run = async () => {
       try {
-        // ✅ 1) /chat/rooms로 제목 세팅
+        // 1) /chat/rooms로 제목 세팅
         const res = await getChatRooms();
         const r = (res.rooms ?? []).find((x: any) => x.channel_url === roomId);
 
         if (!cancelled && r) {
+          setRoomInfo(r);
           const { main, count } = formatRoomTitle({
             date: r?.matched_slot?.date,
             hour: r?.matched_slot?.hour,
@@ -59,7 +68,7 @@ export default function ChatRoomLayout({
           setRoomTitle({ main: '채팅방', count: '' });
         }
 
-        // ✅ 2) Sendbird connect + channel attach
+        // 2) Sendbird connect + channel attach
         await ensureSendbirdConnected(me.id, me.name);
         const sb = getSendbirdInstance();
         const channel = await sb.groupChannel.getChannel(roomId);
@@ -81,6 +90,10 @@ export default function ChatRoomLayout({
       cancelled = true;
     };
   }, [isLoaded, me?.id, me?.name, roomId]);
+
+  const childrenWithProps = isValidElement(children)
+    ? cloneElement(children as any, { roomInfo })
+    : children;
 
   const sendMessage = async () => {
     const text = message.trim();
@@ -124,7 +137,7 @@ export default function ChatRoomLayout({
         <RightSlot />
       </Header>
 
-      <Content style={{ marginBottom: '15px' }}>{children}</Content>
+      <Content style={{ marginBottom: '15px' }}>{childrenWithProps}</Content>
 
       {!hideChatBar && (
         <ChatInputContainer>

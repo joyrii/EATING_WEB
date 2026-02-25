@@ -1,204 +1,110 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-
-import ChatMessage, {
-  type ChatMessageData,
-  type RestaurantPayload,
-  type CafeListPayload,
-  type ChatAction,
-} from '@/components/chat/ChatMessage';
-import IceBreakingModal from '@/components/chat/IceBreakingModal';
-import RestaurantModal from '@/components/chat/RestaurantModal';
-import ProfileModal from '@/components/chat/ProfileModal';
-
-import { useUser } from '@/context/userContext';
-import {
-  ensureSendbirdConnected,
-  getSendbirdInstance,
-} from '@/lib/sendbird/client';
-
-import { GroupChannelHandler } from '@sendbird/chat/groupChannel';
-import type { BaseMessage } from '@sendbird/chat/message';
-
-import { toKstIso } from '@/lib/sendbird/channelMeta';
-import { getRestaurants, getRestaurantById } from '@/api/application';
+import { getRestaurantById, getRestaurants } from '@/api/application';
 import {
   getChatRooms,
   getIceBreakingQuestions,
   joinChat,
 } from '@/api/matching';
+import ChatMessage, {
+  CafeListPayload,
+  ChatAction,
+  ChatMessageData,
+  RestaurantPayload,
+} from '@/components/chat/ChatMessage';
+import { useUser } from '@/context/userContext';
+import { toKstIso } from '@/lib/sendbird/channelMeta';
+import {
+  ensureSendbirdConnected,
+  getSendbirdInstance,
+} from '@/lib/sendbird/client';
+import { ChatRoomInfo } from '@/type/chat';
+import { GroupChannelHandler } from '@sendbird/chat/groupChannel';
+import { AdminMessage, BaseMessage } from '@sendbird/chat/message';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import RestaurantModal from '@/components/chat/RestaurantModal';
+import IceBreakingModal from '@/components/chat/IceBreakingModal';
+import ProfileModal from '@/components/chat/ProfileModal';
 
-const DEFAULT_PROFILE_URL = '/images/chat/profile-default-.png';
-
-function pickDefaultProfileUrlByUserId(userId: string) {
-  // ⚠️ 원본 로직 유지 (DEFAULT_PROFILE_URL이 배열이라면 그대로 동작)
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++)
-    hash = (hash * 31 + userId.charCodeAt(i)) >>> 0;
-  return (DEFAULT_PROFILE_URL as any)[
-    hash % (DEFAULT_PROFILE_URL as any).length
-  ];
+// 기본 프로필 이미지 설정 (모든 사용자)
+const DEFAULT_PROFILE_IMAGE_URL = '/images/chat/profile-default-3.png';
+function setDefaultProfileImage(url?: string) {
+  return url && url.trim() !== '' ? url : DEFAULT_PROFILE_IMAGE_URL;
 }
 
-type ApiRoom = {
-  group_id: string;
-  channel_url: string; // 예: match_4JM1S2
-  chat_code: string; // 예: 4JM1S2
-  matched_slot: { date: string; hour: number };
-  restaurant: { id: string; name: string };
-  member_count: number;
-  members: { user_id: string; name: string; profile_image?: string }[];
-  status: string;
-  created_at: string;
-};
-
-function extractLastMessageText(last: any): string {
-  if (!last) return '';
-  if (typeof last.message === 'string') return last.message;
-  if (last.url) return '[파일]';
-  return '';
-}
-
-export default function ChatRoomClient() {
-  const params = useParams<{ chatRoom: string }>();
-  const roomId = params?.chatRoom ? decodeURIComponent(params.chatRoom) : ''; // ✅ channel_url or sendbird url
-  const searchParams = useSearchParams();
-  const isSystemDebug = searchParams?.get('debug') === 'system';
-
-  const { me, isLoaded } = useUser();
+export default function ChatRoomClient({
+  roomInfo,
+}: {
+  roomInfo: ChatRoomInfo;
+}) {
   const router = useRouter();
 
-  const [sbMessages, setSbMessages] = useState<BaseMessage[]>([]);
-  const [localSystemCards, setLocalSystemCards] = useState<ChatMessageData[]>(
-    [],
-  );
+  // 채팅방 ID
+  const params = useParams<{ chatRoom: string }>();
+  const roomId = params?.chatRoom ? decodeURIComponent(params.chatRoom) : '';
 
+  // 내 정보
+  const { me, isLoaded } = useUser();
+
+  // 채팅방 메타 정보 상태
+  const [roomMeta, setRoomMeta] = useState<ChatRoomInfo | null>(null);
+  const [appointmentAtISO, setAppointmentAtISO] = useState<string>(''); // 카페 리스트 할인 시간 설정용
+
+  // 채팅 내용 가져오기
+  const [messages, setMessages] = useState<ChatMessageData[]>([]);
+
+  // 중복 방지
   const channelRef = useRef<any>(null);
   const handlerIdRef = useRef('');
-  const handledSystemMessageIdsRef = useRef<Set<string>>(new Set());
+  const seenMessageIdsRef = useRef<Set<string>>(new Set());
+  const restaurantCacheRef = useRef<Map<string, RestaurantPayload>>(new Map());
+  const selectedRestaurantCacheRef = useRef<RestaurantPayload | null>(null);
+  const cafeListCacheRef = useRef<CafeListPayload | null>(null);
 
-  const [roomMeta, setRoomMeta] = useState<ApiRoom | null>(null);
-
-  const [appointmentAtISO, setAppointmentAtISO] = useState<string>('');
-  const [restaurantName, setRestaurantName] = useState<string>('');
-
-  const [cafesPayload, setCafesPayload] = useState<CafeListPayload | null>(
-    null,
-  );
-
-  // ✅ R5에서 사용할 "풀" payload
-  const [restaurantPayload, setRestaurantPayload] =
-    useState<RestaurantPayload | null>(null);
-
-  // ✅ 디버그 fallback
-  const [debugRestaurantName, setDebugRestaurantName] =
-    useState<string>('학생식당');
-
+  // 모달
   const [restaurantModalOpen, setRestaurantModalOpen] = useState(false);
-  const [iceBreakingModalOpen, setIceBreakingModalOpen] = useState(false);
   const [iceBreakingTopics, setIceBreakingTopics] = useState<string[]>([]);
+  const [iceBreakingModalOpen, setIceBreakingModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
-  const [selectedRestaurant, setSelectedRestaurant] = useState<null | {
-    id: string;
-    name: string;
-    category: string;
-    benefit: string;
-    menu: string;
-    imageUrl: string;
-  }>(null);
+  // Location Info
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<RestaurantPayload | null>(null);
+  // Cafe List
+  const [cafes, setCafes] = useState<CafeListPayload | null>(null);
 
-  const handleAction = (action: ChatAction) => {
-    switch (action.type) {
-      case 'OPEN_CAFE_LIST':
-        router.push(
-          action.payload.redirectUrl +
-            (appointmentAtISO
-              ? `?appointmentAt=${encodeURIComponent(appointmentAtISO)}`
-              : ''),
-        );
-        break;
-      default:
-        break;
-    }
-  };
-
-  // -------------------------
-  // ✅ 카페 정보 가져오기 (하드코딩 금지, 서버 기반)
-  // -------------------------
-  useEffect(() => {
-    let cancelled = false;
-
-    const run = async () => {
-      try {
-        const restaurants = await getRestaurants();
-        const cafes = (restaurants ?? [])
-          .filter((r: any) => String(r.category).toLowerCase() === '카페')
-          .map((r: any) => ({
-            id: String(r.id),
-            name: String(r.name),
-          }))
-          .slice(0, 3);
-
-        const payload: CafeListPayload = {
-          cafes,
-          redirectUrl: `/chat/${encodeURIComponent(roomId)}/cafe`,
-        };
-
-        if (!cancelled) setCafesPayload(payload);
-      } catch (e) {
-        console.error('Failed to load cafes:', e);
-        if (!cancelled)
-          setCafesPayload({
-            cafes: [],
-            redirectUrl: `/chat/${encodeURIComponent(roomId)}/cafe`,
-          });
-      }
-    };
-
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [roomId]);
-
-  // -------------------------
-  // ✅ /chat/rooms 로드 → 현재 방 메타 세팅 (channel_url === roomId)
-  // -------------------------
+  // 채팅방 메타 정보 가져오기
   useEffect(() => {
     if (!isLoaded || !me?.id || !roomId) return;
-
     let cancelled = false;
 
     (async () => {
       try {
         const res = await getChatRooms();
-        const rooms = (res?.rooms ?? []) as ApiRoom[];
         const found =
-          rooms.find((r) => String(r.channel_url) === String(roomId)) ?? null;
+          (res?.rooms ?? []).find(
+            (r) => String(r.channel_url) === String(roomId),
+          ) ?? null; // 현재 채팅방
 
         if (cancelled) return;
 
-        setRoomMeta(found);
+        setRoomMeta(found); // 채팅방 메타 정보 상태 업데이트
 
         if (found) {
           setAppointmentAtISO(
-            toKstIso(found.matched_slot.date, found.matched_slot.hour),
+            toKstIso(found.matched_slot?.date, found.matched_slot?.hour),
           );
-          setRestaurantName(found.restaurant?.name ?? '');
         } else {
-          setAppointmentAtISO('');
-          setRestaurantName('');
+          // 채팅방 정보가 없는 경우
+          router.replace('/matching');
         }
-      } catch (e) {
-        console.error('Failed to load /chat/rooms meta:', e);
+      } catch (error) {
+        console.error('Failed to fetch chat rooms', error);
         if (!cancelled) {
           setRoomMeta(null);
-          setAppointmentAtISO('');
-          setRestaurantName('');
+          router.replace('/matching');
         }
       }
     })();
@@ -208,47 +114,37 @@ export default function ChatRoomClient() {
     };
   }, [isLoaded, me?.id, roomId]);
 
-  // -------------------------
-  // ✅ restaurant.id로 상세 조회 → RestaurantPayload 풀로 채움
-  // 응답 스키마:
-  // { id, name, category, promotion, image_url }
-  // -------------------------
+  // 매장 정보 가져오기
   useEffect(() => {
-    if (!roomMeta?.restaurant?.id) {
-      setRestaurantPayload(null);
-      return;
-    }
-
+    const id = roomMeta?.restaurant?.id;
+    if (!id) return;
     let cancelled = false;
 
     (async () => {
       try {
-        const data = await getRestaurantById(roomMeta.restaurant.id);
+        const res = await getRestaurants();
+        const found = res.find((r) => String(r.id) === String(id)) ?? null;
+        if (!found) return null;
 
-        const payload: RestaurantPayload = {
-          id: String(data.id),
-          name: String(data.name),
-          category: String(data.category ?? ''),
-          benefit: String(data.promotion ?? ''), // ✅ promotion → benefit
-          menu: '', // 응답에 없으므로 빈값
-          imageUrl: String(data.image_url ?? ''), // ✅ image_url → imageUrl
+        const data = await getRestaurantById(String(id));
+
+        const restaurantData: RestaurantPayload = {
+          id: found.id,
+          name: found.name,
+          category: found.category,
+          benefit: data.promotion,
+          menu: found.menu_items[0].name,
+          imageUrl: found.image_url,
         };
 
-        if (!cancelled) setRestaurantPayload(payload);
-      } catch (e) {
-        console.error('Failed to load restaurant detail:', e);
-
-        // 실패해도 최소 정보는 유지 (카드는 뜨게)
         if (!cancelled) {
-          setRestaurantPayload({
-            id: String(roomMeta.restaurant.id),
-            name: String(roomMeta.restaurant?.name ?? ''),
-            category: '',
-            benefit: '',
-            menu: '',
-            imageUrl: '',
-          });
+          restaurantCacheRef.current.set(String(id), restaurantData);
+          setSelectedRestaurant(restaurantData);
+          selectedRestaurantCacheRef.current = restaurantData;
         }
+      } catch (error) {
+        console.error('Failed to build restaurant payload', error);
+        return null;
       }
     })();
 
@@ -257,106 +153,225 @@ export default function ChatRoomClient() {
     };
   }, [roomMeta?.restaurant?.id]);
 
-  // -------------------------
-  // ✅ 공통: "메시지 1개 들어왔을 때" 처리
-  // -------------------------
-  const processIncomingMessage = (message: BaseMessage) => {
-    setSbMessages((prev) => [...prev, message]);
+  // 카페 정보 불러오기
+  async function primeCafeList() {
+    if (cafeListCacheRef.current?.cafes?.length) return;
 
-    if (isBackendSystemMessage(message)) {
-      // 디버그에서는 payload 없으면 fallback name으로라도 구성
-      const effectiveRestaurantPayload: RestaurantPayload | null = isSystemDebug
-        ? (restaurantPayload ??
-          ({
-            id: roomMeta?.restaurant?.id
-              ? String(roomMeta.restaurant.id)
-              : 'debug',
-            name: restaurantName || debugRestaurantName,
-            category: '',
-            benefit: '',
-            menu: '',
-            imageUrl: '',
-          } as RestaurantPayload))
-        : restaurantPayload;
+    const restaurants = await getRestaurants();
+    const cafes = (restaurants ?? [])
+      .filter((r) => r.category === '카페')
+      .map((r) => ({ id: r.id, name: r.name }))
+      .slice(0, 3);
 
-      const cards = buildCardsForSystemMessage({
-        m: message,
-        roomId,
-        restaurantPayload: effectiveRestaurantPayload,
-        cafesPayload,
-        handled: handledSystemMessageIdsRef.current,
-      });
+    const cafeData: CafeListPayload = {
+      cafes,
+      redirectUrl: `/chat/${encodeURIComponent(roomId)}/cafe`,
+    };
 
-      if (cards.length > 0) setLocalSystemCards((prev) => [...prev, ...cards]);
+    cafeListCacheRef.current = cafeData;
+    setCafes(cafeData);
+  }
+
+  // safe parse
+  function safeParse(raw: any) {
+    try {
+      return JSON.parse(raw || '{}');
+    } catch {
+      return {};
     }
+  }
+
+  // Sendbird -> UI
+  function renderMessage(
+    message: BaseMessage,
+    myUserId: string,
+  ): ChatMessageData {
+    const createdAtISO = new Date(message.createdAt).toISOString();
+
+    // 시스템 메시지
+    if (message.isAdminMessage()) {
+      return {
+        id: String((message as any).messageId ?? createdAtISO),
+        senderType: 'system',
+        messageType: 'text',
+        content: (message as any).message ?? '',
+        createdAt: createdAtISO,
+      };
+    }
+
+    // 유저 메시지
+    const sender = (message as any).sender;
+    const senderId: string | undefined = sender?.userId;
+    const senderName: string | undefined = sender?.nickname;
+    const senderProfileUrl = setDefaultProfileImage(sender?.profileUrl);
+    const isMe = senderId === myUserId;
+
+    return {
+      id: String((message as any).messageId ?? createdAtISO),
+      senderType: isMe ? 'user' : 'other',
+      senderId,
+      senderName,
+      profileImageUrl: senderProfileUrl,
+      messageType: 'text',
+      content: (message as any).message ?? '',
+      createdAt: createdAtISO,
+    };
+  }
+
+  // 메시지 1개 처리
+  const processIncomingMessage = async (message: BaseMessage) => {
+    if (!me?.id) return;
+
+    const key = String(
+      (message as any).messageId ??
+        (message as any).reqId ??
+        (message as any).createdAt ??
+        '',
+    );
+    if (key && seenMessageIdsRef.current.has(key)) return;
+    if (key) seenMessageIdsRef.current.add(key);
+
+    const createdAtISO = new Date(
+      (message as any).createdAt ?? Date.now(),
+    ).toISOString();
+
+    // 시스템 메시지
+    if (message.isAdminMessage()) {
+      const admin = message as AdminMessage;
+      const data = safeParse((admin as any).data);
+
+      // 카드형
+      if ((admin as any).customType === 'SYSTEM_CARD') {
+        // 카페 리스트 예외
+        if (data?.type === 'cafe_recommend') {
+          const textMsg: ChatMessageData = {
+            id: String((admin as any).messageId ?? createdAtISO),
+            senderType: 'system',
+            messageType: 'text',
+            content: (admin as any).message ?? '',
+            createdAt: createdAtISO,
+          };
+          let payload: CafeListPayload | null =
+            cafes ?? cafeListCacheRef.current ?? null;
+
+          if (payload) cafeListCacheRef.current = payload;
+
+          const next: ChatMessageData[] = [textMsg];
+
+          if (payload?.cafes && payload?.redirectUrl) {
+            next.push({
+              id: `card-${String((admin as any).messageId ?? createdAtISO)}`,
+              senderType: 'system',
+              messageType: 'cafeList',
+              payload,
+              createdAt: new Date(
+                new Date(createdAtISO).getTime() + 1,
+              ).toISOString(),
+            });
+          }
+
+          setMessages((prev) => [...prev, ...next]);
+          return;
+        }
+
+        const mapped: ChatMessageData = {
+          id: String((admin as any).messageId ?? createdAtISO),
+          senderType: 'system',
+          messageType: 'actionCard',
+          payload: {
+            cardType: data.type,
+            body: String(data.body ?? ''),
+            button: {
+              label: String(data.button?.label ?? ''),
+              url: String(data.button?.url ?? ''),
+            },
+          } as any,
+          createdAt: createdAtISO,
+        };
+        setMessages((prev) => [...prev, mapped]);
+        return;
+      }
+
+      // location 카드형 (텍스트 + 매장 카드)
+      if (
+        (admin as any).customType === 'SYSTEM_TEXT' &&
+        data?.type === 'location'
+      ) {
+        // (A) 텍스트 버블
+        const textMsg: ChatMessageData = {
+          id: String((admin as any).messageId ?? createdAtISO),
+          senderType: 'system',
+          messageType: 'text',
+          content: (admin as any).message ?? '',
+          createdAt: createdAtISO,
+        };
+
+        // (B) restaurant 카드
+        let payload: RestaurantPayload | null = null;
+
+        if (data?.restaurant_id) {
+          payload = selectedRestaurantCacheRef.current;
+
+          if (payload) setSelectedRestaurant(payload);
+          selectedRestaurantCacheRef.current = payload;
+        } else {
+          payload = selectedRestaurantCacheRef.current;
+        }
+
+        const next: ChatMessageData[] = [textMsg];
+
+        if (payload?.id && payload?.name) {
+          next.push({
+            id: `card-${String((admin as any).messageId ?? createdAtISO)}`,
+            senderType: 'system',
+            messageType: 'restaurant',
+            payload,
+            createdAt: new Date(
+              new Date(createdAtISO).getTime() + 1,
+            ).toISOString(),
+          });
+        }
+
+        setMessages((prev) => [...prev, ...next]);
+        return;
+      }
+
+      // 기타 시스템 메시지
+      setMessages((prev) => [...prev, renderMessage(message, me.id)]);
+      return;
+    }
+
+    // 유저 메시지
+    setMessages((prev) => [...prev, renderMessage(message, me.id)]);
   };
 
-  // -------------------------
-  // ✅ 메시지 히스토리 로드 + SYSTEM 카드 재구성
-  // -------------------------
-  const fetchMessages = async () => {
-    const channel = channelRef.current;
-    if (!channel) return;
-
-    const prevQuery = channel.createPreviousMessageListQuery({
-      limit: 50,
-      reverse: false,
-    });
-
-    const list = (await prevQuery.load()) as BaseMessage[];
-    setSbMessages(list);
-
-    const effectiveRestaurantPayload: RestaurantPayload | null = isSystemDebug
-      ? (restaurantPayload ??
-        ({
-          id: roomMeta?.restaurant?.id
-            ? String(roomMeta.restaurant.id)
-            : 'debug',
-          name: restaurantName || debugRestaurantName,
-          category: '',
-          benefit: '',
-          menu: '',
-          imageUrl: '',
-        } as RestaurantPayload))
-      : restaurantPayload;
-
-    const cards = buildCardsFromSystemMessages({
-      sbMessages: list,
-      roomId,
-      restaurantPayload: effectiveRestaurantPayload,
-      cafesPayload,
-      handled: handledSystemMessageIdsRef.current,
-    });
-
-    setLocalSystemCards(cards);
-  };
-
-  // -------------------------
-  // ✅ sendbird init + channel + messages + handler
-  // - "Channel not found"면 joinChat(code=chat_code)로 복구
-  // -------------------------
+  // 초기화 및 메시지 수신 핸들러
   useEffect(() => {
     if (!isLoaded || !me?.id || !roomId) return;
-
     let cancelled = false;
+
+    // 초기화
+    seenMessageIdsRef.current = new Set();
+    setMessages([]);
 
     const run = async () => {
       try {
         await ensureSendbirdConnected(me.id, me.name);
+        await primeCafeList();
         const sb = getSendbirdInstance();
 
         let channelUrlToOpen = roomId;
         let channel: any = null;
 
+        // 채널 열기 시도
         try {
           channel = await sb.groupChannel.getChannel(channelUrlToOpen);
         } catch (err: any) {
-          const msg = String(err?.message ?? err).toLowerCase();
+          const msg = String(err?.message ?? '').toLowerCase();
 
-          // ✅ Channel not found → joinChat으로 복구
+          // 채널을 찾을 수 없는 경우
           if (msg.includes('channel') && msg.includes('not found')) {
             const code = roomMeta?.chat_code;
-
             if (!code) throw err;
 
             const joinRes = await joinChat({
@@ -364,18 +379,15 @@ export default function ChatRoomClient() {
               user_id: me.id,
               nickname: me.name,
             });
+            const realUrl = String(joinRes.channel_url ?? '');
+            if (!realUrl) throw err;
 
-            const realChannelUrl = String(joinRes?.channel_url ?? '');
-
-            if (!realChannelUrl) throw err;
-
-            // URL 교정 (roomId가 진짜 sendbird url이 아닐 수 있음)
-            if (realChannelUrl !== roomId) {
-              router.replace(`/chat/${encodeURIComponent(realChannelUrl)}`);
+            if (realUrl !== roomId) {
+              router.replace(`/chat/${encodeURIComponent(realUrl)}`);
               return;
             }
 
-            channelUrlToOpen = realChannelUrl;
+            channelUrlToOpen = realUrl;
             channel = await sb.groupChannel.getChannel(channelUrlToOpen);
           } else {
             throw err;
@@ -383,21 +395,31 @@ export default function ChatRoomClient() {
         }
 
         if (cancelled) return;
-
         channelRef.current = channel;
 
-        await fetchMessages();
+        // 기존 메시지 로드
+        const q = channel.createPreviousMessageListQuery({
+          limit: 50,
+          reverse: false,
+        });
+        const list = (await q.load()) as BaseMessage[];
+        if (cancelled) return;
+        for (const m of list) {
+          if (cancelled) return;
+          await processIncomingMessage(m);
+        }
 
+        // 새 메시지 수신 핸들러 등록
         const safeId = btoa(
           unescape(encodeURIComponent(channelUrlToOpen)),
         ).slice(0, 40);
-        const handlerId = `room-${safeId}`;
+        const handlerId = `handler-${safeId}`;
         handlerIdRef.current = handlerId;
 
         const handler = new GroupChannelHandler({
-          onMessageReceived: (ch, message) => {
+          onMessageReceived: (ch, msg) => {
             if (ch.url !== channelUrlToOpen) return;
-            processIncomingMessage(message as BaseMessage);
+            void processIncomingMessage(msg as BaseMessage);
           },
         });
 
@@ -406,15 +428,11 @@ export default function ChatRoomClient() {
         try {
           channel.markAsRead?.();
         } catch {}
-      } catch (e) {
-        console.error('Failed to init chat room:', e);
-        if (!cancelled) {
-          setSbMessages([]);
-          setLocalSystemCards([]);
-        }
+      } catch (error) {
+        console.error('Failed to initialize chat room:', error);
+        if (!cancelled) setMessages([]);
       }
     };
-
     run();
 
     return () => {
@@ -425,82 +443,61 @@ export default function ChatRoomClient() {
         if (id) sb.groupChannel.removeGroupChannelHandler(id);
       } catch {}
       handlerIdRef.current = '';
+      channelRef.current = null;
     };
-    // roomMeta.chat_code 준비되면 복구 로직이 가능하니 의존성에 포함
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, me?.id, me?.name, roomId, roomMeta?.chat_code]);
 
-  // send 이후 강제 새로고침
+  // send 이후 새로고침
   useEffect(() => {
-    const onRefresh = () => fetchMessages();
-    window.addEventListener('chat:refresh', onRefresh);
-    return () => window.removeEventListener('chat:refresh', onRefresh);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const onRefresh = () => {
+      window.location.reload();
+    };
+    window.addEventListener('refreshChat', onRefresh);
+    return () => window.removeEventListener('refreshChat', onRefresh);
   }, []);
 
-  // -------------------------
-  // ✅ DEBUG: 버튼 누르면 SYSTEM 텍스트 도착을 "가짜 주입"
-  // -------------------------
-  const injectSystem = (kind: 'R5' | 'R6' | 'R7' | 'R8') => {
-    const now = Date.now();
-    const msgId = `debug-${kind}-${now}-${Math.random().toString(16).slice(2)}`;
-
-    const effectiveRestaurantName = restaurantName || debugRestaurantName;
-
-    const textMap: Record<typeof kind, string> = {
-      R5: `🎉 매칭이 확정되었어요!\n\n📍 장소: ${effectiveRestaurantName}\n📅 일시: ${
-        appointmentAtISO ? formatKstDebug(appointmentAtISO) : '2026-03-06 12시'
-      }\n\n채팅방에서 먼저 인사를 나눠보세요! 👋`,
-      R6: `👋 오늘 약속이 있어요!\n\n아직 인사를 안 했다면, 먼저 인사해보는 건 어떨까요?\n어색함을 줄이는 데 도움이 될 거예요 😊`,
-      R7: `⏰ 약속 시간이 20분 지났어요.\n\n아직 도착하지 않은 멤버가 있나요?\n노쇼 신고는 마이페이지 > 신고하기에서 할 수 있어요.`,
-      R8: `🍽️ 맛있게 드셨나요?\n\n☕ 2차로 카페는 어떨까요?\n\n📝 오늘 만남은 어땠나요?\n👉 평가하러 가기`,
-    };
-
-    const fake = {
-      messageId: msgId,
-      createdAt: now,
-      message: textMap[kind],
-      customType: 'SYSTEM',
-    } as any as BaseMessage;
-
-    processIncomingMessage(fake);
+  // Action Handler
+  const handleAction = (action: ChatAction) => {
+    switch (action.type) {
+      case 'OPEN_RESTAURANT':
+        // 식당 정보 모달 열기
+        break;
+      case 'OPEN_PROFILE':
+        // 프로필 모달 열기
+        break;
+      case 'OPEN_CAFE_LIST':
+        router.push(
+          action.payload.redirectUrl +
+            (appointmentAtISO
+              ? `?appointmentAt=${encodeURIComponent(appointmentAtISO)}`
+              : ''),
+        );
+        break;
+      case 'NAVIGATE':
+        router.push((action as any).url);
+      default:
+        break;
+    }
   };
 
-  const resetDebugView = () => {
-    handledSystemMessageIdsRef.current.clear();
-    setSbMessages([]);
-    setLocalSystemCards([]);
-  };
-
-  // -------------------------
-  // ✅ sendbird → ui
-  // -------------------------
-  const uiMessages: ChatMessageData[] = useMemo(() => {
-    if (!me?.id) return [];
-    return sbMessages
-      .map((m) => toChatMessageData(m, me.id))
-      .filter(Boolean) as ChatMessageData[];
-  }, [sbMessages, me?.id]);
-
-  const merged: ChatMessageData[] = useMemo(() => {
-    const all = [...uiMessages, ...localSystemCards];
-    all.sort((a, b) => {
-      const ta = new Date(a.createdAt).getTime();
-      const tb = new Date(b.createdAt).getTime();
-      if (ta !== tb) return ta - tb;
-      return a.id.localeCompare(b.id);
-    });
+  // 메시지 정렬 및 그룹핑
+  const merged = useMemo(() => {
+    const all = [...messages];
+    all.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
     return all;
-  }, [uiMessages, localSystemCards]);
+  }, [messages]);
 
-  // 아이스브레이킹
+  // 아이스 브레이킹 주제
   useEffect(() => {
     (async () => {
       try {
         const res = await getIceBreakingQuestions();
         setIceBreakingTopics(res.map((q) => q.question));
       } catch (error) {
-        console.error('Failed to fetch ice-breaking questions', error);
+        console.error('Failed to fetch ice breaking questions:', error);
       }
     })();
   }, []);
@@ -508,37 +505,32 @@ export default function ChatRoomClient() {
   return (
     <Wrapper>
       {merged.length > 0 ? (
-        merged.map((message, index) => {
-          const currentDateKey = getDateKey(message.createdAt);
+        merged.map((msg, idx) => {
+          const currentDateKey = getDateKey(msg.createdAt);
           const prevDateKey =
-            index > 0 ? getDateKey(merged[index - 1].createdAt) : null;
-          const showDateDivider = index === 0 || currentDateKey !== prevDateKey;
+            idx > 0 ? getDateKey(merged[idx - 1].createdAt) : null;
+          const showDateDivider = idx === 0 || currentDateKey !== prevDateKey;
 
-          const isGroupFirst = isFirstOfGroup(merged, index);
-          const isGroupLast = isLastOfGroup(merged, index);
+          const isGroupFirst = isFirstOfGroup(merged, idx);
+          const isGroupLast = isLastOfGroup(merged, idx);
 
           const showSenderName =
             isGroupFirst &&
-            (message.senderType === 'other' || message.senderType === 'system');
-
+            (msg.senderType === 'other' || msg.senderType === 'system');
           const showProfileImage =
             isGroupFirst &&
-            (message.senderType === 'other' || message.senderType === 'system');
-
+            (msg.senderType === 'other' || msg.senderType === 'system');
           const showCreatedAt = isGroupLast;
 
           return (
-            <div key={message.id}>
+            <div key={msg.id}>
               {showDateDivider && (
-                <DateDivider>
-                  {formatDateDivider(message.createdAt)}
-                </DateDivider>
+                <DateDivider>{formatDateDivider(msg.createdAt)}</DateDivider>
               )}
-
               <ChatMessage
-                {...message}
+                {...msg}
                 roomId={roomId}
-                createdAtText={formatChatTime(message.createdAt)}
+                createdAtText={formatChatTime(msg.createdAt)}
                 showCreatedAt={showCreatedAt}
                 showSenderName={showSenderName}
                 showProfileImage={showProfileImage}
@@ -548,7 +540,9 @@ export default function ChatRoomClient() {
           );
         })
       ) : (
-        <EmptyStateText>아직 채팅이 없어요!</EmptyStateText>
+        <EmptyStateText>
+          아직 대화가 없습니다. 첫 메시지를 보내보세요!
+        </EmptyStateText>
       )}
 
       <IceBreaking onClick={() => setIceBreakingModalOpen(true)}>
@@ -576,241 +570,10 @@ export default function ChatRoomClient() {
         isOpen={profileModalOpen}
         onClose={() => setProfileModalOpen(false)}
       />
-
-      {/* ✅ 디버그 모드 UI */}
-      {isSystemDebug && (
-        <DebugPanel>
-          <DebugTitle>DEBUG: SYSTEM UI 테스트 (?debug=system)</DebugTitle>
-
-          <DebugInfo>
-            <div>
-              <strong>roomId:</strong> {roomId}
-            </div>
-            <div>
-              <strong>chat_code:</strong> {roomMeta?.chat_code ?? '(없음)'}
-            </div>
-            <div>
-              <strong>식당명(실제):</strong> {restaurantName || '(없음)'}
-            </div>
-            <div>
-              <strong>식당 payload:</strong>{' '}
-              {restaurantPayload
-                ? `${restaurantPayload.name} / ${restaurantPayload.category} / ${restaurantPayload.benefit}`
-                : '(로딩 전/없음)'}
-            </div>
-            <div>
-              <strong>식당명(디버그 fallback):</strong>{' '}
-              <DebugInput
-                value={debugRestaurantName}
-                onChange={(e) => setDebugRestaurantName(e.target.value)}
-                placeholder="R5 식당카드 테스트용"
-              />
-            </div>
-            <div>
-              <strong>카페(서버):</strong>{' '}
-              {cafesPayload?.cafes?.length
-                ? `${cafesPayload.cafes.length}곳 (${cafesPayload.cafes
-                    .map((c) => c.name)
-                    .join(', ')})`
-                : '(아직 로딩 전이거나 0곳)'}
-            </div>
-          </DebugInfo>
-
-          <DebugButtonRow>
-            <DebugButton onClick={() => injectSystem('R5')}>
-              R5 주입 (텍스트+식당카드)
-            </DebugButton>
-            <DebugButton onClick={() => injectSystem('R6')}>
-              R6 주입 (텍스트만)
-            </DebugButton>
-            <DebugButton onClick={() => injectSystem('R7')}>
-              R7 주입 (텍스트+노쇼카드)
-            </DebugButton>
-            <DebugButton onClick={() => injectSystem('R8')}>
-              R8 주입 (텍스트+카페+피드백)
-            </DebugButton>
-          </DebugButtonRow>
-
-          <DebugButtonDanger onClick={resetDebugView}>
-            화면 초기화
-          </DebugButtonDanger>
-        </DebugPanel>
-      )}
     </Wrapper>
   );
 }
 
-// -------------------------
-// ✅ message → ui message
-// -------------------------
-function toChatMessageData(
-  m: BaseMessage,
-  myUserId: string,
-): ChatMessageData | null {
-  const text = (m as any).message;
-  if (typeof text !== 'string') return null;
-
-  const sender = (m as any).sender;
-  const senderUserId: string | undefined = sender?.userId;
-  const isMe = senderUserId === myUserId;
-
-  const isBackendSystem = isBackendSystemMessage(m);
-
-  if (isBackendSystem) {
-    return {
-      id: String((m as any).messageId ?? `${m.createdAt}`),
-      senderType: 'system',
-      messageType: 'text',
-      content: text,
-      createdAt: new Date(m.createdAt).toISOString(),
-    };
-  }
-
-  return {
-    id: String((m as any).messageId ?? `${m.createdAt}`),
-    senderType: isMe ? 'user' : 'other',
-    messageType: 'text',
-    senderId: senderUserId,
-    senderName: sender?.nickname,
-    profileImageUrl:
-      sender?.profileUrl && sender.profileUrl.trim().length > 0
-        ? sender.profileUrl
-        : pickDefaultProfileUrlByUserId(senderUserId ?? 'unknown'),
-    content: text,
-    createdAt: new Date(m.createdAt).toISOString(),
-  };
-}
-
-// -------------------------
-// ✅ SYSTEM 메시지 판별 + R5/R7/R8 매핑
-// -------------------------
-function isBackendSystemMessage(m: BaseMessage) {
-  const ct = (m as any).customType ?? (m as any).custom_type;
-  return ct === 'SYSTEM';
-}
-
-type SystemKind = 'R5' | 'R7' | 'R8';
-
-function detectSystemKindByText(text: string): SystemKind | null {
-  if (text.includes('매칭이 확정') || text.includes('📍 장소:')) return 'R5';
-  if (text.includes('20분') && (text.includes('노쇼') || text.includes('신고')))
-    return 'R7';
-  if (text.includes('평가') || text.includes('2차') || text.includes('카페'))
-    return 'R8';
-  return null;
-}
-
-function getMessageKey(m: BaseMessage) {
-  return String((m as any).messageId ?? (m as any).createdAt);
-}
-
-function addMs(iso: string, ms: number) {
-  return new Date(new Date(iso).getTime() + ms).toISOString();
-}
-
-/**
- * ✅ SYSTEM 텍스트 다음에 붙을 카드 생성
- * - R5: restaurantPayload(풀)
- * - R7: noShowReport
- * - R8: cafeList → feedback
- */
-function buildCardsForSystemMessage(args: {
-  m: BaseMessage;
-  roomId: string;
-  restaurantPayload: RestaurantPayload | null;
-  cafesPayload: CafeListPayload | null;
-  handled: Set<string>;
-}): ChatMessageData[] {
-  const text = (args.m as any).message;
-  if (typeof text !== 'string') return [];
-
-  const kind = detectSystemKindByText(text);
-  if (!kind) return [];
-
-  const key = getMessageKey(args.m);
-  if (args.handled.has(key)) return [];
-  args.handled.add(key);
-
-  const baseISO = new Date(
-    (args.m as any).createdAt ?? Date.now(),
-  ).toISOString();
-
-  if (kind === 'R5') {
-    if (!args.restaurantPayload?.name) return [];
-
-    return [
-      {
-        id: `sys-card-${key}-restaurant`,
-        senderType: 'system',
-        messageType: 'restaurant',
-        createdAt: addMs(baseISO, 1),
-        payload: args.restaurantPayload,
-      },
-    ];
-  }
-
-  if (kind === 'R7') {
-    return [
-      {
-        id: `sys-card-${key}-noshow`,
-        senderType: 'system',
-        messageType: 'noShowReport',
-        createdAt: addMs(baseISO, 1),
-      },
-    ];
-  }
-
-  const cafePayload: CafeListPayload = args.cafesPayload ?? {
-    cafes: [],
-    redirectUrl: `/chat/${encodeURIComponent(args.roomId)}/cafe`,
-  };
-
-  return [
-    {
-      id: `sys-card-${key}-cafeList`,
-      senderType: 'system',
-      messageType: 'cafeList',
-      createdAt: addMs(baseISO, 1),
-      payload: cafePayload,
-    },
-    {
-      id: `sys-card-${key}-feedback`,
-      senderType: 'system',
-      messageType: 'feedback',
-      createdAt: addMs(baseISO, 2),
-    },
-  ];
-}
-
-function buildCardsFromSystemMessages(args: {
-  sbMessages: BaseMessage[];
-  roomId: string;
-  restaurantPayload: RestaurantPayload | null;
-  cafesPayload: CafeListPayload | null;
-  handled: Set<string>;
-}) {
-  args.handled.clear();
-
-  const cards: ChatMessageData[] = [];
-  for (const m of args.sbMessages) {
-    if (!isBackendSystemMessage(m)) continue;
-
-    const next = buildCardsForSystemMessage({
-      m,
-      roomId: args.roomId,
-      restaurantPayload: args.restaurantPayload,
-      cafesPayload: args.cafesPayload,
-      handled: args.handled,
-    });
-
-    if (next.length > 0) cards.push(...next);
-  }
-  return cards;
-}
-
-// -------------------------
-// 시간/그룹 렌더 유틸
-// -------------------------
 function formatChatTime(createdAt: string) {
   const d = new Date(createdAt);
   return d.toLocaleTimeString('en-US', {
@@ -868,18 +631,6 @@ function isFirstOfGroup(messages: ChatMessageData[], index: number) {
   return getSenderKey(prev) !== getSenderKey(current);
 }
 
-function formatKstDebug(iso: string) {
-  const d = new Date(iso);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const h = d.getHours();
-  return `${y}-${m}-${day} ${h}시`;
-}
-
-// -------------------------
-// styles
-// -------------------------
 const Wrapper = styled.div`
   padding-bottom: 60px;
 `;
