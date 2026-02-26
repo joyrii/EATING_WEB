@@ -15,3 +15,15 @@ export type ChatRoomInfo = {
   status: string;
   created_at: string;
 };
+
+// 프로필 정보
+export type OtherUserProfile = {
+  user_id: string;
+  name: string;
+  department: string;
+  student_id: string;
+  is_verified: boolean;
+  mbti: string;
+  pre_test_result: string;
+  interests: any[];
+};

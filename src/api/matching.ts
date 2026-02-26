@@ -74,3 +74,13 @@ export async function getIceBreakingQuestions(): Promise<
     throw error;
   }
 }
+
+export async function getOtherUserProfile(userId: string) {
+  try {
+    const res = await api.get(`/users/${userId}/profile`);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to fetch other user profile', error);
+    throw error;
+  }
+}

@@ -2,12 +2,25 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
+type UserInfo = {
+  user_id: string;
+  name: string;
+  department: string;
+  student_id: string;
+  is_verified: boolean;
+  mbti: string;
+  pre_test_result: string;
+  interests: any[];
+};
+
 export default function ProfileModal({
   isOpen,
   onClose,
+  userInfo,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  userInfo: UserInfo | null;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -17,48 +30,50 @@ export default function ProfileModal({
 
   if (!mounted || !isOpen) return null;
 
-  const INTERESTS = [
-    '아이돌 덕질',
-    '과외',
-    '동아리',
-    '동아리',
-    '방문학생/교환학생',
-    'Kpop 밴드',
-    '인디밴드',
-  ];
-
   return createPortal(
     <Overlay onClick={onClose}>
       <Modal onClick={(e) => e.stopPropagation()}>
         <Bar />
-        <UserInfo>
-          <ProfileImage
-            src="/images/chat/profile-image-1.jpeg"
-            alt="Profile Image"
-          />
-          <UserInfoDetails>
-            <UserNameWrapper>
-              <UserName>김이름</UserName>
-              <VerificationChip>
-                <VerificationMark
-                  src="/svgs/chat/verification-mark.svg"
-                  alt="Verification Mark"
-                />
-                학교 인증
-              </VerificationChip>
-            </UserNameWrapper>
-            <UserDetail>휴먼기계바이오공학부 26학번</UserDetail>
-            <UserDetail>ISTP</UserDetail>
-          </UserInfoDetails>
-        </UserInfo>
-        <InterestsWrapper>
-          <InterestsTitle>관심사</InterestsTitle>
-          <InterestsList>
-            {INTERESTS.map((interest, index) => (
-              <InterestChip key={index}>#{interest}</InterestChip>
-            ))}
-          </InterestsList>
-        </InterestsWrapper>
+        {!userInfo ? (
+          <LoadingText>사용자 정보를 불러오는 중입니다...</LoadingText>
+        ) : (
+          <>
+            <UserInfo>
+              <ProfileImage
+                src="/images/chat/profile-default-3.png"
+                alt="Profile Image"
+              />
+              <UserInfoDetails>
+                <UserNameWrapper>
+                  <UserName>{userInfo?.name}</UserName>
+                  {userInfo?.is_verified && (
+                    <VerificationChip>
+                      <VerificationMark
+                        src="/svgs/chat/verification-mark.svg"
+                        alt="Verification Mark"
+                      />
+                      학교 인증
+                    </VerificationChip>
+                  )}
+                </UserNameWrapper>
+                <UserDetail>
+                  {userInfo?.department}{' '}
+                  {userInfo?.student_id.slice(0, 2) || '26'}
+                  학번
+                </UserDetail>
+                <UserDetail>{userInfo?.mbti}</UserDetail>
+              </UserInfoDetails>
+            </UserInfo>
+            <InterestsWrapper>
+              <InterestsTitle>관심사</InterestsTitle>
+              <InterestsList>
+                {userInfo?.interests.map((interest, index) => (
+                  <InterestChip key={index}>#{interest}</InterestChip>
+                ))}
+              </InterestsList>
+            </InterestsWrapper>
+          </>
+        )}
       </Modal>
     </Overlay>,
     document.body,
@@ -175,4 +190,11 @@ const InterestChip = styled.span`
   border-radius: 30px;
   margin-right: 11px;
   margin-bottom: 10px;
+`;
+
+const LoadingText = styled.p`
+  font-size: 14px;
+  color: #707070;
+  text-align: center;
+  margin-top: 40px;
 `;
