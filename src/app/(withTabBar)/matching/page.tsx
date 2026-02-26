@@ -18,9 +18,6 @@ import { getChatRooms, joinChat } from '@/api/matching';
 import { ChatRoomInfo } from '@/type/chat';
 import { GroupChannelHandler } from '@sendbird/chat/groupChannel';
 
-// 기본 프로필 이미지
-const DEFAULT_PROFILE_URL = '/images/chat/profile-default-3.png';
-
 function extractLastMessageText(last: any): string {
   if (!last) return '';
   if (typeof last.message === 'string') return last.message;
@@ -59,18 +56,6 @@ export function formatRoomTitle(params: {
   };
 }
 
-type ApiRoom = {
-  group_id: string;
-  channel_url: string; // 예: match_4JM1S2 (서비스 식별자일 수도 있음)
-  chat_code: string; // 예: 4JM1S2 (joinChat에 넣는 값)
-  matched_slot: { date: string; hour: number };
-  restaurant: { id: string; name: string };
-  member_count: number;
-  members: { user_id: string; name: string; profile_image?: string }[];
-  status: string;
-  created_at: string;
-};
-
 type UiRoom = {
   // API 기반
   apiChannelUrl: string;
@@ -98,7 +83,6 @@ export default function Matching() {
   const [isFetching, setIsFetching] = useState(true);
   const fetchingRef = useRef(false);
 
-  // ✅ 클릭 중복 방지
   const enteringRef = useRef(false);
 
   const fetchAll = async () => {
@@ -219,7 +203,6 @@ export default function Matching() {
     };
   }, [isLoaded, me?.id]);
 
-  // ✅ enterChat: 목록에서 클릭할 때도 joinChat을 타고, 응답 channel_url로 이동
   const enterChat = async (room: ChatRoomInfo) => {
     if (!me?.id) return;
     if (enteringRef.current) return;
@@ -228,12 +211,11 @@ export default function Matching() {
 
     try {
       const res = await joinChat({
-        code: room.chat_code, // ✅ 핵심: chat_code로 입장
+        code: room.chat_code,
         user_id: me.id,
         nickname: me.name,
       });
 
-      // ✅ joinChat 응답의 channel_url이 "진짜 sendbird channel url"일 가능성이 높음
       const channelUrl = String(res?.channel_url ?? '');
 
       if (!channelUrl) {

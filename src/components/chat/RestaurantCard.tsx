@@ -48,6 +48,7 @@ const Container = styled.div<{ $width?: string }>`
   border-radius: 10px;
   width: ${(props) => (props.$width ? props.$width : '100%')};
   border: 1px solid #f0f0f0;
+  cursor: pointer;
 `;
 
 const Thumbnail = styled.img`
@@ -73,6 +74,8 @@ const Content = styled.div`
   flex-direction: column;
   margin-left: 13px;
   flex-grow: 1;
+  min-width: 0;
+  overflow: hidden;
 `;
 
 const Title = styled.p`
@@ -89,9 +92,14 @@ const Sub = styled.p`
   font-size: 10px;
   color: #8a8a8a;
 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
   span {
     color: #d6d6d6;
     margin-right: 6px;
+    flex-shrink: 0;
   }
 `;
 
