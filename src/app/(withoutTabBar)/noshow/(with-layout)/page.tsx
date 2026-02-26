@@ -15,10 +15,12 @@ export default function Noshow() {
   return (
     <>
       <List>
-        <ListItem onClick={() => router.push('/noshow/matching')}>
+        <ListItem onClick={() => router.push('/noshow/matching?type=noshow')}>
           노쇼한 사람이 있어요
         </ListItem>
-        <ListItem onClick={() => router.push('/noshow/other')}>
+        <ListItem
+          onClick={() => router.push('/noshow/matching?type=inappropriate')}
+        >
           취지와 다른 목적으로 접근한 사람이 있어요
         </ListItem>
       </List>

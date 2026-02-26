@@ -293,7 +293,7 @@ export default function Matching() {
     );
 
   return (
-    <>
+    <div style={{ minHeight: '100vh', backgroundColor: '#fafafa' }}>
       <Header>
         <HeaderText>잇팅</HeaderText>
         <LogoCharacter alt="logo-character" />
@@ -339,7 +339,7 @@ export default function Matching() {
           <EmptyState />
         )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -357,27 +357,31 @@ function EmptyState() {
   );
 }
 
-const HeaderFont = localFont({
-  src: '../../fonts/Hakgyoansim-Dunggeunmiso-OTF-R.otf',
-  weight: '400',
-});
-
 const EmptyStateFont = localFont({
   src: '../../fonts/Ownglyph-PDH-Regular.ttf',
   weight: '400',
 });
 
-const Header = styled.header`
+const Header = styled.header<{ $variant?: 'logo' | 'title' }>`
   width: 100%;
   background-color: #fafafa;
-  font-family: ${HeaderFont.style.fontFamily};
+  font-family: var(--font-header);
   display: flex;
   flex-direction: row;
   align-items: center;
+  margin-top: 10px;
   padding-block: 8px;
   padding-left: 24px;
   position: sticky;
   top: 0;
+  z-index: 10;
+
+  ${({ $variant }) =>
+    $variant === 'title'
+      ? `justify-content: space-between;
+      padding-block: 15px;
+      padding-right: 24px;`
+      : null}
 `;
 
 const HeaderText = styled.h1`

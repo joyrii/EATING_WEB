@@ -17,6 +17,7 @@ export default function NoshowUser() {
   const matchingId = useParams().matchingId as string;
   const [members, setMembers] = useState([]);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
   // 매칭 정보 가져오기
   useEffect(() => {
@@ -31,9 +32,10 @@ export default function NoshowUser() {
         console.error('Error fetching reportable rooms:', error);
       }
     })();
-  });
+  }, []);
 
   const handleSubmit = async () => {
+    if (submitting) return; // 중복 제출 방지
     (async () => {
       try {
         await submitReport(
@@ -46,6 +48,8 @@ export default function NoshowUser() {
         router.push('/noshow/complete');
       } catch (error) {
         console.error('Error submitting report:', error);
+      } finally {
+        setSubmitting(false);
       }
     })();
   };
@@ -80,10 +84,10 @@ export default function NoshowUser() {
         ))}
       </UserGrid>
       <SubmitButton
-        disabled={selectedUserIds.length === 0}
+        disabled={selectedUserIds.length === 0 || submitting}
         onClick={() => handleSubmit()}
       >
-        제출하기
+        {submitting ? '제출 중...' : '제출하기'}
       </SubmitButton>
     </>
   );

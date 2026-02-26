@@ -12,6 +12,7 @@ export type MatchingListItemProps = {
   onClick?: () => void;
   onChatClick?: () => void;
   onDetailClick?: () => void;
+  onReviewClick?: () => void;
   clickable?: boolean;
 };
 
@@ -33,8 +34,10 @@ export default function MatchingListItem({
   hour,
   currentCount,
   totalCount,
+  onClick,
   onChatClick,
   onDetailClick,
+  onReviewClick,
   clickable = false,
 }: MatchingListItemProps) {
   const formattedDateTime = formatDateTime(date, hour);
@@ -55,12 +58,16 @@ export default function MatchingListItem({
       },
     ],
     match: [
-      { variant: 'review' as const, label: '평가하러 가기', onClick: () => {} },
+      {
+        variant: 'review' as const,
+        label: '평가하러 가기',
+        onClick: () => onReviewClick?.(),
+      },
     ],
   };
 
   return (
-    <MatchingListItemContainer $clickable={clickable}>
+    <MatchingListItemContainer $clickable={clickable} onClick={onClick}>
       <ParticipantsWrapper>
         <Participants>
           {currentCount}명/{totalCount}명

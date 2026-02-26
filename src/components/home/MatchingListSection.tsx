@@ -1,11 +1,10 @@
 import { Section, SectionTitle, MatchingList, Button } from './style';
 import styled from 'styled-components';
 import MatchingListItem from './MatchingListItem';
-import { BaseModal } from '../BaseModal';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import BaseChip from '../BaseChip';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/userContext';
+import MatchingDetailModal from './MatchingDetailModal';
 
 import {
   fetchPendingMatches,
@@ -105,9 +104,20 @@ export default function MatchingListSection() {
     >
   >({});
 
+  const selectedJoinedCount = selectedRoom
+    ? (sbMetaByChannelUrl[selectedRoom.channel_url]?.joinedMemberCount ?? 0)
+    : 0;
+
   // -------------------------
   // 1) list: /chat/rooms
   // -------------------------
+
+  useEffect(() => {
+    if (!isLoaded || !me?.id) return;
+    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, [isLoaded, me?.id]);
+
   useEffect(() => {
     if (!isLoaded || !me?.id) return;
 
@@ -129,7 +139,7 @@ export default function MatchingListSection() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, me?.id, tick]);
+  }, [isLoaded, me?.id]);
 
   // -------------------------
   // 2) modal data: /reviews/pending
@@ -155,7 +165,7 @@ export default function MatchingListSection() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, me?.id, tick]);
+  }, [isLoaded, me?.id]);
 
   // -------------------------
   // 3) sendbird meta
@@ -203,7 +213,7 @@ export default function MatchingListSection() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, me?.id, tick]);
+  }, [isLoaded, me?.id]);
 
   // -------------------------
   // 모달 열기: room 기준으로 pending 매칭해서 상세 보여주기
@@ -305,6 +315,10 @@ export default function MatchingListSection() {
                     totalCount={total}
                     onDetailClick={() => openDetail(room)}
                     onChatClick={() => enterChat(room)}
+                    onReviewClick={() => {
+                      if (getStatusByRoom(room, me?.id) !== 'match') return;
+                      router.replace(`/feedback/${room.group_id}`);
+                    }}
                     clickable
                   />
                 );
@@ -313,125 +327,19 @@ export default function MatchingListSection() {
           </>
         )}
       </Section>
-
-      <BaseModal
+      <MatchingDetailModal
         open={isModalVisible}
         onClose={() => setIsModalVisible(false)}
-        padding="24px 21px"
-      >
-        <div>
-          <ModalMainText>
-            {selectedRoom
-              ? formatSlotTitleFromDateHour(
-                  selectedRoom.matched_slot.date,
-                  selectedRoom.matched_slot.hour,
-                )
-              : ''}
-          </ModalMainText>
-
-          {/* 모달 상세는 /reviews/pending 기반 */}
-          {selectedPending ? (
-            <ModalSubText>
-              {selectedPending.student_years_text},{' '}
-              {selectedPending.personality_text}
-            </ModalSubText>
-          ) : (
-            <ModalSubText>
-              {/* pending 아직 로딩중이거나 매칭 실패했을 때 */}
-              {pendingLoading
-                ? '상세 정보를 불러오는 중...'
-                : '상세 정보를 찾지 못했어요.'}
-            </ModalSubText>
-          )}
-        </div>
-
-        <TagsContainer>
-          {(selectedPending?.common_interests ?? []).map((interest, idx) => (
-            <BaseChip key={idx} label={interest} />
-          ))}
-        </TagsContainer>
-
-        <ParticipantsInfoContainer>
-          <ParticipantsInfoText>
-            총 정원 {selectedRoom?.member_count ?? 0}명
-          </ParticipantsInfoText>
-          <ParticipantsInfoText>
-            입장 인원{' '}
-            {selectedRoom
-              ? (sbMetaByChannelUrl[selectedRoom.channel_url]
-                  ?.joinedMemberCount ?? 0)
-              : 0}
-            명
-          </ParticipantsInfoText>
-        </ParticipantsInfoContainer>
-
-        <ModalButtonContainer>
-          <Button
-            $variant="enter"
-            onClick={() => selectedRoom && enterChat(selectedRoom)}
-            disabled={loading}
-            style={{ fontSize: '14px' }}
-          >
-            입장하기
-          </Button>
-        </ModalButtonContainer>
-      </BaseModal>
+        selectedRoom={selectedRoom}
+        selectedPending={selectedPending}
+        pendingLoading={pendingLoading}
+        sbJoinedMemberCount={selectedJoinedCount}
+        loading={loading}
+        onEnter={(room) => enterChat(room)}
+      />
     </>
   );
 }
-
-// --------------------
-// styles
-// --------------------
-const ModalMainText = styled.h2`
-  margin: 0;
-  font-size: 21px;
-  font-weight: 600;
-  color: #000000;
-`;
-
-const ModalSubText = styled.p`
-  margin: 0;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 145%;
-  letter-spacing: -0.01em;
-  color: #232323;
-`;
-
-const ModalRestaurantText = styled.p`
-  margin: 6px 0 0;
-  font-size: 12px;
-  font-weight: 500;
-  color: #8a8a8a;
-`;
-
-const TagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 2px;
-  margin-top: 30px;
-`;
-
-const ParticipantsInfoContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-  margin-top: 5px;
-`;
-
-const ParticipantsInfoText = styled.span`
-  font-size: 12px;
-  font-weight: 500;
-  color: #8a8a8a;
-`;
-
-const ModalButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 10px;
-`;
 
 const EmptyStateContainer = styled.div`
   display: flex;
