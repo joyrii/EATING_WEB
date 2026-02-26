@@ -212,26 +212,7 @@ export default function MatchingListSection() {
     setSelectedRoom(room);
 
     const found =
-      pending.find(
-        (p) =>
-          p.matched_slot?.date === room.matched_slot?.date &&
-          p.matched_slot?.hour === room.matched_slot?.hour &&
-          String(p.restaurant_name ?? '') ===
-            String(room.restaurant?.name ?? ''),
-      ) ??
-      pending.find((p) => {
-        if (
-          p.matched_slot?.date !== room.matched_slot?.date ||
-          p.matched_slot?.hour !== room.matched_slot?.hour
-        )
-          return false;
-
-        const roomMemberIds = new Set(
-          (room.members ?? []).map((m) => m.user_id),
-        );
-        return (p.members ?? []).some((m) => roomMemberIds.has(m.user_id));
-      }) ??
-      null;
+      pending.find((p) => String(p.group_id) === String(room.group_id)) ?? null;
 
     setSelectedPending(found);
     setIsModalVisible(true);

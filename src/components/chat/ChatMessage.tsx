@@ -60,6 +60,8 @@ export type ChatAction =
   | { type: 'OPEN_RESTAURANT'; payload: RestaurantPayload }
   | { type: 'OPEN_CAFE_LIST'; payload: CafeListPayload }
   | { type: 'OPEN_PROFILE'; payload: ProfilePayload }
+  | { type: 'OPEN_FEEDBACK'; url: string }
+  | { type: 'OPEN_NOSHOW'; url: string }
   | { type: 'NAVIGATE'; url: string };
 
 export type ChatMessageProps = ChatMessageData & {
@@ -290,16 +292,32 @@ function renderSystemBlock(props: ChatMessageProps) {
 
       const width = actionPayload.cardType === 'noshow' ? 190 : 160;
 
-      return (
-        <ActionCard
-          $width={width}
-          onClick={() =>
+      const handleClick = () => {
+        const url = String(actionPayload.button?.url ?? '');
+
+        switch (actionPayload.cardType) {
+          case 'feedback':
+            props.onAction?.({ type: 'OPEN_FEEDBACK', url });
+            return;
+
+          case 'noshow':
+            props.onAction?.({ type: 'OPEN_NOSHOW', url });
+            return;
+
+          case 'cafe_recommend':
             props.onAction?.({
               type: 'NAVIGATE',
-              url: actionPayload.button.url,
-            })
-          }
-        >
+              url,
+            });
+            return;
+
+          default:
+            return;
+        }
+      };
+
+      return (
+        <ActionCard $width={width} onClick={() => handleClick()}>
           {actionPayload.cardType === 'noshow' ? (
             <ActionTitleWrapper>
               <img src="/svgs/chat/noshow-caution.svg" alt="caution" />
