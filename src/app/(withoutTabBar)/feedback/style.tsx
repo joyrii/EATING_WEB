@@ -51,6 +51,10 @@ export const Stars = styled.div`
 `;
 
 export const FeedbackSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   margin-top: 40px;
   padding: 0 10px;
   padding-bottom: 40px;
@@ -58,26 +62,31 @@ export const FeedbackSection = styled.div`
 `;
 
 export const SectionTitle = styled.h2`
+  width: 100%;
   font-size: 18px;
   font-weight: 600;
   color: #232323;
   margin-bottom: 3px;
+  text-align: left;
 `;
 
 export const SectionDescription = styled.p`
+  width: 100%;
   font-size: 14px;
   font-weight: 400;
   color: #a3a3a3;
+  text-align: left;
 `;
 
 export const ButtonWrapper = styled.div`
   display: flex;
   gap: 18px;
   margin-top: 16px;
+  width: 100%;
 `;
 
 export const Button = styled.button<{ selected?: boolean }>`
-  width: 160px;
+  width: calc(50% - 9px);
   padding-block: 15px;
   background: none;
   border: 1px solid ${({ selected }) => (selected ? '#ff5900' : '#a3a3a3')};

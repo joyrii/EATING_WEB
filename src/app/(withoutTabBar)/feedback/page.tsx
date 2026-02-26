@@ -151,9 +151,7 @@ export default function Feedback() {
       </FeedbackSection>
       <FeedbackSection style={{ borderBottom: 'none' }}>
         <SectionTitle>
-          서비스에 대한 의견이나 제안이 있다면 편하게
-          <br />
-          작성해주세요
+          서비스에 대한 의견이나 제안이 있다면 편하게 작성해주세요
         </SectionTitle>
         <Input placeholder="입력해주세요" />
       </FeedbackSection>

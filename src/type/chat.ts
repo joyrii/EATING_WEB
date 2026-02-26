@@ -5,7 +5,7 @@ export type ChatRoomsResponse = {
 
 // 채팅방 정보
 export type ChatRoomInfo = {
-  groupId: string;
+  group_id: string;
   channel_url: string;
   chat_code: string;
   matched_slot: { date: string; hour: number };
