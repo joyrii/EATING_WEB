@@ -50,6 +50,7 @@ export const DescriptionWrapper = styled.div`
   align-items: center;
   padding: 20px;
   position: relative;
+  width: 100%;
 `;
 
 export const Character = styled.img`
@@ -57,7 +58,7 @@ export const Character = styled.img`
   height: 80px;
   z-index: 1;
   position: absolute;
-  left: 22px;
+  left: calc(50% - 160px);
 `;
 
 export const DescriptionText = styled.p`
@@ -70,7 +71,7 @@ export const DescriptionText = styled.p`
   border-radius: 14px;
   padding: 10px 15px;
   position: absolute;
-  right: 24px;
+  right: calc(50% - 160px);
 `;
 
 export const TitleContainer = styled.div`

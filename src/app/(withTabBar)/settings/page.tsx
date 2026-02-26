@@ -124,7 +124,9 @@ export default function Settings() {
         <Section>
           <SectionTitle>고객 지원</SectionTitle>
           <SectionList>
-            <SectionItem>신고하기</SectionItem>
+            <SectionItem onClick={() => router.push('/noshow')}>
+              신고하기
+            </SectionItem>
             <SectionItem>페널티 기록</SectionItem>
             <SectionItem>이용약관</SectionItem>
             <SectionItem>로그아웃</SectionItem>

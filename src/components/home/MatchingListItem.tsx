@@ -33,6 +33,7 @@ export default function MatchingListItem({
   hour,
   currentCount,
   totalCount,
+  onClick,
   onChatClick,
   onDetailClick,
   clickable = false,
@@ -60,7 +61,7 @@ export default function MatchingListItem({
   };
 
   return (
-    <MatchingListItemContainer $clickable={clickable}>
+    <MatchingListItemContainer $clickable={clickable} onClick={onClick}>
       <ParticipantsWrapper>
         <Participants>
           {currentCount}명/{totalCount}명
