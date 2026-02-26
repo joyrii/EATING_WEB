@@ -42,7 +42,6 @@ const UserItemContainer = styled.div<{
   border-radius: 10px;
   padding: 10px 23px;
   width: ${({ width }) => (width ? `${width}px` : '100px')};
-  height: ${({ height }) => (height ? `${height}px` : '120px')};
 `;
 
 const ProfileImage = styled.img`
