@@ -481,7 +481,8 @@ export default function ChatRoomClient({
   const handleAction = (action: ChatAction) => {
     switch (action.type) {
       case 'OPEN_RESTAURANT':
-        // 식당 정보 모달 열기
+        setSelectedRestaurant(action.payload);
+        setRestaurantModalOpen(true);
         break;
       case 'OPEN_PROFILE':
         // 프로필 모달 열기
