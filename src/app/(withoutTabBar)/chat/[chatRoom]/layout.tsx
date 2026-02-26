@@ -126,7 +126,7 @@ export default function ChatRoomLayout({
     <>
       <Header>
         <BackButton onClick={() => window.history.back()}>
-          <img src="/svgs/chat/chevron-back.svg" alt="back" />
+          <img src="/svgs/back.svg" alt="back" />
         </BackButton>
 
         <RoomName>
@@ -177,7 +177,7 @@ const Header = styled.div`
   display: grid;
   grid-template-columns: auto 1fr 40px;
   align-items: center;
-  padding-left: 24px;
+  padding-left: 10px;
   padding-block: 15px;
   background-color: #fdfdfd;
 `;

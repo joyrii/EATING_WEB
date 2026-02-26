@@ -495,7 +495,7 @@ export default function ChatRoomClient({
               : ''),
         );
         break;
-      case 'NAVIGATE': {
+      case 'OPEN_FEEDBACK': {
         const url = String((action as any).url ?? '');
         const gid = (roomMetaRef.current as any)?.group_id;
 
@@ -508,6 +508,21 @@ export default function ChatRoomClient({
         router.push(`${url}${sep}group_id=${encodeURIComponent(gid)}`);
         break;
       }
+      case 'OPEN_NOSHOW': {
+        const rawUrl = String(action.url ?? '');
+        const gid = roomMetaRef.current?.group_id;
+
+        if (!gid) {
+          router.push(rawUrl);
+          break;
+        }
+
+        router.push(`/noshow/matching/${encodeURIComponent(String(gid))}/user`);
+        break;
+      }
+      case 'NAVIGATE':
+        router.push((action as any).url);
+        break;
       default:
         break;
     }

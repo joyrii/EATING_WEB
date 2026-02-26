@@ -1,7 +1,7 @@
 'use client';
 
 import MatchingListItem from '@/components/home/MatchingListItem';
-import { Description, Title, TitleContainer, MatchingList } from '../style';
+import { Description, Title, TitleContainer, MatchingList } from '../../style';
 import { useRouter } from 'next/navigation';
 
 export default function NoshowStore() {

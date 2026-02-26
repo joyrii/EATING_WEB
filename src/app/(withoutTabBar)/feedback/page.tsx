@@ -68,7 +68,7 @@ export default function Feedback() {
   return (
     <>
       <Header>
-        <BackButton>
+        <BackButton onClick={() => router.back()}>
           <img src="/svgs/back.svg" alt="뒤로가기" />
         </BackButton>
         <HeaderText>오늘의 잇팅 피드백</HeaderText>
