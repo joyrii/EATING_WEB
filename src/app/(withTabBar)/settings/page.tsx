@@ -35,7 +35,6 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function Settings() {
   const router = useRouter();
-  const params = useSearchParams();
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -53,19 +52,19 @@ export default function Settings() {
     })();
   }, []);
 
-  // 관심사 변경 시 토스트
   useEffect(() => {
-    if (params.get('interestUpdated') === 'true') {
+    if (typeof window === 'undefined') return;
+
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get('interestUpdated') === 'true') {
       toast.success('관심사가 변경되었습니다!', {
         id: 'interest-updated-toast',
       });
       router.replace('/settings');
     }
-  }, [params]);
+  }, [router]);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <Page>
