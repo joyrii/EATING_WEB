@@ -1,17 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import styled from 'styled-components';
-
-type UserInfo = {
-  user_id: string;
-  name: string;
-  department: string;
-  student_id: string;
-  is_verified: boolean;
-  mbti: string;
-  pre_test_result: string;
-  interests: any[];
-};
+import { OtherUserProfile } from '@/type/chat';
 
 export default function ProfileModal({
   isOpen,
@@ -20,7 +10,7 @@ export default function ProfileModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  userInfo: UserInfo | null;
+  userInfo: OtherUserProfile | null;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
