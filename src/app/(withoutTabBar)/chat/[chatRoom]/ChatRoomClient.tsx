@@ -5,12 +5,14 @@ import { getRestaurantById, getRestaurants } from '@/api/application';
 import {
   getChatRooms,
   getIceBreakingQuestions,
+  getOtherUserProfile,
   joinChat,
 } from '@/api/matching';
 import ChatMessage, {
   CafeListPayload,
   ChatAction,
   ChatMessageData,
+  ProfilePayload,
   RestaurantPayload,
 } from '@/components/chat/ChatMessage';
 import { useUser } from '@/context/userContext';
@@ -19,7 +21,7 @@ import {
   ensureSendbirdConnected,
   getSendbirdInstance,
 } from '@/lib/sendbird/client';
-import { ChatRoomInfo } from '@/type/chat';
+import { ChatRoomInfo, OtherUserProfile } from '@/type/chat';
 import { GroupChannelHandler } from '@sendbird/chat/groupChannel';
 import { AdminMessage, BaseMessage } from '@sendbird/chat/message';
 import { useParams, useRouter } from 'next/navigation';
@@ -54,6 +56,10 @@ export default function ChatRoomClient({
 
   // 채팅 내용 가져오기
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
+
+  // 상대방 프로필
+  const [selectedProfileUserInfo, setSelectedProfileUserInfo] =
+    useState<OtherUserProfile | null>(null);
 
   // refs
   const channelRef = useRef<any>(null);
@@ -478,15 +484,29 @@ export default function ChatRoomClient({
   }, [roomId, me?.id]);
 
   // Action Handler
-  const handleAction = (action: ChatAction) => {
+  const handleAction = async (action: ChatAction) => {
     switch (action.type) {
       case 'OPEN_RESTAURANT':
         setSelectedRestaurant(action.payload);
         setRestaurantModalOpen(true);
         break;
-      case 'OPEN_PROFILE':
-        // 프로필 모달 열기
-        break;
+      case 'OPEN_PROFILE': {
+        const senderId = action.payload?.senderId;
+
+        if (!senderId) return;
+
+        setProfileModalOpen(true);
+        setSelectedProfileUserInfo(null);
+
+        try {
+          const profile = await getOtherUserProfile(String(senderId));
+
+          if (profile) setSelectedProfileUserInfo(profile);
+        } catch (e) {
+          console.error('[OPEN_PROFILE] getOtherUserProfile failed:', e);
+        }
+        return;
+      }
       case 'OPEN_CAFE_LIST':
         router.push(
           action.payload.redirectUrl +
@@ -638,7 +658,11 @@ export default function ChatRoomClient({
       />
       <ProfileModal
         isOpen={profileModalOpen}
-        onClose={() => setProfileModalOpen(false)}
+        onClose={() => {
+          setProfileModalOpen(false);
+          setSelectedProfileUserInfo(null);
+        }}
+        userInfo={selectedProfileUserInfo}
       />
     </Wrapper>
   );

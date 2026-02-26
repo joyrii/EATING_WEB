@@ -8,7 +8,6 @@ export type MessageType = 'text' | 'restaurant' | 'actionCard' | 'cafeList';
 export type ProfilePayload = {
   senderId?: string;
   senderName?: string;
-  profileImageUrl?: string;
 };
 
 export type RestaurantPayload = {
@@ -165,7 +164,7 @@ function OtherMessage({
           onClick={() => {
             onAction?.({
               type: 'OPEN_PROFILE',
-              payload: { senderId, senderName, profileImageUrl },
+              payload: { senderId, senderName },
             });
           }}
         >
