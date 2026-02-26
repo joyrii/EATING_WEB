@@ -284,6 +284,7 @@ const Header = styled.header<{ $variant: 'logo' | 'title' }>`
   padding-left: 24px;
   position: sticky;
   top: 0;
+  z-index: 10;
 
   ${({ $variant }) =>
     $variant === 'title'
@@ -306,14 +307,6 @@ const LogoCharacter = styled.img.attrs({
   height: 44,
 })`
   margin-left: 4px;
-`;
-
-const LogoTitle = styled.img.attrs({
-  src: '/svgs/home/eating-logo-title.svg',
-  width: 106,
-  height: 28,
-})`
-  margin-block: 7px;
 `;
 
 // 팁 배너
