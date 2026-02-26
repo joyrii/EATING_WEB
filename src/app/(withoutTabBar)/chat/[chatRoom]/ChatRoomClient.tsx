@@ -495,8 +495,19 @@ export default function ChatRoomClient({
               : ''),
         );
         break;
-      case 'NAVIGATE':
-        router.push((action as any).url);
+      case 'NAVIGATE': {
+        const url = String((action as any).url ?? '');
+        const gid = (roomMetaRef.current as any)?.group_id;
+
+        if (!gid) {
+          router.push(url);
+          break;
+        }
+
+        const sep = url.includes('?') ? '&' : '?';
+        router.push(`${url}${sep}group_id=${encodeURIComponent(gid)}`);
+        break;
+      }
       default:
         break;
     }
