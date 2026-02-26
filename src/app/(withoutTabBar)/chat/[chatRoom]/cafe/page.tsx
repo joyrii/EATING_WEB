@@ -130,7 +130,7 @@ export default function CafeList() {
               width="75%"
               onClick={() => {
                 setSelectedCafe(cafe);
-                // setIsCafeModalVisible(true);
+                setIsCafeModalVisible(true);
               }}
             />
           ))}

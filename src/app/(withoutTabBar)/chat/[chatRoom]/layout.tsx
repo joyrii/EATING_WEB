@@ -215,7 +215,8 @@ const Content = styled.div`
 const ChatInputContainer = styled.div`
   position: fixed;
   bottom: 0;
-  width: 100%;
+  left: 0;
+  right: 0;
   display: flex;
   gap: 12px;
   flex-direction: row;
@@ -233,6 +234,7 @@ const ChatInput = styled.input`
   font-size: 14px;
   font-weight: 500;
   padding-left: 23px;
+  min-width: 0;
 
   &::placeholder {
     color: #8a8a8a;
@@ -244,8 +246,12 @@ const ChatInput = styled.input`
 `;
 
 const SendButton = styled.button`
+  flex-shrink: 0;
   border: none;
   background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const CountText = styled.span`
