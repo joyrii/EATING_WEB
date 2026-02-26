@@ -1,9 +1,7 @@
 import { Section, SectionTitle, MatchingList, Button } from './style';
 import styled from 'styled-components';
 import MatchingListItem from './MatchingListItem';
-import { BaseModal } from '../BaseModal';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import BaseChip from '../BaseChip';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/userContext';
 import MatchingDetailModal from './MatchingDetailModal';
@@ -113,6 +111,13 @@ export default function MatchingListSection() {
   // -------------------------
   // 1) list: /chat/rooms
   // -------------------------
+
+  useEffect(() => {
+    if (!isLoaded || !me?.id) return;
+    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, [isLoaded, me?.id]);
+
   useEffect(() => {
     if (!isLoaded || !me?.id) return;
 
@@ -134,7 +139,7 @@ export default function MatchingListSection() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, me?.id, tick]);
+  }, [isLoaded, me?.id]);
 
   // -------------------------
   // 2) modal data: /reviews/pending
@@ -160,7 +165,7 @@ export default function MatchingListSection() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, me?.id, tick]);
+  }, [isLoaded, me?.id]);
 
   // -------------------------
   // 3) sendbird meta
@@ -208,7 +213,7 @@ export default function MatchingListSection() {
     return () => {
       cancelled = true;
     };
-  }, [isLoaded, me?.id, tick]);
+  }, [isLoaded, me?.id]);
 
   // -------------------------
   // 모달 열기: room 기준으로 pending 매칭해서 상세 보여주기
@@ -310,6 +315,10 @@ export default function MatchingListSection() {
                     totalCount={total}
                     onDetailClick={() => openDetail(room)}
                     onChatClick={() => enterChat(room)}
+                    onReviewClick={() => {
+                      if (getStatusByRoom(room, me?.id) !== 'match') return;
+                      router.replace(`/feedback/${room.group_id}`);
+                    }}
                     clickable
                   />
                 );

@@ -19,6 +19,7 @@ export default function Inappropriate() {
   const [members, setMembers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState<string[]>([]);
   const [reportText, setReportText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   // 매칭 정보 가져오기
   useEffect(() => {
@@ -33,9 +34,10 @@ export default function Inappropriate() {
         console.error('Error fetching reportable rooms:', error);
       }
     })();
-  });
+  }, []);
 
   const handleSubmit = async () => {
+    if (submitting) return; // 중복 제출 방지
     (async () => {
       try {
         await submitReport(
@@ -49,6 +51,8 @@ export default function Inappropriate() {
         router.push('/noshow/complete');
       } catch (error) {
         console.error('Error submitting report:', error);
+      } finally {
+        setSubmitting(false);
       }
     })();
   };
@@ -86,12 +90,12 @@ export default function Inappropriate() {
         onChange={(e) => setReportText(e.target.value)}
       />
       <SubmitButton
-        disabled={selectedUserId.length === 0}
+        disabled={selectedUserId.length === 0 || submitting}
         onClick={() => {
           handleSubmit();
         }}
       >
-        제출하기
+        {submitting ? '제출 중...' : '제출하기'}
       </SubmitButton>
     </div>
   );
