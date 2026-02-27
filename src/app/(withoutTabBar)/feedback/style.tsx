@@ -56,7 +56,7 @@ export const FeedbackSection = styled.div`
   justify-content: center;
   align-items: center;
   margin-top: 40px;
-  padding: 0 10px;
+  padding: 0 20px;
   padding-bottom: 40px;
   border-bottom: 1px solid #f0f0f0;
 `;
@@ -113,8 +113,13 @@ export const Input = styled.textarea`
   }
 `;
 
+export const SubmitButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
 export const SubmitButton = styled.button`
-  width: calc(100% - 20px);
+  width: calc(100% - 40px);
   margin: 30px 10px;
   padding-block: 15px;
   background: #ff5900;
