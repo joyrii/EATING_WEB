@@ -56,6 +56,7 @@ export default function InterestsForm({
   const [idByName, setIdByName] = useState<Record<string, string>>({});
 
   const [selected, setSelected] = useState<Record<string, string[]>>({});
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -68,15 +69,18 @@ export default function InterestsForm({
       }
     } catch {
       setSelected({});
+    } finally {
+      setHydrated(true);
     }
   }, [storageKey]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!storageKey) return;
+    if (!hydrated) return;
 
     sessionStorage.setItem(storageKey, JSON.stringify(selected));
-  }, [selected, storageKey]);
+  }, [hydrated, selected, storageKey]);
 
   useEffect(() => {
     let mounted = true;
