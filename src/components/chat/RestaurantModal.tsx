@@ -180,7 +180,9 @@ export default function RestaurantModal({
         onTransitionEnd={handleAnimationEnd}
       >
         <ModalHeader>
-          <Bar />
+          <BarWrapper onClick={onClose}>
+            <Bar />
+          </BarWrapper>
         </ModalHeader>
         <ModalBody>
           <RestaurantName>{restaurantData?.name}</RestaurantName>
@@ -308,7 +310,7 @@ export default function RestaurantModal({
 const Overlay = styled.div<{ $open: boolean }>`
   position: fixed;
   inset: 0;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
 
   opacity: ${(props) => (props.$open ? 1 : 0)};
@@ -356,12 +358,20 @@ const ModalBody = styled.div`
   -webkit-overflow-scrolling: touch;
 `;
 
+const BarWrapper = styled.div`
+  padding: 5px 0;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+`;
+
 const Bar = styled.div`
   width: 50px;
   height: 4px;
   background: #d9d9d9;
   border-radius: 17px;
   margin: 0 auto;
+  cursor: pointer;
 `;
 
 const RestaurantName = styled.h2`
