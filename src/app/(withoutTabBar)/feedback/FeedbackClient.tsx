@@ -16,6 +16,7 @@ import {
   SubmitButton,
   Input,
   UserList,
+  SubmitButtonWrapper,
 } from './style';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -191,15 +192,17 @@ export default function Feedback() {
           onChange={(e) => setFeedbackText(e.target.value)}
         />
       </FeedbackSection>
-      <SubmitButton
-        type="submit"
-        onClick={async () => {
-          await handleSubmit();
-          router.replace('/home');
-        }}
-      >
-        제출하기
-      </SubmitButton>
+      <SubmitButtonWrapper>
+        <SubmitButton
+          type="submit"
+          onClick={async () => {
+            await handleSubmit();
+            router.replace('/home');
+          }}
+        >
+          제출하기
+        </SubmitButton>
+      </SubmitButtonWrapper>
     </>
   );
 }

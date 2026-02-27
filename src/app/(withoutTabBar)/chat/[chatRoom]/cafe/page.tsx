@@ -127,7 +127,7 @@ export default function CafeList() {
             <RestaurantCard
               key={cafe.id}
               payload={cafe}
-              width="75%"
+              width="100%"
               onClick={() => {
                 setSelectedCafe(cafe);
                 setIsCafeModalVisible(true);

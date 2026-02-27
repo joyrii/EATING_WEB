@@ -18,6 +18,8 @@ export default function OnboardingMbti() {
   const [selectedMbti3, setSelectedMbti3] = useState<string | null>(null);
   const [selectedMbti4, setSelectedMbti4] = useState<string | null>(null);
 
+  const [hydrated, setHydrated] = useState(false);
+
   const { me } = useUser();
   const name = me?.name || '';
 
@@ -25,15 +27,19 @@ export default function OnboardingMbti() {
 
   useEffect(() => {
     const saved = sessionStorage.getItem(MBTI_KEY);
-    if (!saved) return;
-    const [mbti1, mbti2, mbti3, mbti4] = saved.split('');
-    setSelectedMbti1(mbti1);
-    setSelectedMbti2(mbti2);
-    setSelectedMbti3(mbti3);
-    setSelectedMbti4(mbti4);
+    if (saved) {
+      const [mbti1, mbti2, mbti3, mbti4] = saved.split('');
+      setSelectedMbti1(mbti1);
+      setSelectedMbti2(mbti2);
+      setSelectedMbti3(mbti3);
+      setSelectedMbti4(mbti4);
+    }
+
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     const mbti = `${selectedMbti1 ?? ''}${selectedMbti2 ?? ''}${selectedMbti3 ?? ''}${selectedMbti4 ?? ''}`;
     sessionStorage.setItem(MBTI_KEY, mbti);
   }, [selectedMbti1, selectedMbti2, selectedMbti3, selectedMbti4]);
