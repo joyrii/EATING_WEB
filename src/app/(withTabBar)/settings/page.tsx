@@ -21,7 +21,6 @@ import {
   VerificationChip,
   VerificationMark,
   ProfileInfoText,
-  Mention,
   ChangeInterest,
   CustomerServiceCenter,
   CustomerServiceCenterText,
@@ -93,7 +92,6 @@ export default function Settings() {
                   </VerificationChip>
                 )}
               </ProfileNameWrapper>
-              <Mention>힙합보단 사랑, 사랑보단 벗</Mention>
               <ProfileInfoText>
                 {profile?.student_id || '26학번'}
               </ProfileInfoText>

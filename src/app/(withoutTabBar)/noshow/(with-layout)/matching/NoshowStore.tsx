@@ -8,6 +8,7 @@ import { getReportableRooms } from '@/api/review';
 import MatchingDetailModal from '@/components/home/MatchingDetailModal';
 import { fetchPendingMatches } from '@/api/matching';
 import type { ChatRoomInfo } from '@/type/chat';
+import NoshowListItem from '@/components/feedback/NoshowList';
 
 type PendingSlot = {
   group_id: string;
@@ -127,13 +128,10 @@ export default function NoshowStore() {
             pendingByGroupId.get(String(m.group_id))?.member_count ?? joined;
 
           return (
-            <MatchingListItem
+            <NoshowListItem
               key={m.group_id}
               date={m.matched_slot.date}
               hour={m.matched_slot.hour}
-              currentCount={joined}
-              totalCount={total}
-              clickable
               onClick={() => {
                 {
                   type === 'noshow'
