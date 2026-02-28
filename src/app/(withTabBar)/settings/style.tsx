@@ -133,19 +133,13 @@ export const ProfileInfo = styled.div`
 export const ProfileNameWrapper = styled.div`
   display: flex;
   align-items: center;
+  margin-bottom: 4px;
 `;
 
 export const ProfileName = styled.span`
   font-size: 18px;
   font-weight: 600;
   color: #575757;
-`;
-
-export const Mention = styled.span`
-  font-size: 12px;
-  font-weight: 500;
-  color: #00643e;
-  margin-bottom: 4px;
 `;
 
 export const ProfileInfoText = styled.span`
