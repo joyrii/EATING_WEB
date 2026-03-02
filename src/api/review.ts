@@ -1,4 +1,5 @@
 import { api } from '@/api/axios-client';
+import axios from 'axios';
 
 export const getPendingReviews = async () => {
   try {
@@ -14,23 +15,31 @@ export const submitReview = async (
   match_group_id: string,
   rating: number,
   excluded_user_ids: string[],
-  reported_users: {
-    user_id: string;
-    description: string;
-  }[],
+  reported_users: { user_id: string; description: string }[],
   feedback_text: string,
 ) => {
   try {
-    const res = await api.post('/reviews', {
+    const payload = {
       match_group_id,
       rating,
       excluded_user_ids,
       reported_users,
       feedback_text,
-    });
+    };
+
+    console.log('[submitReview payload]', payload);
+
+    const res = await api.post('/reviews/', payload);
     return res.data;
   } catch (error) {
-    console.error('Error submitting review:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('[submitReview  error]', {
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+    } else {
+      console.error('[submitReview error]', error);
+    }
     throw error;
   }
 };
