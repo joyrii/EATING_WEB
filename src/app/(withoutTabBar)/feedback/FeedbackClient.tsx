@@ -42,6 +42,8 @@ export default function Feedback() {
   const [inappropriateFeedback, setInappropriateFeedback] = useState('');
   const [feedbackText, setFeedbackText] = useState('');
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // 매칭 정보 가져오기
   useEffect(() => {
     if (!groupId) return;
@@ -57,13 +59,44 @@ export default function Feedback() {
   }, [groupId]);
 
   const handleSubmit = async () => {
+    if (!groupId) return;
+    if (rating <= 0) throw new Error('서비스 평점을 선택해주세요.');
+
+    const excludedIds = hasExcludeUser ? selectedExcludeUserId : [];
+
+    const reportedUsers = hasInappropriateUser
+      ? selectedInappropriateUserId.map((user_id) => ({
+          user_id,
+          description: inappropriateFeedback.trim(),
+        }))
+      : [];
+
+    if (reportedUsers.length > 0 && inappropriateFeedback.trim().length === 0) {
+      throw new Error('신고 사유를 작성해주세요.');
+    }
+
     await submitReview(
       groupId,
       rating,
-      selectedExcludeUserId,
-      selectedInappropriateUserId,
+      excludedIds,
+      reportedUsers,
       feedbackText,
     );
+  };
+
+  const onSubmitClick = async () => {
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+      await handleSubmit();
+      router.replace('/home');
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : '제출에 실패했어요.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -108,7 +141,10 @@ export default function Feedback() {
           </Button>
           <Button
             selected={hasExcludeUser === false}
-            onClick={() => setHasExcludeUser(false)}
+            onClick={() => {
+              setHasExcludeUser(false);
+              setSelectedExcludeUserId([]);
+            }}
           >
             아니요
           </Button>
@@ -150,7 +186,11 @@ export default function Feedback() {
           </Button>
           <Button
             selected={hasInappropriateUser === false}
-            onClick={() => setHasInappropriateUser(false)}
+            onClick={() => {
+              setHasInappropriateUser(false);
+              setSelectedInappropriateUserId([]);
+              setInappropriateFeedback('');
+            }}
           >
             아니요
           </Button>
@@ -194,13 +234,11 @@ export default function Feedback() {
       </FeedbackSection>
       <SubmitButtonWrapper>
         <SubmitButton
-          type="submit"
-          onClick={async () => {
-            await handleSubmit();
-            router.replace('/home');
-          }}
+          type="button"
+          disabled={isSubmitting}
+          onClick={onSubmitClick}
         >
-          제출하기
+          {isSubmitting ? '제출 중...' : '제출하기'}
         </SubmitButton>
       </SubmitButtonWrapper>
     </>
