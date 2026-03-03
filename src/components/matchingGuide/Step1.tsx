@@ -1,25 +1,18 @@
+import { Container, Text, Content, Body, Header } from './style';
+
 export default function MatchingGuideStep1() {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        height: '100dvh',
-        overflow: 'hidden',
-      }}
-    >
-      <img
-        src="/images/eating-guide/step1.png"
-        alt="Matching Guide Step 1"
-        style={{
-          width: 'auto%',
-          height: '100%',
-          objectFit: 'contain',
-          display: 'block',
-        }}
-      />
-    </div>
+    <Container>
+      <Header>
+        <Text>
+          대학생활하며 새로운 친구를
+          <br />
+          사귀어보고 싶으신가요?
+        </Text>
+      </Header>
+      <Body>
+        <Content src="/svgs/guide/guide-1.svg" alt="guide-1" />
+      </Body>
+    </Container>
   );
 }

@@ -73,11 +73,11 @@ export default function MatchingListSection() {
 
   const [tick, setTick] = useState(0);
 
-  // list는 chat/rooms
+  // list: chat/rooms
   const [rooms, setRooms] = useState<ChatRoomInfo[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(true);
 
-  // modal은 reviews/pending
+  // modal: reviews/pending
   const [pending, setPending] = useState<PendingSlot[]>([]);
   const [pendingLoading, setPendingLoading] = useState(true);
 
@@ -108,9 +108,7 @@ export default function MatchingListSection() {
     ? (sbMetaByChannelUrl[selectedRoom.channel_url]?.joinedMemberCount ?? 0)
     : 0;
 
-  // -------------------------
   // 1) list: /chat/rooms
-  // -------------------------
 
   useEffect(() => {
     if (!isLoaded || !me?.id) return;
@@ -141,9 +139,7 @@ export default function MatchingListSection() {
     };
   }, [isLoaded, me?.id]);
 
-  // -------------------------
   // 2) modal data: /reviews/pending
-  // -------------------------
   useEffect(() => {
     if (!isLoaded || !me?.id) return;
 
@@ -167,9 +163,7 @@ export default function MatchingListSection() {
     };
   }, [isLoaded, me?.id]);
 
-  // -------------------------
   // 3) sendbird meta
-  // -------------------------
   useEffect(() => {
     if (!isLoaded || !me?.id) return;
 
@@ -215,9 +209,7 @@ export default function MatchingListSection() {
     };
   }, [isLoaded, me?.id]);
 
-  // -------------------------
   // 모달 열기: room 기준으로 pending 매칭해서 상세 보여주기
-  // -------------------------
   const openDetail = (room: ChatRoomInfo) => {
     setSelectedRoom(room);
 
@@ -228,9 +220,7 @@ export default function MatchingListSection() {
     setIsModalVisible(true);
   };
 
-  // -------------------------
   // enterChat: chat_code로 joinChat → 응답 channel_url로 이동
-  // -------------------------
   const enterChat = async (room: ChatRoomInfo) => {
     if (!me?.id) return;
     if (loading) return;

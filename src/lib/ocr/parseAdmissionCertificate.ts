@@ -37,7 +37,6 @@ export default function parseAdmissionCertificateText(
 
   if (!after) return undefined;
 
-  // OCR 한 글자씩 띄어진 거 복구
   const fixed = after
     .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g, ' ')
     .replace(/([가-힣A-Za-z0-9])\s+(?=[가-힣A-Za-z0-9])/g, '$1')

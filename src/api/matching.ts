@@ -26,7 +26,7 @@ export async function fetchPendingMatches(): Promise<PendingMatch[]> {
 }
 
 export type JoinChatReq = {
-  code: string; // group_id
+  code: string;
   user_id: string;
   nickname?: string;
 };

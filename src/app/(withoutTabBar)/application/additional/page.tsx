@@ -21,20 +21,17 @@ export default function Additional() {
 
   const CLASS = ['26', '25', '24', '23', '22'];
 
-  // UI state
   const [selectedClass, setSelectedClass] = useState<string[]>([]);
   const [mbti1, setMbti1] = useState<'E' | 'I' | ''>('');
   const [mbti2, setMbti2] = useState<'S' | 'N' | ''>('');
   const [mbti3, setMbti3] = useState<'T' | 'F' | ''>('');
   const [mbti4, setMbti4] = useState<'J' | 'P' | ''>('');
 
-  // zustand
   const setActiveWeekKey = useMatchingDraftByWeek((s) => s.setActiveWeekKey);
   const getDraft = useMatchingDraftByWeek((s) => s.getDraft);
   const setPreferredYears = useMatchingDraftByWeek((s) => s.setPreferredYears);
   const setExcludedMbti = useMatchingDraftByWeek((s) => s.setExcludedMbti);
 
-  // ✅ 완성형 MBTI(한 덩어리) 만들어서 쓰기
   const mbtiFull = useMemo(() => {
     if (mbti1 && mbti2 && mbti3 && mbti4)
       return `${mbti1}${mbti2}${mbti3}${mbti4}`;
@@ -60,10 +57,10 @@ export default function Additional() {
 
         const draft = getDraft(wk);
 
-        // ✅ 학번 복원 (store는 number[]라고 가정하고 UI는 string[])
+        // 학번 복원
         setSelectedClass((draft.preferred_years ?? []).map(String));
 
-        // ✅ MBTI 복원: store는 항상 ["ENFP"] 또는 [] 만 유지
+        // MBTI 복원
         const saved = draft.excluded_mbti?.[0] ?? '';
         if (saved.length === 4) {
           setMbti1(saved[0] as any);
@@ -71,8 +68,6 @@ export default function Additional() {
           setMbti3(saved[2] as any);
           setMbti4(saved[3] as any);
         } else {
-          // 예전 찢어진 데이터(["E","N","F","P"]) 들어있던 경우 방어
-          // -> 조합 가능하면 조합해서 넣고, 아니면 비움
           if (
             draft.excluded_mbti?.length === 4 &&
             draft.excluded_mbti.every((x) => x.length === 1)
@@ -83,7 +78,6 @@ export default function Additional() {
               setMbti2(merged[1] as any);
               setMbti3(merged[2] as any);
               setMbti4(merged[3] as any);
-              // ✅ store도 즉시 정리 (한 덩어리로 덮어쓰기)
               setExcludedMbti([merged]);
               return;
             }
@@ -97,10 +91,9 @@ export default function Additional() {
         console.error('Additional 복원 실패:', e);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 2) 학번 토글 (store에는 number[]로 저장)
+  // 2) 학번 토글
   const toggleClass = (classYear: string) => {
     setSelectedClass((prev) => {
       const next = prev.includes(classYear)
@@ -114,8 +107,7 @@ export default function Additional() {
     });
   };
 
-  // 3) MBTI 클릭 → UI state 갱신만
-  //    실제 store 저장은 아래 useEffect에서 “한 덩어리”로만 저장함
+  // 3) MBTI 클릭 업데이트
   const updateMbti = (index: 1 | 2 | 3 | 4, value: string) => {
     if (index === 1) setMbti1((prev) => (prev === value ? '' : value) as any);
     if (index === 2) setMbti2((prev) => (prev === value ? '' : value) as any);
@@ -123,7 +115,6 @@ export default function Additional() {
     if (index === 4) setMbti4((prev) => (prev === value ? '' : value) as any);
   };
 
-  // ✅ MBTI는 무조건 한 덩어리로 store 저장(자동)
   useEffect(() => {
     setExcludedMbti(mbtiFull ? [mbtiFull] : []);
   }, [mbtiFull, setExcludedMbti]);
@@ -131,8 +122,6 @@ export default function Additional() {
   const submit = async () => {
     try {
       const draft = getDraft();
-
-      // ✅ 최종 payload는 "store 값 + MBTI는 무조건 한 덩어리 강제"
       const payload = {
         available_slots: draft.available_slots ?? [],
         excluded_restaurant_ids: draft.excluded_restaurant_ids ?? [],
@@ -162,7 +151,7 @@ export default function Additional() {
       <SkipButtonWrapper>
         <SkipButton
           onClick={() => {
-            submit(); // 일단 신청은 하고 나가도록(선택 정보 없이도 신청 가능)
+            submit();
             router.push('/home');
           }}
         >

@@ -1,25 +1,17 @@
+import { Container, Text, Content, Header, Body } from './style';
+
 export default function MatchingGuideStep3() {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        height: '100dvh',
-        overflow: 'hidden',
-      }}
-    >
-      <img
-        src="/images/eating-guide/step3.png"
-        alt="Matching Guide Step 3"
-        style={{
-          width: 'auto%',
-          height: '100%',
-          objectFit: 'contain',
-          display: 'block',
-        }}
-      />
-    </div>
+    <Container>
+      <Header>
+        <Text>
+          회원가입 후<br />
+          매칭 신청을 시작해주세요
+        </Text>
+      </Header>
+      <Body>
+        <Content src="/svgs/guide/guide-3.svg" alt="guide-3" />
+      </Body>
+    </Container>
   );
 }

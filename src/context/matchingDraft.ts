@@ -21,18 +21,16 @@ const emptyDraft = (): MatchingDraft => ({
 });
 
 type State = {
-  activeWeekKey: string; // 예: "2026-02-23" (week_start)
+  activeWeekKey: string;
   draftByWeek: Record<string, MatchingDraft>;
 
   setActiveWeekKey: (weekKey: string) => void;
 
-  // setters (현재 activeWeekKey에 적용)
   setAvailableSlots: (available_slots: ApiSlot[]) => void;
   setExcludedRestaurantIds: (excluded_restaurant_ids: string[]) => void;
   setPreferredYears: (years: number[]) => void;
   setExcludedMbti: (excluded_mbti: string[]) => void;
 
-  // getters/util
   getDraft: (weekKey?: string) => MatchingDraft;
   resetDraft: (weekKey?: string) => void;
 };

@@ -21,18 +21,10 @@ export default function StepShell({
   };
 
   return (
-    <div
-      style={{
-        maxWidth: 520,
-        margin: '0 auto',
-        paddingTop: 40,
-        display: 'grid',
-        gap: 16,
-      }}
-    >
+    <Background>
       <StepIndicator step={step} totalSteps={totalSteps} />
 
-      <div>{children}</div>
+      <Content>{children}</Content>
 
       <ButtonWrapper>
         <BaseButton
@@ -44,7 +36,7 @@ export default function StepShell({
           }}
         />
       </ButtonWrapper>
-    </div>
+    </Background>
   );
 }
 
@@ -53,4 +45,30 @@ const ButtonWrapper = styled.div`
   position: fixed;
   bottom: 43px;
   padding: 0 24px;
+`;
+
+const Background = styled.div`
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  gap: clamp(8px, 2.2vh, 16px);
+
+  padding-top: clamp(16px, 4vh, 40px);
+
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 246, 0.5),
+    rgba(255, 247, 242, 0.5),
+    rgba(255, 238, 229, 0.5)
+  );
+`;
+
+const Content = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+
+  padding-bottom: calc(43px + 56px);
 `;

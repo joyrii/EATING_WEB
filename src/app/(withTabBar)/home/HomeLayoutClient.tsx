@@ -45,7 +45,7 @@ function calcUiStatus(params: {
   // pre_registered는 첫 주차만 사용(이후 폐기)
   const effectivePre = isPreFeatureEnabled(now) ? isPreRegistered : false;
 
-  // 일요일->월요일 자정(다음 주 월요일 00:00 KST) 되면 무조건 before (pre 없음)
+  // 일요일->월요일 자정(다음 주 월요일 00:00 KST) 되면 before
   const nextMon0 = atKstFromWeekStart(weekStart, 7, 0, 0);
   if (now >= nextMon0) return 'before';
 

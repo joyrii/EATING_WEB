@@ -141,7 +141,7 @@ export default function Schedule() {
     const roundIdToWeekStart = new Map<string, string>();
     weeks.forEach((w) => roundIdToWeekStart.set(w.id, w.week_start));
 
-    // week_start -> round_id 역매핑도 만들기
+    // week_start -> round_id 역매핑
     const weekStartToRoundId = new Map<string, string>();
     weeks.forEach((w) => weekStartToRoundId.set(w.week_start, w.id));
 

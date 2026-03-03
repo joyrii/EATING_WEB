@@ -57,11 +57,8 @@ export function formatRoomTitle(params: {
 }
 
 type UiRoom = {
-  // API 기반
   apiChannelUrl: string;
   chatCode: string;
-
-  // UI 표시
   title: { main: string; count: string };
   lastChat: string;
   lastChatAtMs: number;
@@ -98,7 +95,7 @@ export default function Matching() {
       setNotice(roomsRes?.notice || '해당 채팅방은 약속 다음 날 사라집니다.');
       setRooms((roomsRes?.rooms ?? []) as ChatRoomInfo[]);
 
-      // 2) Sendbird 채널 메타(최근메시지/안읽음/멤버수)
+      // 2) Sendbird 채널 메타 (최근메시지/안읽음/멤버수)
       await ensureSendbirdConnected(me.id, me.name, me.profile_image_url);
 
       const list = await listMyGroupChannels({
@@ -123,10 +120,8 @@ export default function Matching() {
   useEffect(() => {
     if (!isLoaded || !me?.id) return;
     fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, me?.id]);
 
-  // 포커스/복귀 시 갱신
   useEffect(() => {
     if (!isLoaded || !me?.id) return;
 
@@ -140,7 +135,6 @@ export default function Matching() {
       window.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVis);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, me?.id]);
 
   // 읽음 처리
@@ -219,7 +213,6 @@ export default function Matching() {
       const channelUrl = String(res?.channel_url ?? '');
 
       if (!channelUrl) {
-        // 응답이 이상하면 fallback으로 api channel_url라도 이동 시도
         router.push(`/chat/${encodeURIComponent(room.channel_url)}`);
         return;
       }
@@ -227,7 +220,7 @@ export default function Matching() {
       router.push(`/chat/${encodeURIComponent(channelUrl)}`);
     } catch (e) {
       console.error('Failed to enter chat:', e);
-      // 실패 시에도 fallback 이동(원하면 제거 가능)
+      // 실패 시에도 fallback 이동
       router.push(`/chat/${encodeURIComponent(room.channel_url)}`);
     } finally {
       enteringRef.current = false;
