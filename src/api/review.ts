@@ -14,7 +14,10 @@ export const submitReview = async (
   match_group_id: string,
   rating: number,
   excluded_user_ids: string[],
-  reported_users: string[],
+  reported_users: {
+    user_id: string;
+    description: string;
+  }[],
   feedback_text: string,
 ) => {
   try {

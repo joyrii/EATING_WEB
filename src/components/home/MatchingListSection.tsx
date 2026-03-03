@@ -317,7 +317,7 @@ export default function MatchingListSection() {
                     onChatClick={() => enterChat(room)}
                     onReviewClick={() => {
                       if (getStatusByRoom(room, me?.id) !== 'match') return;
-                      router.replace(`/feedback/${room.group_id}`);
+                      router.replace(`/feedback?group_id=${room.group_id}`);
                     }}
                     clickable
                   />
