@@ -27,7 +27,7 @@ function getGroupChannelApi(inst: SB) {
   };
 }
 
-/** Sendbird 인스턴스 반환(초기화/연결 안 됐으면 throw) */
+// Sendbird 인스턴스 반환(초기화/연결 안 됐으면 throw)
 export function getSendbirdInstance(): SB {
   if (!sb)
     throw new Error(
@@ -36,7 +36,7 @@ export function getSendbirdInstance(): SB {
   return sb;
 }
 
-/** 최초 init + connect + 내 프로필(nickname/profileUrl) 세팅 */
+// 최초 init + connect + 내 프로필(nickname/profileUrl) 세팅
 export async function connectSendbird(
   userId: string,
   nickname?: string,
@@ -70,7 +70,7 @@ export async function connectSendbird(
   return sb;
 }
 
-/** connect 중복 호출 방지(StrictMode/useEffect 중복 대응) */
+// connect 중복 호출 방지(StrictMode/useEffect 중복 대응)
 export async function ensureSendbirdConnected(
   userId: string,
   nickname?: string,
@@ -89,7 +89,7 @@ export async function ensureSendbirdConnected(
   }
 }
 
-/** 연결 해제(로그아웃 등) */
+// 연결 해제(로그아웃 등)
 export async function disconnectSendbird() {
   try {
     if (!sb) return;
@@ -112,14 +112,14 @@ export type ChannelMeta = {
 
 function extractLastMessageText(lastMessage: any): string | null {
   if (!lastMessage) return null;
-  if (typeof lastMessage.message === 'string') return lastMessage.message; // UserMessage
-  if (typeof lastMessage.name === 'string') return lastMessage.name; // FileMessage 등
+  if (typeof lastMessage.message === 'string') return lastMessage.message;
+  if (typeof lastMessage.name === 'string') return lastMessage.name;
   return null;
 }
 
 export async function getChannelMetaByGroupId(params: {
   userId: string;
-  groupId: string; // match_groups.id(UUID)
+  groupId: string;
   nickname?: string;
   profileUrl?: string;
 }): Promise<ChannelMeta | null> {
@@ -178,7 +178,7 @@ export async function listMyGroupChannels(params: {
   return all;
 }
 
-/** groupId -> memberCount만 빠르게 필요할 때 */
+//groupId -> memberCount만 빠르게 필요할 때
 export async function getMemberCountByGroupId(params: {
   userId: string;
   groupId: string;
@@ -189,7 +189,7 @@ export async function getMemberCountByGroupId(params: {
   return meta?.memberCount ?? 0;
 }
 
-/** channelUrl로 채널 객체 가져오기 (채팅 화면 등에서 사용) */
+// channelUrl로 채널 객체 가져오기
 export async function getGroupChannelByUrl(params: {
   userId: string;
   channelUrl: string;

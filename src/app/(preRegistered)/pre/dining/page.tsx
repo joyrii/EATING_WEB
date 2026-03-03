@@ -103,10 +103,7 @@ export default function PreDining() {
     <div>
       <SkipButtonWrapper style={{ justifyContent: 'space-between' }}>
         <StepText>02</StepText>
-        <SkipButton
-          disabled={isSubmitting}
-          onClick={() => submit([])} // ✅ 건너뛰기도 전송
-        >
+        <SkipButton disabled={isSubmitting} onClick={() => submit([])}>
           <span>건너뛰기</span>
         </SkipButton>
       </SkipButtonWrapper>

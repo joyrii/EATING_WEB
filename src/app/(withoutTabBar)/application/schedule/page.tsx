@@ -39,7 +39,6 @@ export default function Schedule() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // zustand
   const setActiveWeekKey = useMatchingDraftByWeek((s) => s.setActiveWeekKey);
   const setAvailableSlots = useMatchingDraftByWeek((s) => s.setAvailableSlots);
   const getDraft = useMatchingDraftByWeek((s) => s.getDraft);
@@ -75,7 +74,7 @@ export default function Schedule() {
     return Math.round((to - from) / (1000 * 60 * 60 * 24));
   };
 
-  // 1) 주차 조회 (여기 페이지는 1주차만 사용)
+  // 1) 주차 조회
   useEffect(() => {
     const run = async () => {
       try {
@@ -95,10 +94,8 @@ export default function Schedule() {
 
         setWeek(w);
 
-        // ✅ store activeWeekKey 설정
         setActiveWeekKey(w.week_start);
 
-        // ✅ store에 저장된 값 있으면 복원
         const draft = getDraft(w.week_start);
         if (draft.available_slots?.length) {
           const restored: Slot[] = draft.available_slots
@@ -120,10 +117,9 @@ export default function Schedule() {
     };
 
     run();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const lastSlotsSigRef = useRef<string>(''); // Schedule 컴포넌트 안
+  const lastSlotsSigRef = useRef<string>('');
 
   useEffect(() => {
     lastSlotsSigRef.current = sigSlots(slots);
@@ -167,13 +163,12 @@ export default function Schedule() {
           onChange={(next) => {
             const nextSig = sigSlots(next);
 
-            // ✅ 동일 값이면 state/store 업데이트 스킵 (무한루프 차단)
+            // 동일 값이면 state/store 업데이트 스킵 (무한루프 차단)
             if (nextSig === lastSlotsSigRef.current) return;
 
             lastSlotsSigRef.current = nextSig;
             setSlots(next);
 
-            // store 저장
             setActiveWeekKey(week.week_start);
             const nextApiSlots: ApiSlot[] = next.map((s) => ({
               date: addDaysISO(week.week_start, s.day),
@@ -221,7 +216,6 @@ export default function Schedule() {
               onClick={() => {
                 setActiveWeekKey(week.week_start);
                 setAvailableSlots(payload.available_slots);
-                // 필요하면 여기서 payload로 API 호출 or store 저장
                 router.push('/application/dining');
               }}
             />

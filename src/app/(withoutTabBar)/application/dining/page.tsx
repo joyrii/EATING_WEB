@@ -24,7 +24,6 @@ export default function Dining() {
   const [restaurants, setRestaurants] = useState<any[]>([]);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
 
-  // zustand
   const setActiveWeekKey = useMatchingDraftByWeek((s) => s.setActiveWeekKey);
   const getDraft = useMatchingDraftByWeek((s) => s.getDraft);
   const setExcludedRestaurantIds = useMatchingDraftByWeek(
@@ -43,13 +42,9 @@ export default function Dining() {
   useEffect(() => {
     (async () => {
       try {
-        // activeWeekKey가 이미 있으면 그걸로 복원
-        // (주의: persist로 살아있을 수도 있어서 우선 store값을 사용)
-        // activeWeekKey를 직접 읽기 위해 getState 사용
         const state = useMatchingDraftByWeek.getState();
         let wk = state.activeWeekKey;
 
-        // wk가 없으면(직접 진입/새로고침) 서버에서 1주차 가져와서 세팅
         if (!wk) {
           const res = await getMatchingStatus();
           const first = res.rounds?.[0];
@@ -68,23 +63,21 @@ export default function Dining() {
         console.error('Dining 복원 실패:', e);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 3) 체크 변경 함수 + 즉시 store 저장
+  // 3) 체크 변경 함수
   const toggle = (id: string) => {
     setCheckedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
 
-      // ✅ 즉시 store에 저장 (뒤로가기/새로고침 복원)
       setExcludedRestaurantIds(Array.from(next));
       return next;
     });
   };
 
-  // 4) 이동 직전에도 한번 더 저장(보험)
+  // 4) 이동 직전 저장
   const commit = () => {
     setExcludedRestaurantIds(Array.from(checkedIds));
   };

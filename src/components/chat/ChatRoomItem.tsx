@@ -5,7 +5,7 @@ import { getSendbirdInstance } from '@/lib/sendbird/client';
 
 type ChatRoomItemProps = {
   roomId: string;
-  roomName: React.ReactNode; // ✅ string → ReactNode
+  roomName: React.ReactNode;
   lastChatAsMs: number;
   content: string;
   unreadCount: number;

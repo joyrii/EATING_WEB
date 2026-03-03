@@ -13,7 +13,7 @@ export const submitVerification = async (
   verificationData: VerificationData,
 ) => {
   try {
-    // 서버사이드 API route를 통해 제출 (인앱 브라우저 세션 문제 우회)
+    // 서버사이드 API route를 통해 제출
     const res = await fetch('/api/verification/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

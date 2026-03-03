@@ -71,18 +71,17 @@ export default function TimeGrid({
   // emit 중복 방지
   const lastEmittedRef = useRef<string>(externalSig);
 
-  // ✅ 언마운트 직전 최종 커밋용
+  // 언마운트 직전 최종 커밋용
   const latestSelectedRef = useRef<Set<string>>(selected);
   useEffect(() => {
     latestSelectedRef.current = selected;
   }, [selected]);
 
-  // ✅ 외부 value 동기화: "내용이 달라질 때만" 반영 (루프 방지)
+  // 외부 value 동기화
   useEffect(() => {
     setSelected((prev) => {
       const prevSig = signatureOf(prev);
       if (prevSig === externalSig) return prev;
-      // 외부값으로 동기화되는 경우엔 다시 emit 안 하게 기록
       lastEmittedRef.current = externalSig;
       return externalKeySet;
     });
@@ -159,7 +158,6 @@ export default function TimeGrid({
     lastHit.current = null;
   };
 
-  // ✅ 내부 선택 변경 -> onChange (원래 동작)
   useEffect(() => {
     if (!onChange) return;
 
@@ -173,7 +171,6 @@ export default function TimeGrid({
     onChange(nextSlots);
   }, [selected, onChange]);
 
-  // ✅ 언마운트 직전 최종 커밋(뒤로가기 보험)
   useEffect(() => {
     return () => {
       if (!onChange) return;
