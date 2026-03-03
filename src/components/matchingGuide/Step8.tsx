@@ -1,25 +1,18 @@
+import { Body, Container, Content, Header, Text } from './style';
+
 export default function MatchingGuideStep8() {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        height: '100dvh',
-        overflow: 'hidden',
-      }}
-    >
-      <img
-        src="/images/eating-guide/step8.png"
-        alt="Matching Guide Step 8"
-        style={{
-          width: 'auto%',
-          height: '100%',
-          objectFit: 'contain',
-          display: 'block',
-        }}
-      />
-    </div>
+    <Container>
+      <Header>
+        <Text>
+          노쇼·취지와 다른 접근은
+          <br />
+          채팅방/신고하기에서 바로 접수해주세요
+        </Text>
+      </Header>
+      <Body>
+        <Content src="/svgs/guide/guide-8.svg" alt="guide-8" />
+      </Body>
+    </Container>
   );
 }

@@ -37,6 +37,12 @@ const EmptyStateFont = localFont({
   variable: '--font-empty',
 });
 
+const ownglyph = localFont({
+  src: './fonts/Ownglyph-PDH-Regular.ttf',
+  variable: '--font-ownglyph',
+  display: 'swap',
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -45,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${pretendard.variable} ${HeaderFont.variable} ${EmptyStateFont.variable}`}
+      className={`${pretendard.variable} ${HeaderFont.variable} ${EmptyStateFont.variable} ${ownglyph.variable} antialiased`}
     >
       <head>
         <link
@@ -56,7 +62,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${pretendard.variable} antialiased max-w-[430px] mx-auto bg-[#FFFEFE] min-h-screen`}
+        className={`${pretendard.variable} ${ownglyph.variable} antialiased max-w-[430px] mx-auto bg-[#FFFEFE] min-h-screen`}
       >
         <UserProvider>
           <StyledComponentsRegistry>

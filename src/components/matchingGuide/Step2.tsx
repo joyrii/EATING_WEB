@@ -1,25 +1,18 @@
+import { Body, Container, Content, Header, Text } from './style';
+
 export default function MatchingGuideStep2() {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        height: '100dvh',
-        overflow: 'hidden',
-      }}
-    >
-      <img
-        src="/images/eating-guide/step2.png"
-        alt="Matching Guide Step 2"
-        style={{
-          width: 'auto%',
-          height: '100%',
-          objectFit: 'contain',
-          display: 'block',
-        }}
-      />
-    </div>
+    <Container>
+      <Header>
+        <Text>
+          잇팅이 공강 시간과 성향을 바탕으로,
+          <br />
+          같이 밥이나 카페 갈 벗을 매칭해드려요!
+        </Text>
+      </Header>
+      <Body>
+        <Content src="/svgs/guide/guide-2.svg" alt="guide-2" />
+      </Body>
+    </Container>
   );
 }

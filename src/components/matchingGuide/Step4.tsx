@@ -1,25 +1,18 @@
+import { Body, Container, Content, Header, Text } from './style';
+
 export default function MatchingGuideStep4() {
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        height: '100dvh',
-        overflow: 'hidden',
-      }}
-    >
-      <img
-        src="/images/eating-guide/step4.png"
-        alt="Matching Guide Step 4"
-        style={{
-          width: 'auto%',
-          height: '100%',
-          objectFit: 'contain',
-          display: 'block',
-        }}
-      />
-    </div>
+    <Container>
+      <Header>
+        <Text>
+          최적의 매칭을 위해 관심사,
+          <br />
+          가능한 날짜·시간 등을 입력해주세요
+        </Text>
+      </Header>
+      <Body>
+        <Content $width="100vw" src="/svgs/guide/guide-4.svg" alt="guide-4" />
+      </Body>
+    </Container>
   );
 }
