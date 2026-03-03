@@ -125,7 +125,9 @@ export default function Settings() {
               신고하기
             </SectionItem>
             <SectionItem>페널티 기록</SectionItem>
-            <SectionItem>이용약관</SectionItem>
+            <SectionItem onClick={() => router.push('/settings/terms')}>
+              이용약관
+            </SectionItem>
             <SectionItem>로그아웃</SectionItem>
             <SectionItem>회원 탈퇴</SectionItem>
           </SectionList>
