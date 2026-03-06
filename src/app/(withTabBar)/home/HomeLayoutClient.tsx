@@ -152,27 +152,6 @@ export default function HomeLayoutClient({
     };
   }, [me, forcedStatus, isLoaded]);
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-
-      if (error) {
-        console.error('Session fetch error:', error);
-        return;
-      }
-
-      console.log('session:', session);
-      console.log('access_token:', session?.access_token);
-      console.log('refresh_token:', session?.refresh_token);
-      console.log('user:', session?.user);
-    };
-
-    checkSession();
-  }, []);
-
   const banner = banners.find((b) => b.display_order === 1);
 
   if (!isLoaded || !isStatusLoaded) return <LoadingSpinner />;
